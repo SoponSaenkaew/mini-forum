@@ -1,14 +1,48 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, useForm, router } from '@inertiajs/react'; // ✨ เพิ่ม router เข้ามาเพื่อใช้สั่งลบค่ะ
+import { Head, useForm, router } from '@inertiajs/react';
+
+// ✨ คอมโพเนนต์ย่อยสำหรับจัดการฟอร์มคอมเมนต์
+const CommentForm = ({ postId }) => {
+    const { data, setData, post, processing, reset, errors } = useForm({
+        content: '',
+    });
+
+    const submitComment = (e) => {
+        e.preventDefault();
+        post(route('comments.store', postId), {
+            onSuccess: () => reset(),
+            preserveScroll: true,
+        });
+    };
+
+    return (
+        <form onSubmit={submitComment} className="mt-4 flex flex-col gap-2">
+            <div className="flex gap-2">
+                <input
+                    type="text"
+                    value={data.content}
+                    onChange={e => setData('content', e.target.value)}
+                    placeholder="เขียนคอมเมนต์ที่นี่..."
+                    className="flex-1 border-gray-300 rounded-md text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                />
+                <button 
+                    disabled={processing || !data.content.trim()}
+                    className="bg-gray-800 text-white px-4 py-1 rounded-md text-sm font-bold hover:bg-gray-700 disabled:opacity-50 transition"
+                >
+                    ส่ง
+                </button>
+            </div>
+            {errors.content && <div className="text-red-500 text-xs">{errors.content}</div>}
+        </form>
+    );
+};
 
 export default function Dashboard({ auth, posts }) {
-    // 1. เตรียมถังข้อมูลสำหรับฟอร์ม
     const { data, setData, post, processing, errors, reset } = useForm({
         title: '',
         content: '',
     });
 
-    // 2. ฟังก์ชันสำหรับส่งข้อมูลโพสต์ใหม่
     const submit = (e) => {
         e.preventDefault();
         post(route('posts.store'), {
@@ -16,10 +50,18 @@ export default function Dashboard({ auth, posts }) {
         });
     };
 
-    // ✨ 3. ฟังก์ชันสำหรับลบโพสต์
     const handleDelete = (postId) => {
         if (confirm('เซนเซแน่ใจนะว่าจะลบโพสต์นี้? มันกู้คืนไม่ได้นะคะ!')) {
             router.delete(route('posts.destroy', postId));
+        }
+    };
+
+    // ✨ ฟังก์ชันสำหรับลบคอมเมนต์
+    const handleDeleteComment = (commentId) => {
+        if (confirm('เซนเซแน่ใจนะว่าจะลบคอมเมนต์นี้?')) {
+            router.delete(route('comments.destroy', commentId), {
+                preserveScroll: true, // เพื่อให้หน้าไม่เด้งตอนลบค่ะ
+            });
         }
     };
 
@@ -72,7 +114,7 @@ export default function Dashboard({ auth, posts }) {
                         </form>
                     </div>
 
-                    {/* --- รายการโพสต์ --- */}
+                    {/* --- รายการโพสต์และคอมเมนต์ --- */}
                     <div className="space-y-4">
                         <h3 className="text-lg font-bold text-gray-700 px-1">โพสต์ล่าสุดจากเพื่อนๆ 📢</h3>
                         
@@ -87,7 +129,6 @@ export default function Dashboard({ auth, posts }) {
                                             </span>
                                         </div>
 
-                                        {/* ✨ ปุ่มลบ: จะแสดงเฉพาะเจ้าของโพสต์เท่านั้น */}
                                         {post.user_id === auth.user.id && (
                                             <button
                                                 onClick={() => handleDelete(post.id)}
@@ -98,7 +139,39 @@ export default function Dashboard({ auth, posts }) {
                                         )}
                                     </div>
                                     <h4 className="font-bold text-lg text-gray-800">{post.title}</h4>
-                                    <p className="text-gray-700 mt-2 whitespace-pre-wrap">{post.content}</p>
+                                    <p className="text-gray-700 mt-2 whitespace-pre-wrap border-b pb-4 mb-4">{post.content}</p>
+
+                                    {/* --- ส่วนแสดงคอมเมนต์ --- */}
+                                    <div className="bg-gray-50 rounded-lg p-4">
+                                        <h5 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">
+                                            คอมเมนต์ ({post.comments?.length || 0})
+                                        </h5>
+                                        
+                                        <div className="space-y-3">
+                                            {post.comments?.map(comment => (
+                                                <div key={comment.id} className="text-sm flex justify-between items-start">
+                                                    <div>
+                                                        <span className="font-bold text-indigo-600">
+                                                            {comment.user.name}
+                                                        </span>: 
+                                                        <span className="text-gray-700 ml-2">{comment.content}</span>
+                                                    </div>
+
+                                                    {/* ✨ ปุ่มลบคอมเมนต์: แสดงเฉพาะเจ้าของคอมเมนต์เท่านั้น */}
+                                                    {comment.user_id === auth.user.id && (
+                                                        <button
+                                                            onClick={() => handleDeleteComment(comment.id)}
+                                                            className="text-red-300 hover:text-red-500 transition-colors ml-2"
+                                                        >
+                                                            ลบ
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        <CommentForm postId={post.id} />
+                                    </div>
                                 </div>
                             ))
                         ) : (

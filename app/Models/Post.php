@@ -3,18 +3,21 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Post extends Model
 {
-    //
-    public function up(): void 
-    {
-        Schema::create('posts', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->string('title');
-            $table->text('content');
-            $table->timestamps();
-        });
+    // ✨ อนุญาตให้บันทึกข้อมูลได้ (แก้ MassAssignmentException)
+    protected $fillable = ['title', 'content'];
+
+    public function user(): BelongsTo 
+    { 
+        return $this->belongsTo(User::class); 
+    }
+
+    public function comments(): HasMany 
+    { 
+        return $this->hasMany(Comment::class); 
     }
 }

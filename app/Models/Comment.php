@@ -3,19 +3,25 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Comment extends Model
 {
-    //
-    public function up(): void
-    {
-        Schema::create('comments', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete(); // ใครเมนต์
-            $table->foreignId('post_id')->constrained()->cascadeOnDelete(); // เมนต์ที่โพสต์ไหน
-            $table->foreignId('parent_id')->nullable()->constrained('comments')->cascadeOnDelete(); // ตอบกลับเมนต์ไหน (ถ้ามี)
-            $table->text('content');
-            $table->timestamps();
-        });
+    protected $fillable = ['post_id', 'parent_id', 'content'];
+
+    public function user(): BelongsTo 
+    { 
+        return $this->belongsTo(User::class); 
+    }
+
+    public function post(): BelongsTo 
+    { 
+        return $this->belongsTo(Post::class); 
+    }
+
+    public function replies(): HasMany 
+    { 
+        return $this->hasMany(Comment::class, 'parent_id'); 
     }
 }

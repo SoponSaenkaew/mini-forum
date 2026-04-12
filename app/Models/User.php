@@ -10,9 +10,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel; 
+
 #[Fillable(['name', 'email', 'password'])]
 #[Hidden(['password', 'remember_token'])]
-class User extends Authenticatable
+class User extends Authenticatable implements FilamentUser
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
@@ -30,4 +33,10 @@ class User extends Authenticatable
         ];
     }
     public function posts() { return $this->hasMany(Post::class); }
+    // ✨ ฟังก์ชันเช็คสิทธิ์การเข้าถึงหลังบ้าน
+    public function canAccessPanel(Panel $panel): bool
+    {
+        // ในที่นี้คือต้องล็อกอิน และฟิลด์ is_admin ต้องเป็น true ค่ะ
+        return $this->is_admin === true;
+    }
 }

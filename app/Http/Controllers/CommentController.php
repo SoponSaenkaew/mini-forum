@@ -14,21 +14,28 @@ class CommentController extends Controller
     {
         $validated = $request->validate([
             'content' => 'required|string|max:1000',
+            'parent_id' => 'nullable|exists:comments,id', // ✨ ตรวจสอบว่าคอมเมนต์แม่มีจริงไหม
         ]);
-
-        // สร้างคอมเมนต์ผ่านความสัมพันธ์ที่ตั้งไว้ใน Post Model
 
         $comment = $post->comments()->create([
-        'user_id' => auth()->id(),
-        'content' => $request->content,
+            'user_id' => auth()->id(),
+            'content' => $validated['content'],
+            'parent_id' => $request->parent_id, // ✨ บันทึกค่าคอมเมนต์แม่
         ]);
 
-        // ✨ แจ้งเตือนเจ้าของโพสต์ (ถ้าคนคอมเมนต์ไม่ใช่เจ้าของโพสต์เอง)
-        if ($post->user_id !== auth()->id()) {
+        // ✨ กรณีที่ 1: ตอบกลับคอมเมนต์ (ส่งหาเจ้าของคอมเมนต์แม่)
+        if ($comment->parent_id) {
+            $parentComment = Comment::find($comment->parent_id);
+            if ($parentComment->user_id !== auth()->id()) {
+                $parentComment->user->notify(new NewCommentNotification($comment));
+            }
+        } 
+        // ✨ กรณีที่ 2: คอมเมนต์โพสต์ปกติ (ส่งหาเจ้าของโพสต์)
+        elseif ($post->user_id !== auth()->id()) {
             $post->user->notify(new NewCommentNotification($comment));
         }
 
-        return back(); // ส่งกลับหน้าเดิม
+        return back();
     }
     
     public function destroy(Comment $comment)

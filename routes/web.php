@@ -22,7 +22,12 @@ Route::get('/', function () {
 // --- หน้า Dashboard: แสดงฟีดโพสต์ทั้งหมด ---
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard', [
-        'posts' => Post::with(['user', 'comments.user'])->latest()->get(),
+        'posts' => Post::with([
+            'user', 
+            'comments' => function($query) {
+                $query->whereNull('parent_id')->with(['user', 'replies.user', 'replies.parent.user']);
+            }
+        ])->latest()->get(),
     ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
 

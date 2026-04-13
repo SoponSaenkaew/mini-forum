@@ -9,6 +9,8 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+use App\Models\User; 
+
 // --- สำหรับระบบ Admin Dashboard (Filament) ---
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel; 
@@ -73,5 +75,19 @@ class User extends Authenticatable implements FilamentUser
     {
         // อนุญาตเฉพาะผู้ใช้งานที่มีสถานะเป็น Admin เท่านั้น
         return $this->is_admin === true;
+    }
+
+    
+
+    /**
+     * แสดงหน้าโปรไฟล์สาธารณะของผู้ใช้
+     */
+    public function show(User $user): Response
+    {
+        return Inertia::render('Profile/Show', [
+            'user' => $user,
+            // ดึงโพสต์ทั้งหมดของ User คนนี้ พร้อมเจ้าของโพสต์และคอมเมนต์
+            'posts' => $user->posts()->with(['user', 'comments.user'])->latest()->get(),
+        ]);
     }
 }

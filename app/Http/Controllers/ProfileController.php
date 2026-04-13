@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Models\User;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -10,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 use Inertia\Response;
+
 
 class ProfileController extends Controller
 {
@@ -59,5 +61,17 @@ class ProfileController extends Controller
         $request->session()->regenerateToken();
 
         return Redirect::to('/');
+    }
+
+    /**
+     * แสดงหน้าโปรไฟล์ของผู้ใช้พร้อมรายการโพสต์ของเขา
+     */
+    public function show(User $user)
+    {
+        return Inertia::render('Profile/Show', [
+            'user' => $user,
+            // ดึงเฉพาะโพสต์ที่ User คนนี้เป็นเจ้าของ
+            'posts' => $user->posts()->with(['user', 'comments.user'])->latest()->get(),
+        ]);
     }
 }

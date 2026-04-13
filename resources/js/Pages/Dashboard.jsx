@@ -1,14 +1,14 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import Dropdown from '@/Components/Dropdown'; // ✨ ใช้ Dropdown ของ Breeze
-import { Head, useForm, router } from '@inertiajs/react';
+import Dropdown from '@/Components/Dropdown'; 
+import { Head, useForm, router, Link } from '@inertiajs/react'; // ✨ นำเข้า Link เพื่อใช้ทำระบบ Navigation
 import { useState, useRef } from 'react';
 
 /**
  * @component CommentForm
- * @description คอมโพเนนต์สำหรับสร้างคอมเมนต์ใหม่ใต้โพสต์
+ * @description คอมโพเนนต์ฟอร์มสำหรับสร้างคอมเมนต์ใหม่
  */
 const CommentForm = ({ postId }) => {
-    const { data, setData, post, processing, reset } = useForm({
+    const { data, setData, post, processing, reset, errors } = useForm({
         content: '',
     });
 
@@ -43,34 +43,34 @@ const CommentForm = ({ postId }) => {
 
 /**
  * @page Dashboard
- * @description หน้าหลักของฟอรัม แสดงฟีดโพสต์ ระบบคอมเมนต์ และการจัดการข้อมูล (CRUD)
+ * @description หน้าหลักของฟอรัมที่รวบรวมฟีเจอร์ CRUD ทั้งหมด
  */
 export default function Dashboard({ auth, posts }) {
-    // --- สเตตัสสำหรับฟอร์มโพสต์ใหม่ (รองรับรูปภาพ) ---
+    // --- สเตตัสและฟังก์ชันจัดการโพสต์ใหม่ ---
     const { data, setData, post, processing, reset, errors } = useForm({
         title: '',
         content: '',
         image: null,
     });
 
-    // --- สเตตัสการจัดการโหมดแก้ไข (โพสต์และคอมเมนต์) ---
+    // --- สเตตัสควบคุมโหมดการแก้ไข ---
     const [editingId, setEditingId] = useState(null);
     const [editingCommentId, setEditingCommentId] = useState(null);
     const fileInputRef = useRef();
 
-    // --- useForm สำหรับการแก้ไขข้อมูล ---
+    // --- useForm สำหรับการส่งคำขอแก้ไขข้อมูล ---
     const { data: editData, setData: setEditData, post: postUpdate, processing: editProcessing } = useForm({
         title: '',
         content: '',
         image: null,
-        _method: 'patch', // ✨ จำเป็นสำหรับการอัปโหลดไฟล์ผ่าน PATCH ใน Inertia
+        _method: 'patch', 
     });
 
     const { data: editCommentData, setData: setEditCommentData, patch: patchComment } = useForm({
         content: '',
     });
 
-    // --- ฟังก์ชันการทำงาน (Handlers) ---
+    // --- ฟังก์ชันจัดการข้อมูล (Handlers) ---
     
     const submit = (e) => {
         e.preventDefault();
@@ -89,7 +89,6 @@ export default function Dashboard({ auth, posts }) {
 
     const submitUpdate = (e) => {
         e.preventDefault();
-        // ✨ ใช้ post แทน patch เพื่อให้ส่งไฟล์ได้ โดยแนบ _method: 'patch' ไปแทน
         postUpdate(route('posts.update', editingId), {
             onSuccess: () => setEditingId(null),
             preserveScroll: true,
@@ -147,7 +146,7 @@ export default function Dashboard({ auth, posts }) {
                                     type="file"
                                     ref={fileInputRef}
                                     onChange={e => setData('image', e.target.files[0])}
-                                    className="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                                    className="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-indigo-50 file:text-indigo-700"
                                 />
                                 <button disabled={processing} className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-2 rounded-lg font-bold transition shadow-md">
                                     โพสต์เลย!
@@ -156,12 +155,11 @@ export default function Dashboard({ auth, posts }) {
                         </form>
                     </div>
 
-                    {/* รายการฟีด */}
+                    {/* รายการฟีดโพสต์ */}
                     <div className="space-y-6">
                         {posts.map(post => (
                             <div key={post.id} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
                                 {editingId === post.id ? (
-                                    /* โหมดแก้ไขโพสต์ */
                                     <form onSubmit={submitUpdate} className="space-y-4">
                                         <input type="text" value={editData.title} className="w-full border-gray-200 rounded-lg" onChange={e => setEditData('title', e.target.value)} />
                                         <textarea value={editData.content} className="w-full border-gray-200 rounded-lg h-24" onChange={e => setEditData('content', e.target.value)}></textarea>
@@ -172,18 +170,24 @@ export default function Dashboard({ auth, posts }) {
                                         </div>
                                     </form>
                                 ) : (
-                                    /* โหมดแสดงผลปกติ */
                                     <>
                                         <div className="flex justify-between items-start mb-4">
                                             <div className="flex items-center gap-3">
-                                                <div className="h-10 w-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-700 font-bold">{post.user.name[0]}</div>
+                                                <div className="h-10 w-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-700 font-bold">
+                                                    {post.user.name[0]}
+                                                </div>
                                                 <div>
-                                                    <div className="font-bold text-gray-900">{post.user.name}</div>
+                                                    {/* ✨ ลิงก์ไปยังโปรไฟล์เจ้าของโพสต์ */}
+                                                    <Link 
+                                                        href={route('profile.show', post.user.id)}
+                                                        className="font-bold text-gray-900 hover:text-indigo-600 hover:underline transition"
+                                                    >
+                                                        {post.user.name}
+                                                    </Link>
                                                     <div className="text-xs text-gray-400">{new Date(post.created_at).toLocaleString('th-TH')}</div>
                                                 </div>
                                             </div>
                                             
-                                            {/* ✨ ปุ่มสามจุดสำหรับโพสต์ */}
                                             {post.user_id === auth.user.id && (
                                                 <Dropdown>
                                                     <Dropdown.Trigger>
@@ -202,7 +206,6 @@ export default function Dashboard({ auth, posts }) {
                                         <h3 className="text-xl font-bold text-gray-900 mb-2">{post.title}</h3>
                                         <p className="text-gray-700 whitespace-pre-wrap mb-4">{post.content}</p>
                                         
-                                        {/* ✨ แสดงรูปภาพประกอบโพสต์ */}
                                         {post.image && (
                                             <div className="mb-4 rounded-xl overflow-hidden border border-gray-100">
                                                 <img src={`/storage/${post.image}`} alt="Post content" className="w-full h-auto object-cover max-h-[500px]" />
@@ -224,7 +227,13 @@ export default function Dashboard({ auth, posts }) {
                                                         ) : (
                                                             <div className="flex justify-between items-start">
                                                                 <p className="text-sm text-gray-800">
-                                                                    <span className="font-bold text-indigo-600 mr-2">{comment.user.name}</span>
+                                                                    {/* ✨ ลิงก์ไปยังโปรไฟล์เจ้าของคอมเมนต์ */}
+                                                                    <Link 
+                                                                        href={route('profile.show', comment.user.id)}
+                                                                        className="font-bold text-indigo-600 hover:underline mr-2"
+                                                                    >
+                                                                        {comment.user.name}
+                                                                    </Link>
                                                                     {comment.content}
                                                                 </p>
                                                                 {comment.user_id === auth.user.id && (

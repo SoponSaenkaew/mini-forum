@@ -63,4 +63,14 @@ class PostController extends Controller
         $post->update($validated);
         return redirect(route('dashboard'));
     }
+    /**
+     * แสดงหน้าโพสต์เดี่ยวพร้อมคอมเมนต์
+     */
+    public function show(Post $post)
+    {
+        // โหลดความสัมพันธ์ของเจ้าของโพสต์ และเจ้าของคอมเมนต์
+        return Inertia::render('Posts/Show', [
+            'post' => $post->load(['user', 'comments.user']),
+        ]);
+    }
 }

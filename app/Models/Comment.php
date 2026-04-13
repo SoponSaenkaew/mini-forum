@@ -20,13 +20,13 @@ class Comment extends Model
         return $this->belongsTo(Post::class); 
     }
 
-    public function replies(): HasMany 
-    { 
-        return $this->hasMany(Comment::class, 'parent_id'); 
+    public function parent()
+    {
+        return $this->belongsTo(Comment::class, 'parent_id')->with('user');
     }
 
-    public function parent(): BelongsTo 
-    { 
-        return $this->belongsTo(Comment::class, 'parent_id'); 
+    public function replies()
+    {
+        return $this->hasMany(Comment::class, 'parent_id')->with(['user', 'replies']);
     }
 }

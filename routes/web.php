@@ -25,7 +25,10 @@ Route::get('/dashboard', function () {
         'posts' => Post::with([
             'user', 
             'comments' => function($query) {
-                $query->whereNull('parent_id')->with(['user', 'replies.user', 'replies.parent.user']);
+                // ✨ เปลี่ยนมาเรียกแค่ 'user' และ 'replies' พอค่ะ Model จะจัดการส่วนที่ลึกกว่าให้เอง
+                $query->whereNull('parent_id')
+                      ->with(['user', 'replies'])
+                      ->latest();
             }
         ])->latest()->get(),
     ]);
@@ -53,6 +56,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // 🔔 ระบบแจ้งเตือน
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::patch('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+    Route::get('/comments/{comment}/reply', [CommentController::class, 'replyPage'])->name('comments.reply');
+    
+    
 });
 
 require __DIR__.'/auth.php';

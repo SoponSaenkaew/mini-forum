@@ -35,8 +35,10 @@ export default function Index({ auth, notifications }) {
                                 <div className="flex-1 mr-4">
                                     {/* ✨ ส่วนที่เพิ่ม: หุ้มข้อความแจ้งเตือนด้วย Link เพื่อให้กดวาร์ปไปที่โพสต์ได้ */}
                                     <Link 
-                                        href={route('posts.show', notification.data.post_id)} 
-                                        className="block group"
+                                        method="patch" 
+                                        as="button" 
+                                        href={route('notifications.read', notification.id)} 
+                                        className="..."
                                     >
                                         <p className="text-sm text-gray-800 group-hover:text-indigo-600 transition">
                                             <span className="font-bold text-indigo-600">{notification.data.user_name}</span> 

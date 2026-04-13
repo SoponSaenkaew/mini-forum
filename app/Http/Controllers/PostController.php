@@ -67,11 +67,18 @@ class PostController extends Controller
     /**
      * แสดงหน้าโพสต์เดี่ยวพร้อมคอมเมนต์
      */
-    public function show(Post $post)
+    public function show(Request $request, Post $post)
     {
-        // โหลดความสัมพันธ์ของเจ้าของโพสต์ และเจ้าของคอมเมนต์
+        $highlightId = $request->query('comment_id');
+
         return Inertia::render('Posts/Show', [
-            'post' => $post->load(['user', 'comments.user']),
+            'post' => $post->load(['user', 'comments' => function($query) {
+                // ✨ โหลดลูกๆ ของคอมเมนต์ออกมาด้วย (ใช้ .replies ไปเรื่อยๆ เพื่อรองรับหลายชั้น)
+                $query->whereNull('parent_id')
+                    ->with(['user', 'replies.user']) 
+                    ->latest();
+            }]),
+            'highlightId' => $highlightId ? (int)$highlightId : null,
         ]);
     }
 }

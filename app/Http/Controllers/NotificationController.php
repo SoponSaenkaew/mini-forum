@@ -23,10 +23,19 @@ class NotificationController extends Controller
      */
     public function markAsRead($id)
     {
-        // ค้นหาการแจ้งเตือนที่ระบุ และเปลี่ยนสถานะ
         $notification = auth()->user()->notifications()->findOrFail($id);
+        
+        // 1. เปลี่ยนสถานะเป็นอ่านแล้ว
         $notification->markAsRead();
 
-        return back(); // ส่งกลับหน้าเดิม
+        // 2. ดึงข้อมูล post_id และ comment_id จาก data ของแจ้งเตือน
+        $postId = $notification->data['post_id'];
+        $commentId = $notification->data['comment_id'] ?? null;
+
+        // 3. วาร์ปเซนเซไปยังหน้าโพสต์นั้น พร้อมส่ง comment_id ไปไฮไลท์
+        return redirect()->route('posts.show', [
+            'post' => $postId, 
+            'comment_id' => $commentId
+        ]);
     }
 }

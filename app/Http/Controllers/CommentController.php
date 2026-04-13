@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Post; //
 use App\Models\Comment; //
 
+use Inertia\Inertia;
 use Illuminate\Http\Request;
 use App\Notifications\NewCommentNotification;
 
@@ -64,5 +65,15 @@ class CommentController extends Controller
         $comment->update($validated); // บันทึกข้อมูลใหม่
 
         return back(); // กลับหน้าเดิมโดยรักษาตำแหน่ง scroll
+    }
+
+    /**
+     * หน้าสำหรับตอบกลับคอมเมนต์ที่ระบุโดยเฉพาะ (วาร์ปจาก Notification)
+     */
+    public function replyPage(Comment $comment)
+    {
+        return Inertia::render('Comments/ReplyPage', [
+            'targetComment' => $comment->load(['user', 'post', 'replies.user', 'replies.replies.user']),
+        ]);
     }
 }

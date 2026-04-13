@@ -6,6 +6,7 @@ use App\Models\Post;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
 
 class PostController extends Controller
 {
@@ -14,16 +15,20 @@ class PostController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        // 1. ตรวจสอบข้อมูลที่ส่งมา
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'content' => 'required|string',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048', // ✨ เช็คว่าเป็นรูปภาพไม่เกิน 2MB
         ]);
 
-        // 2. สร้างโพสต์ผ่านความสัมพันธ์ของ User ที่ล็อกอินอยู่
+        if ($request->hasFile('image')) {
+            // ✨ บันทึกลงโฟลเดอร์ storage/app/public/posts
+            $path = $request->file('image')->store('posts', 'public');
+            $validated['image'] = $path;
+        }
+
         $request->user()->posts()->create($validated);
 
-        // 3. ย้ายหน้ากลับไปที่เดิม (Dashboard)
         return redirect(route('dashboard'));
     }
     
@@ -41,18 +46,21 @@ class PostController extends Controller
 
     public function update(Request $request, Post $post)
     {
-        // ตรวจสอบสิทธิ์ว่าเป็นเจ้าของโพสต์จริงไหม
-        if ($post->user_id !== auth()->id()) {
-            abort(403);
-        }
+        if ($post->user_id !== auth()->id()) { abort(403); }
 
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'content' => 'required|string',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
-        $post->update($validated); // บันทึกข้อมูลที่แก้ไข
+        if ($request->hasFile('image')) {
+            // ลบรูปเก่าทิ้งถ้ามีการอัปโหลดรูปใหม่
+            if ($post->image) { Storage::disk('public')->delete($post->image); }
+            $validated['image'] = $request->file('image')->store('posts', 'public');
+        }
 
+        $post->update($validated);
         return redirect(route('dashboard'));
     }
 }

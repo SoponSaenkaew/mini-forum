@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Post extends Model
 {
     // ✨ อนุญาตให้บันทึกข้อมูลได้ (แก้ MassAssignmentException)
-    protected $fillable = ['title', 'content'];
+    protected $fillable = ['title', 'content','image'];
 
     public function user(): BelongsTo 
     { 

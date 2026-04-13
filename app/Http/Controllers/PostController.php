@@ -38,4 +38,21 @@ class PostController extends Controller
 
         return redirect(route('dashboard'));
     }
+
+    public function update(Request $request, Post $post)
+    {
+        // ตรวจสอบสิทธิ์ว่าเป็นเจ้าของโพสต์จริงไหม
+        if ($post->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'content' => 'required|string',
+        ]);
+
+        $post->update($validated); // บันทึกข้อมูลที่แก้ไข
+
+        return redirect(route('dashboard'));
+    }
 }

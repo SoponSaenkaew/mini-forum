@@ -36,4 +36,19 @@ class CommentController extends Controller
         // กลับไปหน้าเดิมและรักษาตำแหน่งการ Scroll ไว้ด้วยนะคะ
         return back();
     }
+    public function update(Request $request, Comment $comment)
+    {
+        // ตรวจสอบสิทธิ์ว่าเซนเซเป็นเจ้าของคอมเมนต์นี้จริงไหม
+        if ($comment->user_id !== auth()->id()) {
+            abort(403, 'เซนเซไม่มีสิทธิ์แก้ไขคอมเมนต์ของคนอื่นนะคะ!');
+        }
+
+        $validated = $request->validate([
+            'content' => 'required|string|max:1000',
+        ]);
+
+        $comment->update($validated); // บันทึกข้อมูลใหม่
+
+        return back(); // กลับหน้าเดิมโดยรักษาตำแหน่ง scroll
+    }
 }

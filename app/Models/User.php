@@ -4,25 +4,46 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
+// --- สำหรับระบบ Admin Dashboard (Filament) ---
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel; 
 
-#[Fillable(['name', 'email', 'password'])]
-#[Hidden(['password', 'remember_token'])]
+/**
+ * @class User
+ * @description โมเดลสำหรับจัดการข้อมูลผู้ใช้งานและสิทธิ์การเข้าถึงระบบ
+ */
 class User extends Authenticatable implements FilamentUser
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
     /**
-     * Get the attributes that should be cast.
-     *
+     * รายการฟิลด์ที่อนุญาตให้บันทึกข้อมูลแบบเป็นชุด (Mass Assignment)
+     * @var array<int, string>
+     */
+    protected $fillable = [
+        'name',
+        'email',
+        'password',
+        'is_admin', // ✨ เพิ่มไว้เพื่อให้เปลี่ยนสิทธิ์แอดมินได้ง่ายๆ ค่ะ
+    ];
+
+    /**
+     * รายการฟิลด์ที่ต้องซ่อนเมื่อแปลงข้อมูลเป็น Array หรือ JSON (เช่น API)
+     * @var array<int, string>
+     */
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
+
+    /**
+     * การตั้งค่าการแปลงประเภทข้อมูลอัตโนมัติ (Casting)
      * @return array<string, string>
      */
     protected function casts(): array
@@ -30,13 +51,27 @@ class User extends Authenticatable implements FilamentUser
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_admin' => 'boolean', // ✨ แปลงเป็น Boolean ให้อัตโนมัติค่ะ
         ];
     }
-    public function posts() { return $this->hasMany(Post::class); }
-    // ✨ ฟังก์ชันเช็คสิทธิ์การเข้าถึงหลังบ้าน
+
+    /**
+     * ความสัมพันธ์: ผู้ใช้งานหนึ่งคนสามารถมีได้หลายโพสต์
+     * @return HasMany
+     */
+    public function posts(): HasMany 
+    { 
+        return $this->hasMany(Post::class); 
+    }
+
+    /**
+     * ฟังก์ชันตรวจสอบสิทธิ์การเข้าถึงระบบหลังบ้าน (Filament Admin Panel)
+     * @param Panel $panel
+     * @return bool
+     */
     public function canAccessPanel(Panel $panel): bool
     {
-        // ในที่นี้คือต้องล็อกอิน และฟิลด์ is_admin ต้องเป็น true ค่ะ
+        // อนุญาตเฉพาะผู้ใช้งานที่มีสถานะเป็น Admin เท่านั้น
         return $this->is_admin === true;
     }
 }

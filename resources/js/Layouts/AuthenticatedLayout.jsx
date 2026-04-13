@@ -12,7 +12,7 @@ import { useState } from 'react';
 export default function AuthenticatedLayout({ header, children }) {
     /**
      * ดึงข้อมูลผู้ใช้จาก Inertia Page Props
-     * @property {number} unread_notifications_count - จำนวนการแจ้งเตือนที่ยังไม่ได้อ่าน (ส่งมาจาก Middleware)
+     * @property {number} unread_notifications_count - จำนวนการแจ้งเตือนที่ยังไม่ได้อ่าน
      */
     const user = usePage().props.auth.user;
 
@@ -52,13 +52,16 @@ export default function AuthenticatedLayout({ header, children }) {
                                                 type="button"
                                                 className="inline-flex items-center rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none"
                                             >
-                                                {/* ✨ แสดงชื่อผู้ใช้พร้อมตัวเลขแจ้งเตือนสีแดง */}
                                                 <span className="relative inline-flex items-center">
                                                     {user.name}
+                                                    {/* ✨ เปลี่ยนจาก span เป็น Link เพื่อให้กดไปหน้าแจ้งเตือนได้ทันที */}
                                                     {user.unread_notifications_count > 0 && (
-                                                        <span className="ms-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm">
+                                                        <Link 
+                                                            href={route('notifications.index')}
+                                                            className="ms-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm hover:bg-red-600 transition"
+                                                        >
                                                             {user.unread_notifications_count > 99 ? '99+' : user.unread_notifications_count}
-                                                        </span>
+                                                        </Link>
                                                     )}
                                                 </span>
 
@@ -80,12 +83,19 @@ export default function AuthenticatedLayout({ header, children }) {
 
                                     <Dropdown.Content>
                                         <Dropdown.Link href={route('profile.edit')}>Profile</Dropdown.Link>
-                                        {/* ✨ ลิงก์ไปหน้าแอดมินสำหรับผู้ที่มีสิทธิ์ (ตรวจสอบจาก Model User) */}
+                                        
+                                        {/* ✨ เพิ่มลิงก์ไปยังหน้าแจ้งเตือนทั้งหมด */}
+                                        <Dropdown.Link href={route('notifications.index')}>
+                                            Notifications
+                                        </Dropdown.Link>
+
+                                        {/* ลิงก์ไปหน้าแอดมินสำหรับผู้ที่มีสิทธิ์ */}
                                         {user.is_admin && (
                                             <a href="/admin" className="block w-full px-4 py-2 text-start text-sm leading-5 text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 transition duration-150 ease-in-out">
                                                 Admin Panel
                                             </a>
                                         )}
+                                        
                                         <Dropdown.Link href={route('logout')} method="post" as="button">
                                             Log Out
                                         </Dropdown.Link>
@@ -100,7 +110,6 @@ export default function AuthenticatedLayout({ header, children }) {
                                 onClick={() => setShowingNavigationDropdown((previousState) => !previousState)}
                                 className="inline-flex items-center justify-center rounded-md p-2 text-gray-400 transition duration-150 ease-in-out hover:bg-gray-100 hover:text-gray-500 focus:bg-gray-100 focus:text-gray-500 focus:outline-none"
                             >
-                                {/* สลับไอคอน Hamburger และ Close พร้อมแสดงจุดแดงแจ้งเตือนถ้ามีข้อความใหม่ */}
                                 <div className="relative">
                                     <svg className="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
                                         <path
@@ -136,19 +145,17 @@ export default function AuthenticatedLayout({ header, children }) {
                         <ResponsiveNavLink href={route('dashboard')} active={route().current('dashboard')}>
                             Dashboard
                         </ResponsiveNavLink>
+                        {/* ✨ เพิ่มเมนูแจ้งเตือนใน Mobile Nav */}
+                        <ResponsiveNavLink href={route('notifications.index')} active={route().current('notifications.index')}>
+                            Notifications ({user.unread_notifications_count})
+                        </ResponsiveNavLink>
                     </div>
 
                     <div className="border-t border-gray-200 pb-1 pt-4">
                         <div className="flex items-center px-4">
                             <div className="flex-1">
-                                <div className="text-base font-medium text-gray-800 flex items-center">
+                                <div className="text-base font-medium text-gray-800">
                                     {user.name}
-                                    {/* ✨ ตัวเลขแจ้งเตือนสำหรับ Mobile */}
-                                    {user.unread_notifications_count > 0 && (
-                                        <span className="ms-2 px-2 py-0.5 text-[10px] font-bold text-white bg-red-500 rounded-full">
-                                            {user.unread_notifications_count}
-                                        </span>
-                                    )}
                                 </div>
                                 <div className="text-sm font-medium text-gray-500">{user.email}</div>
                             </div>

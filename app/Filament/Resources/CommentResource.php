@@ -15,9 +15,13 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class CommentResource extends Resource
 {
+    protected static ?string $navigationGroup = 'Community Management';
+
     protected static ?string $model = Comment::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+
+    protected static ?string $recordTitleAttribute = 'content';
 
     public static function form(Form $form): Form
     {
@@ -31,18 +35,26 @@ class CommentResource extends Resource
     {
         return $table
             ->columns([
-                //
+                Tables\Columns\TextColumn::make('user.name')->label('ผู้เขียน')->searchable(),
+                Tables\Columns\TextColumn::make('post.title')->label('โพสต์ที่เกี่ยวข้อง')->limit(30),
+                Tables\Columns\TextColumn::make('content')->label('ข้อความ')->limit(50)->searchable(),
+                // ✨ แสดงป้ายกำกับว่าเป็น "การตอบกลับ" หรือไม่
+                Tables\Columns\IconColumn::make('parent_id')
+                    ->label('ประเภท')
+                    ->boolean()
+                    ->trueIcon('heroicon-o-chat-bubble-left-right')
+                    ->falseIcon('heroicon-o-chat-bubble-left')
+                    ->trueColor('warning')
+                    ->falseColor('success'),
+                Tables\Columns\TextColumn::make('created_at')->label('เวลา')->since(),
             ])
             ->filters([
-                //
-            ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
+                Tables\Filters\TernaryFilter::make('is_reply')
+                    ->label('แสดงเฉพาะการตอบกลับ')
+                    ->queries(
+                        true: fn ($query) => $query->whereNotNull('parent_id'),
+                        false: fn ($query) => $query->whereNull('parent_id'),
+                    ),
             ]);
     }
 

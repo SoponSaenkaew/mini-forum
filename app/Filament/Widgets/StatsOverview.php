@@ -12,17 +12,21 @@ class StatsOverview extends BaseWidget
     protected function getStats(): array
     {
         return [
-            // แสดงยอดรวมโพสต์ทั้งหมด
             Stat::make('Total Posts', Post::count())
-                ->description('จำนวนโพสต์ทั้งหมดในระบบ')
-                ->descriptionIcon('heroicon-m-pencil-square')
+                ->description('การเติบโตของเนื้อหา')
+                ->descriptionIcon('heroicon-m-arrow-trending-up')
+                ->chart([7, 2, 10, 3, 15, 4, 17]) // เพิ่มกราฟเส้นจำลองสวยๆ
                 ->color('success'),
 
-            // แสดงยอดรวมคอมเมนต์ทั้งหมด
             Stat::make('Total Comments', Comment::count())
-                ->description('การตอบกลับจากสมาชิก')
+                ->description('การมีส่วนร่วมล่าสุด')
                 ->descriptionIcon('heroicon-m-chat-bubble-left-right')
                 ->color('info'),
+                
+            Stat::make('Total Users', \App\Models\User::count())
+                ->description('สมาชิกทั้งหมดในระบบ')
+                ->descriptionIcon('heroicon-m-users')
+                ->color('warning'),
         ];
     }
 }

@@ -4,11 +4,11 @@ namespace App\Events;
 
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow; // ✨ สำคัญมาก!
+use Illuminate\Contracts\Broadcasting\ShouldBroadcast; // ✨ สำคัญมาก!
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class FeedUpdated implements ShouldBroadcastNow
+class FeedUpdated implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 

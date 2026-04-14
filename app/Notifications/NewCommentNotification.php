@@ -7,13 +7,15 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class NewCommentNotification extends Notification
+use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
+
+class NewCommentNotification extends Notification implements ShouldBroadcastNow
 {
     public function __construct(public $comment) {}
 
     public function via(object $notifiable): array
     {
-        return ['database']; // ✨ ระบุว่าเก็บลง Database
+        return ['database', 'broadcast']; // ✨ ระบุว่าเก็บลง Database
     }
 
     public function toArray(object $notifiable): array
@@ -29,5 +31,14 @@ class NewCommentNotification extends Notification
             'user_name' => $this->comment->user->name, // ชื่อคนคอมเมนต์
             'message' => $message, // ✨ ส่งข้อความที่แยกประเภทแล้วไปเก็บ
         ];
+    }
+
+    public function toBroadcast(object $notifiable)
+    {
+        return new \Illuminate\Notifications\Messages\BroadcastMessage([
+            'unread_notifications_count' => $notifiable->unreadNotifications()->count(),
+            'user_name' => $this->comment->user->name,
+            'message' => $this->comment->parent_id ? 'ตอบกลับคอมเมนต์ของคุณ' : 'คอมเมนต์โพสต์ของคุณ',
+        ]);
     }
 }

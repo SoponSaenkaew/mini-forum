@@ -5,32 +5,35 @@ namespace App\Http\Controllers;
 use App\Models\Post;
 use App\Models\Comment;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache; // ✨ อย่าลืม import Cache
+use App\Events\FeedUpdated;           // ✨ อย่าลืม import Event
 
 class LikeController extends Controller
 {
-    // ✨ สำหรับจัดการตอนคนกดไลก์โพสต์
     public function togglePost(Post $post)
     {
         $this->toggleLike($post);
-        return back(); // กลับไปหน้าเดิมโดยรักษาตำแหน่งจอไว้
+        return back();
     }
 
-    // ✨ สำหรับจัดการตอนคนกดไลก์คอมเมนต์
     public function toggleComment(Comment $comment)
     {
         $this->toggleLike($comment);
         return back();
     }
 
-    // ✨ ฟังก์ชันกลาง ทำหน้าที่เช็คว่าเคยกดหรือยัง (ช่วยลดความซ้ำซ้อนของโค้ด)
     private function toggleLike($model)
     {
         $existingLike = $model->likes()->where('user_id', auth()->id())->first();
 
         if ($existingLike) {
-            $existingLike->delete(); // ถ้ามีอยู่แล้วให้ ลบออก (Unlike)
+            $existingLike->delete();
         } else {
-            $model->likes()->create(['user_id' => auth()->id()]); // ถ้ายังไม่มีให้ สร้างใหม่ (Like)
+            $model->likes()->create(['user_id' => auth()->id()]);
         }
+
+        // ✨ ตรงนี้แหละค่ะทีเด็ด! พอกดไลก์ปุ๊บ สั่งล้างแคชเก่าแล้วตะโกนบอก Reverb เลย!
+        Cache::flush();
+        event(new FeedUpdated());
     }
 }

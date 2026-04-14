@@ -102,10 +102,6 @@ export default function PostItem({ post, auth, highlightId = null }) {
                     <h3 className="text-xl font-bold text-gray-900 mb-2">{post.title}</h3>
                     <p className="text-gray-700 whitespace-pre-wrap mb-4 leading-relaxed">{post.content}</p>
                     
-                    {/* ✨ 1. ดึงรูปภาพเก่า (กระทู้ดั้งเดิม) กลับมาแสดง */}
-                    {post.image && <img src={`/storage/${post.image}`} alt="content" className="w-full rounded-xl mb-4 shadow-sm border object-cover" />}
-
-                    {/* ✨ 2. โชว์รูป Gallery ใหม่ */}
                     {post.images && post.images.length > 0 && (
                         <div className={`grid gap-2 mb-4 ${post.images.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
                             {post.images.map(img => (
@@ -113,7 +109,7 @@ export default function PostItem({ post, auth, highlightId = null }) {
                                     key={img.id} 
                                     src={`/storage/${img.image_path}`} 
                                     alt="content" 
-                                    className="w-full rounded-xl shadow-sm border object-cover h-48 sm:h-64" 
+                                    className="w-full rounded-xl shadow-sm border object-contain bg-gray-50 max-h-[400px]"
                                 />
                             ))}
                         </div>

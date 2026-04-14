@@ -2,8 +2,9 @@ import ApplicationLogo from '@/Components/ApplicationLogo';
 import Dropdown from '@/Components/Dropdown';
 import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
-import { Link, usePage } from '@inertiajs/react';
-import { useState } from 'react';
+import { Link, usePage, router } from '@inertiajs/react';
+import { useState,useEffect } from 'react';
+
 
 /**
  * @component AuthenticatedLayout
@@ -17,6 +18,18 @@ export default function AuthenticatedLayout({ header, children }) {
     const user = usePage().props.auth.user;
 
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
+
+    useEffect(() => {
+        // ✨ ดักฟังช่องส่วนตัวของผู้ใช้ (Private Channel)
+        window.Echo.private(`App.Models.User.${user.id}`)
+            .notification((notification) => {
+                console.log('🔔 มีแจ้งเตือนใหม่!', notification);
+                // สั่งให้ Inertia ดึงข้อมูล auth ใหม่เพื่ออัปเดตตัวเลขแจ้งเตือนบนหัวเว็บ
+                router.reload({ only: ['auth'], preserveScroll: true });
+            });
+
+        return () => window.Echo.leave(`App.Models.User.${user.id}`);
+    }, [user.id]);
 
     return (
         <div className="min-h-screen bg-gray-100">

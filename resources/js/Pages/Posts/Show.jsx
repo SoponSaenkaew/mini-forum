@@ -83,7 +83,13 @@ export default function Show({ auth, post, highlightId }) {
                                     </div>
                                 )}
                                 <form onSubmit={handleCommentSubmit} className="flex gap-2">
-                                    <input type="text" value={commentForm.content} onChange={e => setCommentForm('content', e.target.value)} className="flex-1 rounded-xl border-gray-200" placeholder="ร่วมแสดงความคิดเห็น..." />
+                                    <textarea 
+                                        value={commentForm.content} 
+                                        onChange={e => setCommentForm('content', e.target.value)} 
+                                        className="flex-1 rounded-xl border-gray-200 resize-y" 
+                                        rows="2"
+                                        placeholder="ร่วมแสดงความคิดเห็น..." 
+                                    ></textarea>
                                     <button disabled={commentProcessing || !commentForm.content.trim()} className="bg-indigo-600 text-white px-6 py-2 rounded-xl font-bold">ส่ง</button>
                                 </form>
                             </div>

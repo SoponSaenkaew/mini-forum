@@ -103,13 +103,13 @@ const PostItem = ({ post, auth }) => {
                         </div>
                     )}
                     <form onSubmit={handleCommentSubmit} className="flex gap-2">
-                        <input 
+                        <textarea
                             type="text" 
                             value={commentForm.content}
                             onChange={e => setCommentForm('content', e.target.value)}
                             placeholder={replyingTo ? `ตอบกลับ @${replyingTo.user.name}...` : "เขียนคอมเมนต์..."}
                             className="flex-1 border-gray-200 rounded-xl text-sm focus:ring-indigo-500 shadow-sm"
-                        />
+                        ></textarea>
                         <button disabled={commentProcessing || !commentForm.content.trim()} className="bg-indigo-600 text-white px-6 py-2 rounded-xl text-sm font-bold transition hover:bg-indigo-700 disabled:opacity-50">
                             {editingComment ? 'บันทึก' : (replyingTo ? 'ตอบกลับ' : 'ส่ง')}
                         </button>

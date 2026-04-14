@@ -1,13 +1,17 @@
 <?php
+use Inertia\Inertia;
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\NotificationController;
+
+use App\Models\Post;
+use App\Models\User;
+
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
-use App\Models\Post;
+use Illuminate\Http\Request;
 
 // --- หน้าแรกของเว็บไซต์ ---
 Route::get('/', function () {
@@ -20,17 +24,31 @@ Route::get('/', function () {
 });
 
 // --- หน้า Dashboard: แสดงฟีดโพสต์ทั้งหมด ---
-Route::get('/dashboard', function () {
+
+
+// --- หน้า Dashboard: แสดงฟีดโพสต์ทั้งหมด ---
+Route::get('/dashboard', function (Request $request) {
+    $search = $request->query('search'); // รับคำค้นหา
+
     return Inertia::render('Dashboard', [
+        // ✨ 1. ค้นหาโพสต์ (จากหัวข้อ หรือ เนื้อหา)
         'posts' => Post::with([
             'user', 
             'comments' => function($query) {
-                // ✨ เปลี่ยนมาเรียกแค่ 'user' และ 'replies' พอค่ะ Model จะจัดการส่วนที่ลึกกว่าให้เอง
-                $query->whereNull('parent_id')
-                      ->with(['user', 'replies'])
-                      ->latest();
+                $query->whereNull('parent_id')->with(['user', 'replies'])->latest();
             }
-        ])->latest()->get(),
+        ])
+        ->when($search, function($query, $search) {
+            $query->where('title', 'like', "%{$search}%")
+                  ->orWhere('content', 'like', "%{$search}%");
+        })
+        ->latest()->get(),
+
+        // ✨ 2. ค้นหาผู้ใช้ (ถ้ามีคำค้นหา)
+        'searchedUsers' => $search ? User::where('name', 'like', "%{$search}%")->limit(5)->get() : [],
+        
+        // ส่งคำค้นหากลับไปแสดงที่หน้าช่องค้นหา
+        'filters' => ['search' => $search],
     ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
 

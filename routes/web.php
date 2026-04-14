@@ -5,10 +5,12 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\LikeController;
 
 use App\Models\Post;
 use App\Models\User;
 
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
@@ -24,30 +26,34 @@ Route::get('/', function () {
 });
 
 // --- หน้า Dashboard: แสดงฟีดโพสต์ทั้งหมด ---
-
-
-// --- หน้า Dashboard: แสดงฟีดโพสต์ทั้งหมด ---
 Route::get('/dashboard', function (Request $request) {
-    $search = $request->query('search'); // รับคำค้นหา
+    $search = $request->query('search');
 
-    return Inertia::render('Dashboard', [
-        // ✨ 1. ค้นหาโพสต์ (จากหัวข้อ หรือ เนื้อหา)
-        'posts' => Post::with([
+    // ✨ สร้างกุญแจสำหรับจำข้อมูล (ถ้ามีการค้นหา ก็ให้จำแยกกัน)
+    $cacheKey = 'dashboard_posts_' . ($search ?: 'all');
+
+    // ✨ สั่งให้ Redis จำข้อมูลโพสต์ทั้งหมดไว้ 60 วินาที!
+    $posts = Cache::remember($cacheKey, 60, function () use ($search) {
+        return Post::with([
             'user', 
+            'likes', 
+            'images',
             'comments' => function($query) {
-                $query->whereNull('parent_id')->with(['user', 'replies'])->latest();
+                $query->whereNull('parent_id')
+                      ->with(['user', 'likes', 'replies']) 
+                      ->latest();
             }
         ])
         ->when($search, function($query, $search) {
             $query->where('title', 'like', "%{$search}%")
                   ->orWhere('content', 'like', "%{$search}%");
         })
-        ->latest()->get(),
+        ->latest()->get();
+    });
 
-        // ✨ 2. ค้นหาผู้ใช้ (ถ้ามีคำค้นหา)
+    return Inertia::render('Dashboard', [
+        'posts' => $posts, // ส่งข้อมูลที่จำไว้ออกไป!
         'searchedUsers' => $search ? User::where('name', 'like', "%{$search}%")->limit(5)->get() : [],
-        
-        // ส่งคำค้นหากลับไปแสดงที่หน้าช่องค้นหา
         'filters' => ['search' => $search],
     ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
@@ -76,7 +82,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
     Route::get('/comments/{comment}/reply', [CommentController::class, 'replyPage'])->name('comments.reply');
     
-    
+    // ❤️ ระบบกดถูกใจ (Likes)
+    Route::post('/posts/{post}/like', [LikeController::class, 'togglePost'])->name('posts.like');
+    Route::post('/comments/{comment}/like', [LikeController::class, 'toggleComment'])->name('comments.like');
 });
 
 require __DIR__.'/auth.php';

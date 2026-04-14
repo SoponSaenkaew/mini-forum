@@ -20,4 +20,29 @@ class Post extends Model
     { 
         return $this->hasMany(Comment::class); 
     }
+
+    public function likes()
+    {
+        return $this->morphMany(Like::class, 'likeable');
+    }
+
+    public function images()
+    {
+        return $this->hasMany(PostImage::class);
+    }
+
+
+    // ✨ สั่งล้าง Cache และตะโกนบอกหน้าบ้าน (Broadcast)
+    protected static function booted()
+    {
+        static::saved(function () {
+            \Illuminate\Support\Facades\Cache::flush();
+            event(new \App\Events\FeedUpdated()); // 📢 ตะโกนบอกว่ามีอัปเดต!
+        });
+
+        static::deleted(function () {
+            \Illuminate\Support\Facades\Cache::flush();
+            event(new \App\Events\FeedUpdated()); // 📢 ตะโกนบอกว่ามีอัปเดต!
+        });
+    }
 }

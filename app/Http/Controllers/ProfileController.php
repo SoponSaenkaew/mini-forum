@@ -73,9 +73,11 @@ class ProfileController extends Controller
                 // ✨ ปรับการดึงข้อมูลคอมเมนต์ให้ดึงลูกๆ ออกมาเหมือนหน้า Dashboard ค่ะ
                 'posts' => $user->posts()->with([
                     'user', 
+                    'likes',
+                    'images',
                     'comments' => function($query) {
                         $query->whereNull('parent_id')
-                            ->with(['user', 'replies']) // <-- ตรงนี้สำคัญมากค่ะ!
+                            ->with(['user', 'likes', 'replies']) // <-- ตรงนี้สำคัญมากค่ะ!
                             ->latest();
                     }
                 ])->latest()->get(),

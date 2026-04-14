@@ -54,8 +54,23 @@ export default function Show({ auth, post, highlightId }) {
                     <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 mb-6">
                         <h3 className="text-3xl font-bold mb-4">{post.title}</h3>
                         <p className="text-gray-700 whitespace-pre-wrap mb-8 text-lg">{post.content}</p>
-                        {post.image && <img src={`/storage/${post.image}`} className="w-full rounded-2xl mb-8 border" alt="content" />}
+                        
+                        {/* ✨ รูปเก่า */}
+                        {post.image && <img src={`/storage/${post.image}`} className="w-full rounded-2xl mb-8 border object-cover" alt="content" />}
 
+                        {/* ✨ รูป Gallery ใหม่ */}
+                        {post.images && post.images.length > 0 && (
+                            <div className={`grid gap-2 mb-8 ${post.images.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
+                                {post.images.map(img => (
+                                    <img 
+                                        key={img.id} 
+                                        src={`/storage/${img.image_path}`} 
+                                        alt="content" 
+                                        className="w-full rounded-2xl shadow-sm border object-cover max-h-[500px]" 
+                                    />
+                                ))}
+                            </div>
+                        )}
                         {/* ส่วนคอมเมนต์ */}
                         <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100 shadow-inner">
                             <h4 className="text-xs font-bold text-gray-400 uppercase mb-6 tracking-widest">Comments</h4>

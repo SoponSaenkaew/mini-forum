@@ -29,4 +29,23 @@ class Comment extends Model
     {
         return $this->hasMany(Comment::class, 'parent_id')->with(['user', 'replies']);
     }
+
+    public function likes()
+    {
+        return $this->morphMany(Like::class, 'likeable');
+    }
+
+    // ✨ สั่งล้าง Cache และตะโกนบอกหน้าบ้าน (Broadcast)
+    protected static function booted()
+    {
+        static::saved(function () {
+            \Illuminate\Support\Facades\Cache::flush();
+            event(new \App\Events\FeedUpdated()); // 📢 ตะโกนบอกว่ามีอัปเดต!
+        });
+
+        static::deleted(function () {
+            \Illuminate\Support\Facades\Cache::flush();
+            event(new \App\Events\FeedUpdated()); // 📢 ตะโกนบอกว่ามีอัปเดต!
+        });
+    }
 }

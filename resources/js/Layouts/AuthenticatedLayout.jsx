@@ -3,37 +3,79 @@ import Dropdown from '@/Components/Dropdown';
 import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import { Link, usePage, router } from '@inertiajs/react';
-import { useState,useEffect } from 'react';
-
+import { useState, useEffect } from 'react';
 
 /**
  * @component AuthenticatedLayout
- * @description เลย์เอาต์หลักสำหรับหน้าที่ต้องผ่านการเข้าสู่ระบบ จัดการระบบนำทางและข้อมูลผู้ใช้
+ * @description เลย์เอาต์หลักสำหรับหน้าที่ต้องผ่านการเข้าสู่ระบบ จัดการระบบนำทาง ข้อมูลผู้ใช้ และการแจ้งเตือนแบบ Real-time
  */
 export default function AuthenticatedLayout({ header, children }) {
     /**
      * ดึงข้อมูลผู้ใช้จาก Inertia Page Props
-     * @property {number} unread_notifications_count - จำนวนการแจ้งเตือนที่ยังไม่ได้อ่าน
      */
     const user = usePage().props.auth.user;
 
+    /** * @state isVisible - สถานะการแสดงผลของ Navbar (ซ่อน/แสดง)
+     * @state lastScrollY - ตำแหน่งการเลื่อนแกน Y ล่าสุด เพื่อใช้คำนวณทิศทาง
+     * @state showingNavigationDropdown - สถานะการเปิด/ปิดเมนูบน Mobile
+     */
+    const [isVisible, setIsVisible] = useState(true);
+    const [lastScrollY, setLastScrollY] = useState(0);
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
 
+    /**
+     * ✨ Real-time Notifications Listener
+     * จัดการเชื่อมต่อ Laravel Echo เพื่อดักฟังการแจ้งเตือนใหม่
+     */
     useEffect(() => {
-        // ✨ ดักฟังช่องส่วนตัวของผู้ใช้ (Private Channel)
         window.Echo.private(`App.Models.User.${user.id}`)
             .notification((notification) => {
                 console.log('🔔 มีแจ้งเตือนใหม่!', notification);
-                // สั่งให้ Inertia ดึงข้อมูล auth ใหม่เพื่ออัปเดตตัวเลขแจ้งเตือนบนหัวเว็บ
                 router.reload({ only: ['auth'], preserveScroll: true });
             });
 
         return () => window.Echo.leave(`App.Models.User.${user.id}`);
     }, [user.id]);
 
+    /**
+     * ✨ Sticky & Auto-hide Navbar Logic
+     * ฟังก์ชันจัดการการซ่อน Navbar เมื่อเลื่อนลง และแสดงเมื่อเลื่อนขึ้น
+     */
+    useEffect(() => {
+        const controlNavbar = () => {
+            if (typeof window !== 'undefined') {
+                const currentScrollY = window.scrollY;
+
+                // กรณีเลื่อนลง: ซ่อนบาร์ (ตรวจสอบว่าเลื่อนพ้นระยะ 100px เพื่อไม่ให้ซ่อนเร็วเกินไป)
+                if (currentScrollY > lastScrollY && currentScrollY > 100) {
+                    setIsVisible(false);
+                } 
+                // กรณีเลื่อนขึ้น: แสดงบาร์
+                else {
+                    setIsVisible(true);
+                }
+                
+                // อัปเดตตำแหน่งล่าสุด
+                setLastScrollY(currentScrollY);
+            }
+        };
+
+        window.addEventListener('scroll', controlNavbar);
+        
+        // Cleanup function เมื่อ Component ถูกทำลาย
+        return () => window.removeEventListener('scroll', controlNavbar);
+    }, [lastScrollY]);
+
     return (
         <div className="min-h-screen bg-gray-100">
-            <nav className="border-b border-gray-100 bg-white">
+            {/* ✨ ปรับแต่ง Navbar:
+                - fixed top-0: ตรึงไว้ด้านบนสุด
+                - transition-transform: เพิ่ม Animation เวลาเลื่อนขึ้น/ลง
+                - translate-y: ควบคุมการเลื่อนหายไปตามสถานะ isVisible
+            */}
+            <nav className={`fixed top-0 z-50 w-full border-b border-gray-100 bg-white transition-transform duration-300 ease-in-out ${
+                isVisible ? 'translate-y-0' : '-translate-y-full'
+            }`}>
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div className="flex h-16 justify-between">
                         <div className="flex">
@@ -67,7 +109,6 @@ export default function AuthenticatedLayout({ header, children }) {
                                             >
                                                 <span className="relative inline-flex items-center">
                                                     {user.name}
-                                                    {/* ✨ เปลี่ยนจาก span เป็น Link เพื่อให้กดไปหน้าแจ้งเตือนได้ทันที */}
                                                     {user.unread_notifications_count > 0 && (
                                                         <Link 
                                                             href={route('notifications.index')}
@@ -96,13 +137,10 @@ export default function AuthenticatedLayout({ header, children }) {
 
                                     <Dropdown.Content>
                                         <Dropdown.Link href={route('profile.edit')}>Profile</Dropdown.Link>
-                                        
-                                        {/* ✨ เพิ่มลิงก์ไปยังหน้าแจ้งเตือนทั้งหมด */}
                                         <Dropdown.Link href={route('notifications.index')}>
                                             Notifications
                                         </Dropdown.Link>
 
-                                        {/* ลิงก์ไปหน้าแอดมินสำหรับผู้ที่มีสิทธิ์ */}
                                         {user.is_admin && (
                                             <a href="/admin" className="block w-full px-4 py-2 text-start text-sm leading-5 text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 transition duration-150 ease-in-out">
                                                 Admin Panel
@@ -158,7 +196,6 @@ export default function AuthenticatedLayout({ header, children }) {
                         <ResponsiveNavLink href={route('dashboard')} active={route().current('dashboard')}>
                             Dashboard
                         </ResponsiveNavLink>
-                        {/* ✨ เพิ่มเมนูแจ้งเตือนใน Mobile Nav */}
                         <ResponsiveNavLink href={route('notifications.index')} active={route().current('notifications.index')}>
                             Notifications ({user.unread_notifications_count})
                         </ResponsiveNavLink>
@@ -167,9 +204,7 @@ export default function AuthenticatedLayout({ header, children }) {
                     <div className="border-t border-gray-200 pb-1 pt-4">
                         <div className="flex items-center px-4">
                             <div className="flex-1">
-                                <div className="text-base font-medium text-gray-800">
-                                    {user.name}
-                                </div>
+                                <div className="text-base font-medium text-gray-800">{user.name}</div>
                                 <div className="text-sm font-medium text-gray-500">{user.email}</div>
                             </div>
                         </div>
@@ -187,17 +222,21 @@ export default function AuthenticatedLayout({ header, children }) {
                 </div>
             </nav>
 
-            {/* ส่วนหัวของหน้า (Header Section) */}
-            {header && (
-                <header className="bg-white shadow">
-                    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-                        {header}
-                    </div>
-                </header>
-            )}
+            {/* ✨ ส่วน Main Content:
+                เพิ่ม Padding Top (pt-16 สำหรับ Nav และ pt-0/pt-6 ตามความเหมาะสม)
+                เพื่อให้เนื้อหาไม่ถูก Navbar ที่เป็น Fixed ทับ
+            */}
+            <div className="pt-16">
+                {header && (
+                    <header className="bg-white shadow">
+                        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+                            {header}
+                        </div>
+                    </header>
+                )}
 
-            {/* ส่วนเนื้อหาหลัก (Main Content) */}
-            <main>{children}</main>
+                <main>{children}</main>
+            </div>
         </div>
     );
 }

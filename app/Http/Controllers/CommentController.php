@@ -2,78 +2,119 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Post; //
-use App\Models\Comment; //
-
+use App\Models\Post;
+use App\Models\Comment;
 use Inertia\Inertia;
-use Illuminate\Http\Request;
+use Inertia\Response;
+use Illuminate\Http\RedirectResponse;
 use App\Notifications\NewCommentNotification;
+use App\Http\Requests\StoreCommentRequest;
+use App\Events\FeedUpdated;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Auth;
 
 class CommentController extends Controller
 {
-    public function store(Request $request, Post $post)
+    /**
+     * Store a newly created comment in storage.
+     * * @param  StoreCommentRequest  $request
+     * @param  Post  $post
+     * @return RedirectResponse
+     */
+    public function store(StoreCommentRequest $request, Post $post): RedirectResponse
     {
-        $validated = $request->validate([
-            'content' => 'required|string|max:1000',
-            'parent_id' => 'nullable|exists:comments,id', // ✨ ตรวจสอบว่าคอมเมนต์แม่มีจริงไหม
-        ]);
+        $validated = $request->validated();
 
         $comment = $post->comments()->create([
-            'user_id' => auth()->id(),
-            'content' => $validated['content'],
-            'parent_id' => $request->parent_id, // ✨ บันทึกค่าคอมเมนต์แม่
+            'user_id'   => Auth::id(),
+            'content'   => $validated['content'],
+            'parent_id' => $validated['parent_id'] ?? null,
         ]);
 
-        // ✨ กรณีที่ 1: ตอบกลับคอมเมนต์ (ส่งหาเจ้าของคอมเมนต์แม่)
-        if ($comment->parent_id) {
-            $parentComment = Comment::find($comment->parent_id);
-            if ($parentComment->user_id !== auth()->id()) {
-                $parentComment->user->notify(new NewCommentNotification($comment));
-            }
-        } 
-        // ✨ กรณีที่ 2: คอมเมนต์โพสต์ปกติ (ส่งหาเจ้าของโพสต์)
-        elseif ($post->user_id !== auth()->id()) {
-            $post->user->notify(new NewCommentNotification($comment));
-        }
+        $this->sendNotification($comment, $post);
+
+        $this->clearCacheAndBroadcast();
 
         return back();
     }
-    
-    public function destroy(Comment $comment)
+
+    /**
+     * Update the specified comment.
+     */
+    public function update(StoreCommentRequest $request, Comment $comment): RedirectResponse
     {
-        // ✨ เช็คว่าคนที่จะลบ เป็นเจ้าของคอมเมนต์จริงๆ หรือเปล่า
-        if ($comment->user_id !== auth()->id()) {
-            abort(403, 'เซนเซไม่มีสิทธิ์ลบคอมเมนต์ของคนอื่นนะคะ!');
+        // แนะนำให้ใช้ Policy: $this->authorize('update', $comment);
+        if ($comment->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $comment->update($request->validated());
+
+        $this->clearCacheAndBroadcast();
+
+        return back();
+    }
+
+    /**
+     * Remove the specified comment.
+     */
+    public function destroy(Comment $comment): RedirectResponse
+    {
+        // แนะนำให้ใช้ Policy: $this->authorize('delete', $comment);
+        if ($comment->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized action.');
         }
 
         $comment->delete();
 
-        // กลับไปหน้าเดิมและรักษาตำแหน่งการ Scroll ไว้ด้วยนะคะ
+        $this->clearCacheAndBroadcast();
+
         return back();
-    }
-    public function update(Request $request, Comment $comment)
-    {
-        // ตรวจสอบสิทธิ์ว่าเซนเซเป็นเจ้าของคอมเมนต์นี้จริงไหม
-        if ($comment->user_id !== auth()->id()) {
-            abort(403, 'เซนเซไม่มีสิทธิ์แก้ไขคอมเมนต์ของคนอื่นนะคะ!');
-        }
-
-        $validated = $request->validate([
-            'content' => 'required|string|max:1000',
-        ]);
-
-        $comment->update($validated); // บันทึกข้อมูลใหม่
-
-        return back(); // กลับหน้าเดิมโดยรักษาตำแหน่ง scroll
     }
 
     /**
-     * หน้าสำหรับตอบกลับคอมเมนต์ที่ระบุโดยเฉพาะ (วาร์ปจาก Notification)
+     * Show the reply page for a specific comment.
      */
-    public function replyPage(Comment $comment)
+    public function replyPage(Comment $comment): Response
     {
         return Inertia::render('Comments/ReplyPage', [
-            'targetComment' => $comment->load(['user', 'post', 'replies.user', 'replies.replies.user']),
+            'targetComment' => $comment->load([
+                'user', 
+                'post', 
+                'replies.user', 
+                'replies.replies.user'
+            ]),
         ]);
+    }
+
+    /**
+     * Internal helper to handle notifications.
+     */
+    private function sendNotification(Comment $comment, Post $post): void
+    {
+        // กรณีตอบกลับคอมเมนต์
+        if ($comment->parent_id) {
+            $parent = $comment->parent; // ใช้ Relationship จะดูดีกว่าค่ะ
+            if ($parent && $parent->user_id !== Auth::id()) {
+                $parent->user->notify(new NewCommentNotification($comment));
+            }
+            return;
+        }
+
+        // กรณีคอมเมนต์โพสต์ปกติ
+        if ($post->user_id !== Auth::id()) {
+            $post->user->notify(new NewCommentNotification($comment));
+        }
+    }
+
+    /**
+     * Handle cache clearing and broadcasting.
+     */
+    private function clearCacheAndBroadcast(): void
+    {
+        // ระวัง: Cache::flush() จะลบข้อมูลแคชทั้งหมดของแอป
+        // แนะนำให้ใช้ Cache::forget('key') หรือ Tags แทนนะคะ
+        Cache::flush(); 
+        broadcast(new FeedUpdated())->toOthers();
     }
 }

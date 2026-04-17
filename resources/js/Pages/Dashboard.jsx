@@ -9,7 +9,7 @@ import PostItem from '@/Components/PostItem';
  * Dashboard Component (หน้าฟีดหลักของชุมชน)
  * @description หน้าหลักสำหรับแสดงโพสต์ทั้งหมด รองรับการค้นหา การสร้างโพสต์ใหม่ 
  * และการอัปเดตข้อมูลแบบ Real-time ผ่าน Laravel Echo
- * * @param {Object} props
+ * @param {Object} props
  * @param {Object} props.auth - ข้อมูลผู้ใช้งานที่เข้าสู่ระบบ
  * @param {Array} props.posts - รายการโพสต์ทั้งหมดที่จะนำมาแสดงผล
  * @param {Array} props.searchedUsers - รายการผู้ใช้ที่ค้นพบจากการค้นหา (ถ้ามี)
@@ -52,7 +52,7 @@ export default function Dashboard({ auth, posts, searchedUsers = [], filters = {
             .listen('.FeedUpdated', (e) => {
                 console.log('📢 มีคนอัปเดตฟีด! กำลังดึงข้อมูลใหม่...');
                 // โหลดเฉพาะข้อมูล posts ใหม่โดยไม่กระตุกหน้าจอ (preserveScroll)
-                router.reload({ only: ['posts'], preserveScroll: true });
+                router.reload({ only: ['posts'], preserveScroll: true, preserveState: true});
             });
 
         // Cleanup: ออกจาก Channel เมื่อเปลี่ยนหน้า

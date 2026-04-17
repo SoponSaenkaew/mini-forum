@@ -32,8 +32,8 @@ class LikeController extends Controller
             $model->likes()->create(['user_id' => auth()->id()]);
         }
 
-        // ✨ ตรงนี้แหละค่ะทีเด็ด! พอกดไลก์ปุ๊บ สั่งล้างแคชเก่าแล้วตะโกนบอก Reverb เลย!
+        
         Cache::flush();
-        event(new FeedUpdated());
+        broadcast(new FeedUpdated())->toOthers();
     }
 }

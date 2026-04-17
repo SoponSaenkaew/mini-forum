@@ -3,7 +3,7 @@ import Dropdown from '@/Components/Dropdown';
 import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import { Link, usePage, router } from '@inertiajs/react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef} from 'react';
 
 /**
  * @component AuthenticatedLayout
@@ -20,7 +20,7 @@ export default function AuthenticatedLayout({ header, children }) {
      * @state showingNavigationDropdown - สถานะการเปิด/ปิดเมนูบน Mobile
      */
     const [isVisible, setIsVisible] = useState(true);
-    const [lastScrollY, setLastScrollY] = useState(0);
+    const lastScrollY = useRef(0);
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
 
     /**
@@ -31,7 +31,7 @@ export default function AuthenticatedLayout({ header, children }) {
         window.Echo.private(`App.Models.User.${user.id}`)
             .notification((notification) => {
                 console.log('🔔 มีแจ้งเตือนใหม่!', notification);
-                router.reload({ only: ['auth'], preserveScroll: true });
+                router.reload({ only: ['auth'],preserveScroll: true, preserveState: true});
             });
 
         return () => window.Echo.leave(`App.Models.User.${user.id}`);
@@ -56,15 +56,15 @@ export default function AuthenticatedLayout({ header, children }) {
                 }
                 
                 // อัปเดตตำแหน่งล่าสุด
-                setLastScrollY(currentScrollY);
+                lastScrollY.current = currentScrollY;
             }
         };
 
-        window.addEventListener('scroll', controlNavbar);
+        window.addEventListener('scroll', controlNavbar, { passive: true });
         
         // Cleanup function เมื่อ Component ถูกทำลาย
         return () => window.removeEventListener('scroll', controlNavbar);
-    }, [lastScrollY]);
+    }, []);
 
     return (
         <div className="min-h-screen bg-gray-100">

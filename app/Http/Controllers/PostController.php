@@ -7,17 +7,15 @@ use App\Models\Post;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
+use App\Http\Requests\StorePostRequest;
+use App\Http\Requests\UpdatePostRequest;
 
 class PostController extends Controller
 {
-    public function store(Request $request): RedirectResponse
+    public function store(StorePostRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'content' => 'required|string',
-            'images' => 'nullable|array|max:5', // ✨ อนุญาตให้แนบรูปได้สูงสุด 5 รูป
-            'images.*' => 'nullable|image|mimes:jpg,jpeg,png|max:5120',
-        ]);
+
+        $validated = $request->validated();
 
         // สร้างโพสต์ก่อน
         $post = $request->user()->posts()->create([
@@ -43,16 +41,11 @@ class PostController extends Controller
         return redirect(route('dashboard'));
     }
 
-    public function update(Request $request, Post $post)
+    public function update(UpdatePostRequest $request, Post $post)
     {
-        if ($post->user_id !== auth()->id()) { abort(403); }
+        
 
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'content' => 'required|string',
-            'images' => 'nullable|array|max:5', // ✨ อนุญาตให้แนบรูปได้สูงสุด 5 รูป
-            'images.*' => 'nullable|image|mimes:jpg,jpeg,png|max:5120',
-        ]);
+        $validated = $request->validated();
 
         $post->update([
             'title' => $validated['title'],

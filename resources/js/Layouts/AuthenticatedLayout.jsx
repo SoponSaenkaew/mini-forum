@@ -28,10 +28,16 @@ export default function AuthenticatedLayout({ header, children }) {
      * จัดการเชื่อมต่อ Laravel Echo เพื่อดักฟังการแจ้งเตือนใหม่
      */
     useEffect(() => {
+        // ✨ ต้องดักฟังที่ Channel ส่วนตัวของ User คนนั้นๆ ค่ะ
         window.Echo.private(`App.Models.User.${user.id}`)
             .notification((notification) => {
-                console.log('🔔 มีแจ้งเตือนใหม่!', notification);
-                router.reload({ only: ['auth'],preserveScroll: true, preserveState: true});
+                console.log('🔔 แจ้งเตือนใหม่มาแล้ว!');
+                // ✨ สั่งให้ Inertia รีโหลดเฉพาะข้อมูล 'auth' เพื่ออัปเดตเลข unread_notifications_count
+                router.reload({ 
+                    only: ['auth'], 
+                    preserveScroll: true, 
+                    preserveState: true 
+                });
             });
 
         return () => window.Echo.leave(`App.Models.User.${user.id}`);

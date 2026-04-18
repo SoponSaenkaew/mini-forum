@@ -67,20 +67,20 @@ class ProfileController extends Controller
      * แสดงหน้าโปรไฟล์ของผู้ใช้พร้อมรายการโพสต์ของเขา
      */
     public function show(User $user)
-        {
-            return Inertia::render('Profile/Show', [
-                'user' => $user,
-                // ✨ ปรับการดึงข้อมูลคอมเมนต์ให้ดึงลูกๆ ออกมาเหมือนหน้า Dashboard ค่ะ
-                'posts' => $user->posts()->with([
-                    'user', 
-                    'likes',
-                    'images',
-                    'comments' => function($query) {
-                        $query->whereNull('parent_id')
-                            ->with(['user', 'likes', 'replies']) // <-- ตรงนี้สำคัญมากค่ะ!
-                            ->latest();
-                    }
-                ])->latest()->get(),
-            ]);
-        }
+    {
+        return Inertia::render('Profile/Show', [
+            'user' => $user,
+            // ✨ ดึงโพสต์พร้อมความสัมพันธ์ต่างๆ เหมือนหน้า Dashboard เพื่อให้ PostItem ทำงานได้
+            'posts' => $user->posts()->with([
+                'user', 
+                'likes',
+                'images',
+                'comments' => function($query) {
+                    $query->whereNull('parent_id')
+                        ->with(['user', 'likes', 'replies'])
+                        ->latest();
+                }
+            ])->latest()->get(),
+        ]);
+    }
 }

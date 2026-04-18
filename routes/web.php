@@ -16,12 +16,13 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 
 // --- หน้าแรกของเว็บไซต์ ---
+// routes/web.php
 Route::get('/', function () {
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
         'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
+        // ✨ ดึงโพสต์ล่าสุด 3 อันมาโชว์ที่หน้าแรก
+        'latestPosts' => Post::with(['user', 'likes', 'images'])->latest()->take(3)->get(),
     ]);
 });
 

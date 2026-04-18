@@ -216,7 +216,7 @@ export default function AuthenticatedLayout({ header, children }) {
                         </div>
 
                         <div className="mt-3 space-y-1">
-                            <ResponsiveNavLink href={route('profile.edit')}>Profile</ResponsiveNavLink>
+                            <ResponsiveNavLink href={route('profile.show', user.id)}>Profile</ResponsiveNavLink>
                             {user.is_admin && (
                                 <ResponsiveNavLink href="/admin">Admin Panel</ResponsiveNavLink>
                             )}

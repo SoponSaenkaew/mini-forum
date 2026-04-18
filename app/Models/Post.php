@@ -37,12 +37,12 @@ class Post extends Model
     {
         static::saved(function () {
             \Illuminate\Support\Facades\Cache::flush();
-            event(new \App\Events\FeedUpdated()); // 📢 ตะโกนบอกว่ามีอัปเดต!
+            
         });
 
         static::deleted(function () {
             \Illuminate\Support\Facades\Cache::flush();
-            event(new \App\Events\FeedUpdated()); // 📢 ตะโกนบอกว่ามีอัปเดต!
+            
         });
     }
 }

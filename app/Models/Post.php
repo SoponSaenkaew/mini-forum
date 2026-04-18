@@ -5,9 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Post extends Model
 {
+    use SoftDeletes;
+
     // ✨ อนุญาตให้บันทึกข้อมูลได้ (แก้ MassAssignmentException)
     protected $fillable = ['title', 'content','image'];
 
@@ -43,6 +46,17 @@ class Post extends Model
         static::deleted(function () {
             \Illuminate\Support\Facades\Cache::flush();
             
+        });
+
+        // 🗑️ เมื่อโพสต์หลักถูกลบ (Soft Delete) ให้ซ่อนรูปภาพลูกๆ ด้วย
+        static::deleting(function ($post) {
+            // แจ้งเตือน: เซนเซต้องเช็กชื่อความสัมพันธ์ให้ตรงกับที่มีในโค้ดนะคะ (เช่น images())
+            $post->images()->delete(); 
+        });
+
+        // ♻️ เมื่อโพสต์หลักถูกกู้คืน (Restore) ให้เรียกรูปภาพกลับมาด้วย
+        static::restoring(function ($post) {
+            $post->images()->withTrashed()->restore();
         });
     }
 }

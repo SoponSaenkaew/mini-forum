@@ -111,4 +111,27 @@ class ProfileController extends Controller
         // รีโหลดข้อมูลกลับไปที่หน้าเดิมเพื่อให้รูปเปลี่ยนทันที
         return back()->with('status', 'profile-avatar-updated');
     }
+
+    public function updateCoverPhoto(Request $request)
+    {
+        $request->validate([
+            // หน้าปกอาจจะใหญ่หน่อย หนูให้ลิมิตที่ 4MB นะคะ (4096 KB)
+            'cover_photo' => ['required', 'image', 'max:4096'], 
+        ]);
+
+        $user = $request->user();
+
+        if ($request->hasFile('cover_photo')) {
+            // ลบหน้าปกเก่าทิ้งก่อนเพื่อประหยัดพื้นที่
+            if ($user->cover_photo) {
+                Storage::disk('public')->delete($user->cover_photo);
+            }
+
+            // เก็บรูปใหม่ในโฟลเดอร์ covers
+            $path = $request->file('cover_photo')->store('covers', 'public');
+            $user->update(['cover_photo' => $path]);
+        }
+
+        return back()->with('status', 'profile-cover-updated');
+    }
 }

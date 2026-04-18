@@ -67,6 +67,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::get('/user/{user}', [ProfileController::class, 'show'])->name('profile.show'); // ✨ หน้าโปรไฟล์ User
     Route::post('/profile/avatar', [ProfileController::class, 'updateAvatar'])->name('profile.avatar.update');
+    Route::post('/profile/cover', [ProfileController::class, 'updateCoverPhoto'])->name('profile.cover.update');
 
     // 📝 จัดการโพสต์
     Route::get('/posts/{post}', [PostController::class, 'show'])->name('posts.show'); // ✨ ดูโพสต์เดี่ยว (วาร์ปจากแจ้งเตือน)

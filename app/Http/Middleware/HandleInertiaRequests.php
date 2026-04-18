@@ -37,6 +37,7 @@ class HandleInertiaRequests extends Middleware
                     'name' => $request->user()->name,
                     'email' => $request->user()->email,
                     'avatar' => $request->user()->avatar,
+                    'cover_photo' => $request->user()->cover_photo,
 
                     // ✨ เพิ่มจำนวนแจ้งเตือนที่ยังไม่ได้อ่าน
                     'unread_notifications_count' => $request->user()->unreadNotifications->count(),

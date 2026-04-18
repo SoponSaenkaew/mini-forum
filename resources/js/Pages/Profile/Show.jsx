@@ -33,42 +33,64 @@ export default function Show({ auth, user, posts }) {
                 <div className="max-w-4xl mx-auto sm:px-6 lg:px-8 space-y-6">
                     
                     {/* --- ส่วนหัวโปรไฟล์ (User Header Card) --- */}
-                    <section className="p-8 bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center sm:flex-row sm:justify-between sm:items-center">
-                        <div className="flex flex-col items-center sm:flex-row gap-6 text-center sm:text-left">
-                            {/* Avatar: แสดงอักษรตัวแรกของชื่อ */}
-                            <div className="h-32 w-32 relative shrink-0">
-                                {user.avatar ? (
-                                    <img 
-                                        src={`/storage/${user.avatar}`} 
-                                        className="h-32 w-32 rounded-full object-cover border-4 border-white shadow-lg"
-                                        alt={user.name}
-                                    />
-                                ) : (
-                                    <div className="h-32 w-32 bg-indigo-500 rounded-full flex items-center justify-center text-4xl text-white font-black shadow-lg">
-                                        {user.name[0]}
-                                    </div>
-                                )}
-                            </div>
-                            
-                            {/* ข้อมูลพื้นฐาน: ชื่อ, อีเมล และวันที่เข้าร่วม */}
-                            <div>
-                                <h3 className="text-3xl font-bold text-gray-900">{user.name}</h3>
-                                <p className="text-gray-500">{user.email}</p>
-                                <p className="text-xs text-gray-400 mt-1">
-                                    เป็นสมาชิกเมื่อ {new Date(user.created_at).toLocaleDateString('th-TH')}
-                                </p>
-                            </div>
+                    {/* ✨ โซนหน้าปก + โปรไฟล์ (รวมไว้ในการ์ดเดียวกันเพื่อความสวยงาม) */}
+                    <section className="bg-white shadow-sm sm:rounded-3xl overflow-hidden border border-gray-100">
+                        
+                        {/* 1. ส่วนรูปหน้าปก (Cover Photo) */}
+                        <div className="h-48 sm:h-64 w-full relative">
+                            {user.cover_photo ? (
+                                <img 
+                                    src={`/storage/${user.cover_photo}`} 
+                                    className="w-full h-full object-cover" 
+                                    alt="Cover" 
+                                />
+                            ) : (
+                                <div className="w-full h-full bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400"></div>
+                            )}
                         </div>
 
-                        {/* การควบคุม (Actions): ปุ่มแก้ไขโปรไฟล์จะแสดงเฉพาะเมื่อเป็นเจ้าของโปรไฟล์เท่านั้น */}
-                        {isOwnProfile && (
-                            <Link
-                                href={route('profile.edit')}
-                                className="mt-6 sm:mt-0 px-6 py-2 bg-white border-2 border-indigo-100 text-indigo-600 rounded-xl font-bold hover:bg-indigo-50 transition shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                            >
-                                แก้ไขโปรไฟล์ ⚙️
-                            </Link>
-                        )}
+                        {/* 2. ส่วนข้อมูลผู้ใช้และรูปโปรไฟล์ (ดึงรูปขึ้นไปทับหน้าปกด้วย -mt-16) */}
+                        <div className="px-6 sm:px-10 pb-8 relative">
+                            <div className="flex flex-col sm:flex-row gap-6">
+                                
+                                {/* รูปโปรไฟล์: ขยับขึ้นไปทับหน้าปก */}
+                                <div className="relative shrink-0 -mt-16 sm:-mt-20">
+                                    {user.avatar ? (
+                                        <img 
+                                            src={`/storage/${user.avatar}`} 
+                                            className="h-32 w-32 sm:h-40 sm:w-40 rounded-full object-cover border-4 border-white shadow-md bg-white"
+                                            alt={user.name}
+                                        />
+                                    ) : (
+                                        <div className="h-32 w-32 sm:h-40 sm:w-40 bg-indigo-500 rounded-full flex items-center justify-center text-4xl text-white font-black shadow-md border-4 border-white">
+                                            {user.name[0]}
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* ข้อมูลชื่อและอีเมล */}
+                                <div className="flex-1 mt-2 sm:mt-4">
+                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                        <div>
+                                            <h3 className="text-3xl font-black text-gray-900 tracking-tight">{user.name}</h3>
+                                            <p className="text-gray-500 font-medium">
+                                                {user.email} <span className="mx-2 text-gray-300">•</span> เข้าร่วมเมื่อ {new Date(user.created_at).toLocaleDateString('th-TH')}
+                                            </p>
+                                        </div>
+
+                                        {/* ปุ่มแก้ไขโปรไฟล์ */}
+                                        {isOwnProfile && (
+                                            <Link 
+                                                href={route('profile.edit')} 
+                                                className="inline-flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-2.5 rounded-full font-bold transition-all text-sm shrink-0"
+                                            >
+                                                ⚙️ ตั้งค่าโปรไฟล์
+                                            </Link>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </section>
 
                     {/* --- ส่วนรายการโพสต์ (User Activity Feed) --- */}

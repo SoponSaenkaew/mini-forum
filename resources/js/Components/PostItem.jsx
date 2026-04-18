@@ -147,7 +147,7 @@ export default function PostItem({ post, auth, highlightId = null }) {
             {/* --- ส่วนหัวของโพสต์ (Header) --- */}
             <div className="flex justify-between items-start mb-4">
                 <div className="flex items-center gap-3">
-                    {/* ✨ ปรับให้โชว์รูปโปรไฟล์จริงค่ะ */}
+                    {/* ปรับให้โชว์รูปโปรไฟล์จริง */}
                     {post.user.avatar ? (
                         <img src={`/storage/${post.user.avatar}`} className="h-10 w-10 rounded-full object-cover border border-gray-100" />
                     ) : (
@@ -237,7 +237,7 @@ export default function PostItem({ post, auth, highlightId = null }) {
                             auth={auth} 
                             highlightId={highlightId} 
                             
-                            // ✨ ส่งต่อสถานะและฟังก์ชันทั้งหมดของฟอร์มให้ Component ลูก 
+                            // ส่งต่อสถานะและฟังก์ชันทั้งหมดของฟอร์มให้ Component ลูก 
                             replyingTo={replyingTo}
                             editingComment={editingComment}
                             commentForm={commentForm}

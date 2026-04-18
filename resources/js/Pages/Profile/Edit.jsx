@@ -4,6 +4,7 @@ import DeleteUserForm from './Partials/DeleteUserForm';
 import UpdatePasswordForm from './Partials/UpdatePasswordForm';
 import UpdateProfileInformationForm from './Partials/UpdateProfileInformationForm';
 import UpdateAvatarForm from './Partials/UpdateAvatarForm';
+import UpdateCoverPhotoForm from './Partials/UpdateCoverPhotoForm';
 
 export default function Edit({ mustVerifyEmail, status, auth }) {
     return (
@@ -22,6 +23,11 @@ export default function Edit({ mustVerifyEmail, status, auth }) {
                         <UpdateAvatarForm 
                             currentAvatar={auth.user.avatar} 
                             className="max-w-xl" 
+                        />
+                    </div>
+                    <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
+                        <UpdateCoverPhotoForm 
+                            currentCover={auth.user.cover_photo} 
                         />
                     </div>
                     <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">

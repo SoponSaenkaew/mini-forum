@@ -38,4 +38,25 @@ class NotificationController extends Controller
             'comment_id' => $commentId
         ]);
     }
+
+    /**
+     * ลบการแจ้งเตือนที่ระบุ
+     */
+    public function destroy($id)
+    {
+        $notification = auth()->user()->notifications()->findOrFail($id);
+        $notification->delete();
+
+        return back();
+    }
+
+    /**
+     * ทำเป็นอ่านแล้วทั้งหมด
+     */
+    public function markAllAsRead()
+    {
+        auth()->user()->unreadNotifications->markAsRead();
+        
+        return back();
+    }
 }

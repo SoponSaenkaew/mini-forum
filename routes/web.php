@@ -81,6 +81,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::patch('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
     Route::get('/comments/{comment}/reply', [CommentController::class, 'replyPage'])->name('comments.reply');
+    Route::delete('/notifications/{id}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
+    Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read_all');
     
     // ❤️ ระบบกดถูกใจ (Likes)
     Route::post('/posts/{post}/like', [LikeController::class, 'togglePost'])->name('posts.like');

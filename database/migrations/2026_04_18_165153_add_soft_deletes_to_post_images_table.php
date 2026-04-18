@@ -6,23 +6,22 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        Schema::table('post_images', function (Blueprint $table) {
-            //
-        });
+        // ✨ ใส่เกราะเช็กก่อนว่ามีคอลัมน์ deleted_at แอบอยู่แล้วหรือยัง
+        if (!Schema::hasColumn('post_images', 'deleted_at')) {
+            Schema::table('post_images', function (Blueprint $table) {
+                $table->softDeletes(); 
+            });
+        }
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::table('post_images', function (Blueprint $table) {
-            //
-        });
+        if (Schema::hasColumn('post_images', 'deleted_at')) {
+            Schema::table('post_images', function (Blueprint $table) {
+                $table->dropSoftDeletes();
+            });
+        }
     }
 };

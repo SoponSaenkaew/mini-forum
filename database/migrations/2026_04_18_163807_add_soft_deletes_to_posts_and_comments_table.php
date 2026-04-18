@@ -8,26 +8,34 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // ✨ เพิ่ม deleted_at ให้ตาราง posts
-        Schema::table('posts', function (Blueprint $table) {
-            $table->softDeletes(); 
-        });
+        // ✨ เช็กก่อนว่าตาราง posts มีคอลัมน์ deleted_at แอบอยู่แล้วหรือยัง?
+        if (!Schema::hasColumn('posts', 'deleted_at')) {
+            Schema::table('posts', function (Blueprint $table) {
+                $table->softDeletes(); 
+            });
+        }
 
-        // ✨ เพิ่ม deleted_at ให้ตาราง comments
-        Schema::table('comments', function (Blueprint $table) {
-            $table->softDeletes(); 
-        });
+        // ✨ เช็กก่อนว่าตาราง comments มีหรือยัง?
+        if (!Schema::hasColumn('comments', 'deleted_at')) {
+            Schema::table('comments', function (Blueprint $table) {
+                $table->softDeletes(); 
+            });
+        }
     }
 
     public function down(): void
     {
-        // ✨ วิธียกเลิก (Rollback) ถ้าเปลี่ยนใจ
-        Schema::table('posts', function (Blueprint $table) {
-            $table->dropSoftDeletes();
-        });
+        // ✨ ตอนถอยหลัง ก็เช็กก่อนลบเช่นกันค่ะ
+        if (Schema::hasColumn('posts', 'deleted_at')) {
+            Schema::table('posts', function (Blueprint $table) {
+                $table->dropSoftDeletes();
+            });
+        }
 
-        Schema::table('comments', function (Blueprint $table) {
-            $table->dropSoftDeletes();
-        });
+        if (Schema::hasColumn('comments', 'deleted_at')) {
+            Schema::table('comments', function (Blueprint $table) {
+                $table->dropSoftDeletes();
+            });
+        }
     }
 };

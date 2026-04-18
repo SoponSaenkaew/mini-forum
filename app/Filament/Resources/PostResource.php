@@ -18,6 +18,14 @@ use Filament\Forms\Components\FileUpload;
 
 class PostResource extends Resource
 {
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->withoutGlobalScopes([
+                SoftDeletingScope::class,
+            ]);
+    }
+    
     protected static ?string $model = Post::class;
 
     protected static ?string $navigationGroup = 'Community Management';
@@ -103,6 +111,20 @@ class PostResource extends Resource
                 Tables\Filters\SelectFilter::make('user')
                     ->relationship('user', 'name')
                     ->label('กรองตามผู้ใช้งาน'),
+                Tables\Filters\TrashedFilter::make(),
+            ])
+            ->actions([ // ✨ จุดที่ 2: เพิ่มปุ่มกดท้ายแถว
+                Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\RestoreAction::make(), // ปุ่มกู้คืน
+                Tables\Actions\ForceDeleteAction::make(), // ปุ่มลบถาวร
+            ])
+            ->bulkActions([ // ✨ จุดที่ 3: เพิ่มกลุ่มปุ่มจัดการทีละหลายๆ โพสต์
+                Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\RestoreBulkAction::make(),
+                    Tables\Actions\ForceDeleteBulkAction::make(),
+                ]),
             ]);
     }
 

@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Post;
 use App\Models\Comment;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache; // ✨ อย่าลืม import Cache
-use App\Events\FeedUpdated;           // ✨ อย่าลืม import Event
+use Illuminate\Support\Facades\Cache; 
+use App\Events\FeedUpdated;           
 
 class LikeController extends Controller
 {
@@ -34,6 +34,5 @@ class LikeController extends Controller
 
         
         Cache::flush();
-        broadcast(new FeedUpdated())->toOthers();
     }
 }

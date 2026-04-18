@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 use Inertia\Response;
 
+use Illuminate\Support\Facades\Storage;
+
 
 class ProfileController extends Controller
 {
@@ -67,20 +69,69 @@ class ProfileController extends Controller
      * แสดงหน้าโปรไฟล์ของผู้ใช้พร้อมรายการโพสต์ของเขา
      */
     public function show(User $user)
-        {
-            return Inertia::render('Profile/Show', [
-                'user' => $user,
-                // ✨ ปรับการดึงข้อมูลคอมเมนต์ให้ดึงลูกๆ ออกมาเหมือนหน้า Dashboard ค่ะ
-                'posts' => $user->posts()->with([
-                    'user', 
-                    'likes',
-                    'images',
-                    'comments' => function($query) {
-                        $query->whereNull('parent_id')
-                            ->with(['user', 'likes', 'replies']) // <-- ตรงนี้สำคัญมากค่ะ!
-                            ->latest();
-                    }
-                ])->latest()->get(),
-            ]);
+    {
+        return Inertia::render('Profile/Show', [
+            'user' => $user,
+            // ✨ ดึงโพสต์พร้อมความสัมพันธ์ต่างๆ เหมือนหน้า Dashboard เพื่อให้ PostItem ทำงานได้
+            'posts' => $user->posts()->with([
+                'user', 
+                'likes',
+                'images',
+                'comments' => function($query) {
+                    $query->whereNull('parent_id')
+                        ->with(['user', 'likes', 'replies'])
+                        ->latest();
+                }
+            ])->latest()->get(),
+        ]);
+    }
+
+    public function updateAvatar(Request $request)
+    {
+        $request->validate([
+            'avatar' => ['required', 'image', 'max:2048'],
+        ]);
+
+        $user = $request->user();
+
+        if ($request->hasFile('avatar')) {
+            // ลบรูปเก่าทิ้งก่อน (ถ้ามี)
+            // 💡 ตอนนี้จะใช้งานได้แล้วเพราะเรา import Storage มาแล้วค่ะ
+            if ($user->avatar) {
+                Storage::disk('public')->delete($user->avatar);
+            }
+
+            // เก็บรูปใหม่ในโฟลเดอร์ avatars
+            $path = $request->file('avatar')->store('avatars', 'public');
+            
+            // บันทึกพาธรูปลง Database
+            $user->update(['avatar' => $path]);
         }
+
+        // รีโหลดข้อมูลกลับไปที่หน้าเดิมเพื่อให้รูปเปลี่ยนทันที
+        return back()->with('status', 'profile-avatar-updated');
+    }
+
+    public function updateCoverPhoto(Request $request)
+    {
+        $request->validate([
+            // หน้าปกอาจจะใหญ่หน่อย หนูให้ลิมิตที่ 4MB นะคะ (4096 KB)
+            'cover_photo' => ['required', 'image', 'max:4096'], 
+        ]);
+
+        $user = $request->user();
+
+        if ($request->hasFile('cover_photo')) {
+            // ลบหน้าปกเก่าทิ้งก่อนเพื่อประหยัดพื้นที่
+            if ($user->cover_photo) {
+                Storage::disk('public')->delete($user->cover_photo);
+            }
+
+            // เก็บรูปใหม่ในโฟลเดอร์ covers
+            $path = $request->file('cover_photo')->store('covers', 'public');
+            $user->update(['cover_photo' => $path]);
+        }
+
+        return back()->with('status', 'profile-cover-updated');
+    }
 }

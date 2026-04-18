@@ -16,12 +16,13 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 
 // --- หน้าแรกของเว็บไซต์ ---
+// routes/web.php
 Route::get('/', function () {
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
         'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
+        // ✨ ดึงโพสต์ล่าสุด 3 อันมาโชว์ที่หน้าแรก
+        'latestPosts' => Post::with(['user', 'likes', 'images'])->latest()->take(3)->get(),
     ]);
 });
 
@@ -65,6 +66,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::get('/user/{user}', [ProfileController::class, 'show'])->name('profile.show'); // ✨ หน้าโปรไฟล์ User
+    Route::post('/profile/avatar', [ProfileController::class, 'updateAvatar'])->name('profile.avatar.update');
+    Route::post('/profile/cover', [ProfileController::class, 'updateCoverPhoto'])->name('profile.cover.update');
 
     // 📝 จัดการโพสต์
     Route::get('/posts/{post}', [PostController::class, 'show'])->name('posts.show'); // ✨ ดูโพสต์เดี่ยว (วาร์ปจากแจ้งเตือน)
@@ -81,6 +84,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::patch('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
     Route::get('/comments/{comment}/reply', [CommentController::class, 'replyPage'])->name('comments.reply');
+    Route::delete('/notifications/{id}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
+    Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read_all');
     
     // ❤️ ระบบกดถูกใจ (Likes)
     Route::post('/posts/{post}/like', [LikeController::class, 'togglePost'])->name('posts.like');

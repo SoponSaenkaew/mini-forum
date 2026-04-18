@@ -32,7 +32,9 @@ class User extends Authenticatable implements FilamentUser
         'name',
         'email',
         'password',
-        'is_admin', // ✨ เพิ่มไว้เพื่อให้เปลี่ยนสิทธิ์แอดมินได้ง่ายๆ ค่ะ
+        'is_admin', 
+        'avatar',      
+        'cover_photo',
     ];
 
     /**
@@ -77,17 +79,4 @@ class User extends Authenticatable implements FilamentUser
         return $this->is_admin === true;
     }
 
-    
-
-    /**
-     * แสดงหน้าโปรไฟล์สาธารณะของผู้ใช้
-     */
-    public function show(User $user): Response
-    {
-        return Inertia::render('Profile/Show', [
-            'user' => $user,
-            // ดึงโพสต์ทั้งหมดของ User คนนี้ พร้อมเจ้าของโพสต์และคอมเมนต์
-            'posts' => $user->posts()->with(['user', 'comments.user'])->latest()->get(),
-        ]);
-    }
 }

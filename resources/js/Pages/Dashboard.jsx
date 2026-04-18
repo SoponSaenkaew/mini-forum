@@ -37,27 +37,6 @@ export default function Dashboard({ auth, posts, searchedUsers = [], filters = {
     /** @type {[string, Function]} searchQuery - สถานะของช่องค้นหาข้อมูล */
     const [searchQuery, setSearchQuery] = useState(filters.search || '');
 
-    // ==========================================
-    // Effects & Event Listeners
-    // ==========================================
-
-    /**
-     * Real-time Feed Listener
-     * @description ดักฟัง Public Channel เพื่อรีโหลดหน้าฟีดเมื่อมีผู้ใช้คนอื่นสร้างโพสต์ใหม่
-     */
-    useEffect(() => {
-        const channelName = 'public-feed';
-        
-        window.Echo.channel(channelName)
-            .listen('.FeedUpdated', (e) => {
-                console.log('📢 มีคนอัปเดตฟีด! กำลังดึงข้อมูลใหม่...');
-                // โหลดเฉพาะข้อมูล posts ใหม่โดยไม่กระตุกหน้าจอ (preserveScroll)
-                router.reload({ only: ['posts'], preserveScroll: true, preserveState: true});
-            });
-
-        // Cleanup: ออกจาก Channel เมื่อเปลี่ยนหน้า
-        return () => window.Echo.leaveChannel(channelName);
-    }, []);
 
     // ==========================================
     // Handlers

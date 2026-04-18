@@ -17,6 +17,7 @@ window.Echo = new Echo({
     wssPort: import.meta.env.VITE_REVERB_PORT ?? 8081,
     forceTLS: false, // ✨ ปิดการบังคับใช้ TLS เพราะเราจะใช้ ws/wss ตามที่กำหนด
     // forceTLS: (import.meta.env.VITE_REVERB_SCHEME ?? 'https') === 'https',
-    enabledTransports: ['ws', 'wss'], // ✨ เปิดใช้งานเฉพาะ WebSocket เท่านั้น
+    enabledTransports: ['ws'],
     // enabledTransports: ['ws', 'wss'],
+    withCredentials: true,
 });

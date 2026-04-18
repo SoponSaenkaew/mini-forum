@@ -3,7 +3,7 @@ import Dropdown from '@/Components/Dropdown';
 import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import { Link, usePage, router } from '@inertiajs/react';
-import { useState, useEffect, useRef} from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 /**
  * @component AuthenticatedLayout
@@ -30,8 +30,12 @@ export default function AuthenticatedLayout({ header, children }) {
     useEffect(() => {
         window.Echo.private(`App.Models.User.${user.id}`)
             .notification((notification) => {
-                console.log('🔔 มีแจ้งเตือนใหม่!', notification);
-                router.reload({ only: ['auth'],preserveScroll: true, preserveState: true});
+                console.log('🔔 แจ้งเตือนใหม่มาแล้ว!');
+                router.reload({ 
+                    only: ['auth'], 
+                    preserveScroll: true, 
+                    preserveState: true 
+                });
             });
 
         return () => window.Echo.leave(`App.Models.User.${user.id}`);
@@ -39,54 +43,38 @@ export default function AuthenticatedLayout({ header, children }) {
 
     /**
      * ✨ Sticky & Auto-hide Navbar Logic
-     * ฟังก์ชันจัดการการซ่อน Navbar เมื่อเลื่อนลง และแสดงเมื่อเลื่อนขึ้น
      */
     useEffect(() => {
         const controlNavbar = () => {
             if (typeof window !== 'undefined') {
                 const currentScrollY = window.scrollY;
-
-                // กรณีเลื่อนลง: ซ่อนบาร์ (ตรวจสอบว่าเลื่อนพ้นระยะ 100px เพื่อไม่ให้ซ่อนเร็วเกินไป)
-                if (currentScrollY > lastScrollY && currentScrollY > 100) {
+                if (currentScrollY > lastScrollY.current && currentScrollY > 100) {
                     setIsVisible(false);
-                } 
-                // กรณีเลื่อนขึ้น: แสดงบาร์
-                else {
+                } else {
                     setIsVisible(true);
                 }
-                
-                // อัปเดตตำแหน่งล่าสุด
                 lastScrollY.current = currentScrollY;
             }
         };
 
         window.addEventListener('scroll', controlNavbar, { passive: true });
-        
-        // Cleanup function เมื่อ Component ถูกทำลาย
         return () => window.removeEventListener('scroll', controlNavbar);
     }, []);
 
     return (
         <div className="min-h-screen bg-gray-100">
-            {/* ✨ ปรับแต่ง Navbar:
-                - fixed top-0: ตรึงไว้ด้านบนสุด
-                - transition-transform: เพิ่ม Animation เวลาเลื่อนขึ้น/ลง
-                - translate-y: ควบคุมการเลื่อนหายไปตามสถานะ isVisible
-            */}
             <nav className={`fixed top-0 z-50 w-full border-b border-gray-100 bg-white transition-transform duration-300 ease-in-out ${
                 isVisible ? 'translate-y-0' : '-translate-y-full'
             }`}>
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div className="flex h-16 justify-between">
                         <div className="flex">
-                            {/* ส่วนโลโก้ระบบ */}
                             <div className="flex shrink-0 items-center">
                                 <Link href="/">
                                     <ApplicationLogo className="block h-9 w-auto fill-current text-gray-800" />
                                 </Link>
                             </div>
 
-                            {/* เมนูนำทางหลัก (Desktop) */}
                             <div className="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                                 <NavLink
                                     href={route('dashboard')}
@@ -97,7 +85,6 @@ export default function AuthenticatedLayout({ header, children }) {
                             </div>
                         </div>
 
-                        {/* ส่วนข้อมูลผู้ใช้และการตั้งค่า (Desktop) */}
                         <div className="hidden sm:ms-6 sm:flex sm:items-center">
                             <div className="relative ms-3">
                                 <Dropdown>
@@ -108,7 +95,21 @@ export default function AuthenticatedLayout({ header, children }) {
                                                 className="inline-flex items-center rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none"
                                             >
                                                 <span className="relative inline-flex items-center">
+                                                    {/* ✨ แสดงรูปโปรไฟล์ใน Dropdown (Desktop) */}
+                                                    {user.avatar ? (
+                                                        <img 
+                                                            src={`/storage/${user.avatar}?t=${new Date().getTime()}`} // ✨ เพิ่ม ?t=... เพื่อล้าง Cache
+                                                            className="h-8 w-8 rounded-full object-cover mr-2 border border-gray-200" 
+                                                            alt={user.name}
+                                                        />
+                                                    ) : (
+                                                        <div className="h-8 w-8 rounded-full bg-indigo-500 flex items-center justify-center text-[10px] text-white font-bold mr-2 shadow-sm">
+                                                            {user.name[0]}
+                                                        </div>
+                                                    )}
+                                                    
                                                     {user.name}
+
                                                     {user.unread_notifications_count > 0 && (
                                                         <Link 
                                                             href={route('notifications.index')}
@@ -136,7 +137,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                     </Dropdown.Trigger>
 
                                     <Dropdown.Content>
-                                        <Dropdown.Link href={route('profile.edit')}>Profile</Dropdown.Link>
+                                        <Dropdown.Link href={route('profile.show', user.id)}>Profile</Dropdown.Link>
                                         <Dropdown.Link href={route('notifications.index')}>
                                             Notifications
                                         </Dropdown.Link>
@@ -155,7 +156,6 @@ export default function AuthenticatedLayout({ header, children }) {
                             </div>
                         </div>
 
-                        {/* ปุ่มเมนูสำหรับอุปกรณ์พกพา (Mobile Toggle) */}
                         <div className="-me-2 flex items-center sm:hidden">
                             <button
                                 onClick={() => setShowingNavigationDropdown((previousState) => !previousState)}
@@ -190,7 +190,6 @@ export default function AuthenticatedLayout({ header, children }) {
                     </div>
                 </div>
 
-                {/* เมนูนำทางสำหรับอุปกรณ์พกพา (Mobile Menu Content) */}
                 <div className={(showingNavigationDropdown ? 'block' : 'hidden') + ' sm:hidden'}>
                     <div className="space-y-1 pb-3 pt-2">
                         <ResponsiveNavLink href={route('dashboard')} active={route().current('dashboard')}>
@@ -203,14 +202,28 @@ export default function AuthenticatedLayout({ header, children }) {
 
                     <div className="border-t border-gray-200 pb-1 pt-4">
                         <div className="flex items-center px-4">
-                            <div className="flex-1">
+                            {/* ✨ แสดงรูปโปรไฟล์ใน Mobile Menu */}
+                            <div className="shrink-0">
+                                {user.avatar ? (
+                                    <img 
+                                        src={`/storage/${user.avatar}?t=${new Date().getTime()}`} // ✨ เพิ่มเหมือนกันค่ะ
+                                        className="h-10 w-10 rounded-full object-cover border border-gray-200" 
+                                        alt={user.name}
+                                    />
+                                ) : (
+                                    <div className="h-10 w-10 rounded-full bg-indigo-500 flex items-center justify-center text-white font-bold shadow-sm">
+                                        {user.name[0]}
+                                    </div>
+                                )}
+                            </div>
+                            <div className="ml-3">
                                 <div className="text-base font-medium text-gray-800">{user.name}</div>
                                 <div className="text-sm font-medium text-gray-500">{user.email}</div>
                             </div>
                         </div>
 
                         <div className="mt-3 space-y-1">
-                            <ResponsiveNavLink href={route('profile.edit')}>Profile</ResponsiveNavLink>
+                            <ResponsiveNavLink href={route('profile.show', user.id)}>Profile</ResponsiveNavLink>
                             {user.is_admin && (
                                 <ResponsiveNavLink href="/admin">Admin Panel</ResponsiveNavLink>
                             )}
@@ -222,10 +235,6 @@ export default function AuthenticatedLayout({ header, children }) {
                 </div>
             </nav>
 
-            {/* ✨ ส่วน Main Content:
-                เพิ่ม Padding Top (pt-16 สำหรับ Nav และ pt-0/pt-6 ตามความเหมาะสม)
-                เพื่อให้เนื้อหาไม่ถูก Navbar ที่เป็น Fixed ทับ
-            */}
             <div className="pt-16">
                 {header && (
                     <header className="bg-white shadow">
@@ -234,7 +243,6 @@ export default function AuthenticatedLayout({ header, children }) {
                         </div>
                     </header>
                 )}
-
                 <main>{children}</main>
             </div>
         </div>

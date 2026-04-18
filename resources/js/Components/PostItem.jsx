@@ -147,9 +147,14 @@ export default function PostItem({ post, auth, highlightId = null }) {
             {/* --- ส่วนหัวของโพสต์ (Header) --- */}
             <div className="flex justify-between items-start mb-4">
                 <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-700 font-bold">
-                        {post.user.name[0]}
-                    </div>
+                    {/* ✨ ปรับให้โชว์รูปโปรไฟล์จริงค่ะ */}
+                    {post.user.avatar ? (
+                        <img src={`/storage/${post.user.avatar}`} className="h-10 w-10 rounded-full object-cover border border-gray-100" />
+                    ) : (
+                        <div className="h-10 w-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-700 font-bold">
+                            {post.user.name[0]}
+                        </div>
+                    )}
                     <div>
                         <Link href={route('profile.show', post.user.id)} className="font-bold text-gray-900 hover:text-indigo-600 transition">
                             {post.user.name}

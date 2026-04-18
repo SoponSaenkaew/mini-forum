@@ -36,8 +36,18 @@ export default function Show({ auth, user, posts }) {
                     <section className="p-8 bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center sm:flex-row sm:justify-between sm:items-center">
                         <div className="flex flex-col items-center sm:flex-row gap-6 text-center sm:text-left">
                             {/* Avatar: แสดงอักษรตัวแรกของชื่อ */}
-                            <div className="h-24 w-24 bg-indigo-600 rounded-full flex items-center justify-center text-4xl text-white font-bold shadow-lg">
-                                {user.name[0]}
+                            <div className="h-32 w-32 relative shrink-0">
+                                {user.avatar ? (
+                                    <img 
+                                        src={`/storage/${user.avatar}`} 
+                                        className="h-32 w-32 rounded-full object-cover border-4 border-white shadow-lg"
+                                        alt={user.name}
+                                    />
+                                ) : (
+                                    <div className="h-32 w-32 bg-indigo-500 rounded-full flex items-center justify-center text-4xl text-white font-black shadow-lg">
+                                        {user.name[0]}
+                                    </div>
+                                )}
                             </div>
                             
                             {/* ข้อมูลพื้นฐาน: ชื่อ, อีเมล และวันที่เข้าร่วม */}

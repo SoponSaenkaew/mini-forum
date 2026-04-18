@@ -97,8 +97,17 @@ export default function CommentItem({
                         
                         {/* --- ข้อมูลเจ้าของคอมเมนต์ --- */}
                         <div className="flex items-center gap-2 mb-1">
-                            <Link href={route('profile.show', comment.user.id)} className="font-bold text-indigo-600 hover:underline text-sm">
-                                {comment.user.name}
+                            <Link href={route('profile.show', comment.user.id)} className="flex items-center gap-2 group/user">
+                                {comment.user.avatar ? (
+                                    <img src={`/storage/${comment.user.avatar}`} className="h-6 w-6 rounded-full object-cover border border-gray-100 shadow-sm" />
+                                ) : (
+                                    <div className="h-6 w-6 bg-indigo-100 rounded-full flex items-center justify-center text-[10px] text-indigo-600 font-bold">
+                                        {comment.user.name[0]}
+                                    </div>
+                                )}
+                                <span className="font-bold text-gray-900 group-hover/user:text-indigo-600 transition-colors text-sm">
+                                    {comment.user.name}
+                                </span>
                             </Link>
                             
                             {comment.parent && (

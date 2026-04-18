@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 use Inertia\Response;
 
+use Illuminate\Support\Facades\Storage;
+
 
 class ProfileController extends Controller
 {
@@ -82,5 +84,31 @@ class ProfileController extends Controller
                 }
             ])->latest()->get(),
         ]);
+    }
+
+    public function updateAvatar(Request $request)
+    {
+        $request->validate([
+            'avatar' => ['required', 'image', 'max:2048'],
+        ]);
+
+        $user = $request->user();
+
+        if ($request->hasFile('avatar')) {
+            // ลบรูปเก่าทิ้งก่อน (ถ้ามี)
+            // 💡 ตอนนี้จะใช้งานได้แล้วเพราะเรา import Storage มาแล้วค่ะ
+            if ($user->avatar) {
+                Storage::disk('public')->delete($user->avatar);
+            }
+
+            // เก็บรูปใหม่ในโฟลเดอร์ avatars
+            $path = $request->file('avatar')->store('avatars', 'public');
+            
+            // บันทึกพาธรูปลง Database
+            $user->update(['avatar' => $path]);
+        }
+
+        // รีโหลดข้อมูลกลับไปที่หน้าเดิมเพื่อให้รูปเปลี่ยนทันที
+        return back()->with('status', 'profile-avatar-updated');
     }
 }

@@ -60,7 +60,7 @@ class CommentController extends Controller
      */
     public function destroy(Comment $comment): RedirectResponse
     {
-        // แนะนำให้ใช้ Policy: $this->authorize('delete', $comment);
+        
         if ($comment->user_id !== Auth::id()) {
             abort(403, 'Unauthorized action.');
         }
@@ -94,7 +94,7 @@ class CommentController extends Controller
     {
         // กรณีตอบกลับคอมเมนต์
         if ($comment->parent_id) {
-            $parent = $comment->parent; // ใช้ Relationship จะดูดีกว่าค่ะ
+            $parent = $comment->parent;
             if ($parent && $parent->user_id !== Auth::id()) {
                 $parent->user->notify(new NewCommentNotification($comment));
             }
@@ -113,7 +113,7 @@ class CommentController extends Controller
     private function clearCacheAndBroadcast(): void
     {
         // ระวัง: Cache::flush() จะลบข้อมูลแคชทั้งหมดของแอป
-        // แนะนำให้ใช้ Cache::forget('key') หรือ Tags แทนนะคะ
+        // แนะนำให้ใช้ Cache::forget('key') หรือ Tags แทน
         Cache::flush(); 
         broadcast(new FeedUpdated())->toOthers();
     }

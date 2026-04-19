@@ -13,6 +13,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->string('title'); // ✨ คอลัมน์ที่เซนเซต้องการ
             $table->text('content');
+            $table->softDeletes();
             $table->timestamps();
         });
     }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Models\User;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -10,11 +11,20 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 use Inertia\Response;
+use Illuminate\Support\Facades\Storage;
 
+/**
+ * @class ProfileController
+ * @description คอนโทรลเลอร์สำหรับจัดการข้อมูลส่วนตัวของผู้ใช้งาน (User Profile)
+ * ครอบคลุมการแก้ไขข้อมูลพื้นฐาน, การลบบัญชี, การแสดงหน้าโปรไฟล์สาธารณะ รวมถึงการอัปโหลดรูปโปรไฟล์และรูปหน้าปก
+ */
 class ProfileController extends Controller
 {
     /**
-     * Display the user's profile form.
+     * @function edit
+     * @description แสดงหน้าฟอร์มสำหรับแก้ไขข้อมูลส่วนตัวของผู้ใช้งาน (Settings/Edit Profile)
+     * @param Request $request ข้อมูล HTTP Request
+     * @return Response หน้า Component ของ Inertia.js
      */
     public function edit(Request $request): Response
     {
@@ -25,12 +35,16 @@ class ProfileController extends Controller
     }
 
     /**
-     * Update the user's profile information.
+     * @function update
+     * @description ตรวจสอบและบันทึกการเปลี่ยนแปลงข้อมูลส่วนตัวของผู้ใช้งาน (เช่น ชื่อ, อีเมล)
+     * @param ProfileUpdateRequest $request ข้อมูลฟอร์มที่ผ่านการตรวจสอบความถูกต้องแล้ว
+     * @return RedirectResponse รีไดเรกต์กลับไปยังหน้าแก้ไขโปรไฟล์
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
         $request->user()->fill($request->validated());
 
+        // หากมีการเปลี่ยนอีเมล ให้รีเซ็ตสถานะการยืนยันอีเมล
         if ($request->user()->isDirty('email')) {
             $request->user()->email_verified_at = null;
         }
@@ -41,7 +55,10 @@ class ProfileController extends Controller
     }
 
     /**
-     * Delete the user's account.
+     * @function destroy
+     * @description ลบบัญชีผู้ใช้งานออกจากระบบอย่างถาวร พร้อมทั้งยกเลิก Session
+     * @param Request $request ข้อมูล HTTP Request ที่แนบรหัสผ่านปัจจุบันมาเพื่อยืนยันความปลอดภัย
+     * @return RedirectResponse รีไดเรกต์ผู้ใช้กลับไปยังหน้าแรกสุด (Welcome Page)
      */
     public function destroy(Request $request): RedirectResponse
     {
@@ -59,5 +76,90 @@ class ProfileController extends Controller
         $request->session()->regenerateToken();
 
         return Redirect::to('/');
+    }
+
+    /**
+     * @function show
+     * @description แสดงหน้าโปรไฟล์สาธารณะของผู้ใช้งาน (Public Profile) พร้อมดึงประวัติการโพสต์ทั้งหมด
+     * @param User $user ข้อมูลโมเดลของผู้ใช้งานที่ถูกเรียกดู
+     * @return Response หน้า Component ของ Inertia.js
+     */
+    public function show(User $user)
+    {
+        return Inertia::render('Profile/Show', [
+            'user' => $user,
+            // ดึงข้อมูลโพสต์พร้อมความสัมพันธ์ต่างๆ แบบ Eager Loading เพื่อให้คอมโพเนนต์ PostItem นำไปแสดงผลได้อย่างสมบูรณ์
+            'posts' => $user->posts()->with([
+                'user', 
+                'likes',
+                'images',
+                'comments' => function($query) {
+                    $query->whereNull('parent_id')
+                        ->with(['user', 'likes', 'replies'])
+                        ->latest();
+                }
+            ])->latest()->get(),
+        ]);
+    }
+
+    /**
+     * @function updateAvatar
+     * @description จัดการการอัปโหลดและอัปเดตรูปโปรไฟล์ (Avatar) ของผู้ใช้งาน
+     * @param Request $request ข้อมูล HTTP Request ที่แนบไฟล์รูปภาพมาด้วย
+     * @return RedirectResponse รีไดเรกต์กลับไปยังหน้าเดิมพร้อมแนบสถานะความสำเร็จ
+     */
+    public function updateAvatar(Request $request)
+    {
+        $request->validate([
+            'avatar' => ['required', 'image', 'max:2048'], // จำกัดขนาดไฟล์รูปโปรไฟล์สูงสุดที่ 2MB
+        ]);
+
+        $user = $request->user();
+
+        if ($request->hasFile('avatar')) {
+            // ทำการลบรูปโปรไฟล์เก่าออกจากระบบ (Storage) ก่อน เพื่อไม่ให้เปลืองพื้นที่เซิร์ฟเวอร์
+            if ($user->avatar) {
+                Storage::disk('public')->delete($user->avatar);
+            }
+
+            // บันทึกไฟล์รูปภาพใหม่ลงในโฟลเดอร์ 'avatars'
+            $path = $request->file('avatar')->store('avatars', 'public');
+            
+            // อัปเดตที่อยู่ไฟล์ (Path) ลงในฐานข้อมูลของผู้ใช้งาน
+            $user->update(['avatar' => $path]);
+        }
+
+        return back()->with('status', 'profile-avatar-updated');
+    }
+
+    /**
+     * @function updateCoverPhoto
+     * @description จัดการการอัปโหลดและอัปเดตรูปหน้าปก (Cover Photo) ของผู้ใช้งาน
+     * @param Request $request ข้อมูล HTTP Request ที่แนบไฟล์รูปภาพมาด้วย
+     * @return RedirectResponse รีไดเรกต์กลับไปยังหน้าเดิมพร้อมแนบสถานะความสำเร็จ
+     */
+    public function updateCoverPhoto(Request $request)
+    {
+        $request->validate([
+            // หน้าปกมีขนาดพื้นที่กว้างกว่า อาโรน่าจึงเผื่อขีดจำกัดไฟล์ไว้ที่ 4MB (4096 KB) นะคะ
+            'cover_photo' => ['required', 'image', 'max:4096'], 
+        ]);
+
+        $user = $request->user();
+
+        if ($request->hasFile('cover_photo')) {
+            // ทำการลบรูปหน้าปกเก่าออกจากระบบเพื่อคืนพื้นที่ว่าง
+            if ($user->cover_photo) {
+                Storage::disk('public')->delete($user->cover_photo);
+            }
+
+            // บันทึกไฟล์รูปลงในโฟลเดอร์ 'covers'
+            $path = $request->file('cover_photo')->store('covers', 'public');
+            
+            // อัปเดตข้อมูลที่อยู่ไฟล์ในฐานข้อมูล
+            $user->update(['cover_photo' => $path]);
+        }
+
+        return back()->with('status', 'profile-cover-updated');
     }
 }

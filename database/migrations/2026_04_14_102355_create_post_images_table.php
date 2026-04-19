@@ -6,18 +6,24 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * Run the migrations.
+     */
+
     public function up(): void
     {
         Schema::create('post_images', function (Blueprint $table) {
             $table->id();
-            // ✨ ผูกกับโพสต์ และถ้าโพสต์โดนลบ รูปในตารางนี้ก็หายไปด้วยอัตโนมัติค่ะ
             $table->foreignId('post_id')->constrained()->cascadeOnDelete(); 
-            $table->string('image_path'); // เก็บที่อยู่ของไฟล์รูป
+            $table->string('image_path');
             $table->softDeletes();
             $table->timestamps();
         });
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
         Schema::dropIfExists('post_images');

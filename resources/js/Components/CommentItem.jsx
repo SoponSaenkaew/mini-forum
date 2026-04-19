@@ -170,14 +170,14 @@ export default function CommentItem({
                 </div>
 
                 {/* ==========================================
-                    ✨ INLINE FORM 
+                    INLINE FORM 
                     จะกางออกมาแสดงผลก็ต่อเมื่อ "ตัวมันเอง" กำลังถูกตอบกลับหรือแก้ไข
                 ========================================== */}
                 {(isBeingReplied || isBeingEdited) && (
                     <div className="mt-4 pt-4 border-t border-gray-100">
                         <form onSubmit={onCommentSubmit} className="flex flex-col gap-2">
                             <textarea 
-                                autoFocus // ✨ ให้เคอร์เซอร์ไปกระพริบรอพิมพ์ทันที
+                                autoFocus // ให้เคอร์เซอร์ไปกระพริบรอพิมพ์ทันที
                                 value={commentForm.content} 
                                 onChange={e => setCommentForm('content', e.target.value)} 
                                 placeholder={isBeingReplied ? `ตอบกลับ @${comment.user.name}...` : "แก้ไขข้อความของคุณ..."} 

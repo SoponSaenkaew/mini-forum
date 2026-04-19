@@ -2,21 +2,34 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, router, Link } from '@inertiajs/react';
 
 /**
- * @page Notifications Index
- * @description หน้าแสดงรายการแจ้งเตือนทั้งหมด พร้อมฟีเจอร์อ่านทั้งหมดและลบทีละรายการ
+ * @component NotificationsIndex
+ * @description หน้าแสดงรายการแจ้งเตือน (Notifications) ทั้งหมดของผู้ใช้งาน
+ * รองรับการจัดการสถานะการอ่าน (Mark as Read) ทั้งแบบรายรายการและทั้งหมด รวมถึงการลบประวัติการแจ้งเตือน
+ *
+ * @param {Object} props - ข้อมูล Props ที่ได้รับมาจากเซิร์ฟเวอร์ (Inertia)
+ * @param {Object} props.auth - ข้อมูลผู้ใช้งานปัจจุบันที่กำลังเข้าสู่ระบบ
+ * @param {Array} props.notifications - รายการข้อมูลการแจ้งเตือนทั้งหมดของผู้ใช้งาน
+ * @returns {JSX.Element}
  */
 export default function Index({ auth, notifications }) {
     
-    // ✨ ฟังก์ชันทำเป็นอ่านแล้วทั้งหมด
+    /**
+     * @function markAllAsRead
+     * @description ส่งคำร้องขอไปยังเซิร์ฟเวอร์เพื่ออัปเดตสถานะการแจ้งเตือนทั้งหมดให้เป็น "อ่านแล้ว"
+     */
     const markAllAsRead = () => {
-        if (confirm('จะทำเป็นอ่านแล้วทั้งหมดเลยเหรอคะเซนเซ? ✨')) {
+        if (confirm('ทำเป็นอ่านแล้วทั้งหมดเลย ?')) {
             router.post(route('notifications.read_all'), {}, { 
                 preserveScroll: true 
             });
         }
     };
 
-    // ✨ ฟังก์ชันลบการแจ้งเตือนทีละอัน
+    /**
+     * @function deleteNotification
+     * @description ส่งคำร้องขอไปยังเซิร์ฟเวอร์เพื่อลบข้อมูลการแจ้งเตือนแบบรายรายการ
+     * @param {number|string} id - รหัส (ID) ของการแจ้งเตือนที่ต้องการลบ
+     */
     const deleteNotification = (id) => {
         if (confirm('จะลบประวัตินี้ทิ้งจริงๆ เหรอคะ? 🥺')) {
             router.delete(route('notifications.destroy', id), { 
@@ -25,6 +38,11 @@ export default function Index({ auth, notifications }) {
         }
     };
 
+    /**
+     * @function markAsRead
+     * @description ส่งคำร้องขอไปยังเซิร์ฟเวอร์เพื่ออัปเดตสถานะการแจ้งเตือนรายการนี้ให้เป็น "อ่านแล้ว"
+     * @param {number|string} id - รหัส (ID) ของการแจ้งเตือนเป้าหมาย
+     */
     const markAsRead = (id) => {
         router.patch(route('notifications.read', id), {}, {
             preserveScroll: true,
@@ -38,7 +56,7 @@ export default function Index({ auth, notifications }) {
                     <h2 className="text-xl font-semibold leading-tight text-gray-800">
                         การแจ้งเตือนทั้งหมด 🔔
                     </h2>
-                    {/* ✨ ปุ่มอ่านทั้งหมด จะแสดงเมื่อมีรายการที่ยังไม่ได้อ่านเท่านั้น */}
+                    {/* แสดงปุ่ม "ทำเป็นอ่านแล้วทั้งหมด" เฉพาะกรณีที่มีการแจ้งเตือนที่ยังไม่ได้อ่านเท่านั้น */}
                     {auth.user.unread_notifications_count > 0 && (
                         <button 
                             onClick={markAllAsRead}
@@ -54,6 +72,7 @@ export default function Index({ auth, notifications }) {
 
             <div className="py-12 bg-gray-50 min-h-screen">
                 <div className="mx-auto max-w-3xl sm:px-6 lg:px-8 space-y-4">
+                    {/* ตรวจสอบว่ามีข้อมูลการแจ้งเตือนหรือไม่ */}
                     {notifications && notifications.length > 0 ? (
                         notifications.map((notification) => (
                             <div 
@@ -81,7 +100,7 @@ export default function Index({ auth, notifications }) {
                                 </div>
 
                                 <div className="flex items-center gap-3">
-                                    {/* ปุ่มอ่านแล้ว (แสดงเฉพาะที่ยังไม่อ่าน) */}
+                                    {/* ปุ่มเปลี่ยนสถานะเป็น "อ่านแล้ว" (แสดงเฉพาะรายการที่ยังไม่ได้อ่าน) */}
                                     {!notification.read_at && (
                                         <button 
                                             onClick={() => markAsRead(notification.id)}
@@ -91,7 +110,7 @@ export default function Index({ auth, notifications }) {
                                         </button>
                                     )}
 
-                                    {/* ✨ ปุ่มลบประวัติ (ถังขยะ) จะชัดขึ้นเมื่อเอาเมาส์มาวาง (Hover) */}
+                                    {/* ปุ่มลบประวัติการแจ้งเตือน (แสดงผลชัดเจนขึ้นเมื่อนำเมาส์ไปชี้) */}
                                     <button 
                                         onClick={() => deleteNotification(notification.id)}
                                         className="text-gray-300 hover:text-rose-500 transition p-1"
@@ -105,8 +124,9 @@ export default function Index({ auth, notifications }) {
                             </div>
                         ))
                     ) : (
+                        /* หน้าจอแสดงผลเมื่อไม่มีการแจ้งเตือน (Empty State) */
                         <div className="text-center py-16 bg-white rounded-xl border border-dashed border-gray-300 text-gray-400">
-                            ยังไม่มีการแจ้งเตือนในตอนนี้ค่ะ 🎈
+                            ยังไม่มีการแจ้งเตือนในตอนนี้
                         </div>
                     )}
                 </div>

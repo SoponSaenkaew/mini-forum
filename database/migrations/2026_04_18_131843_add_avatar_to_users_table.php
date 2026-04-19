@@ -12,7 +12,6 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            // ✨ เก็บพาธรูปโปรไฟล์ ถ้าไม่มีให้เป็น null ได้ค่ะ
             $table->string('avatar')->nullable()->after('email');
         });
     }

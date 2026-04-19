@@ -75,7 +75,7 @@ export default function Dashboard({ auth, posts, searchedUsers = [], filters = {
     // ==========================================
 
     return (
-        <AuthenticatedLayout header={<h2 className="text-xl font-semibold text-gray-800">Community Feed ✨</h2>}>
+        <AuthenticatedLayout header={<h2 className="text-xl font-semibold text-gray-800">Community</h2>}>
             <Head title="Dashboard" />
             <div className="py-12 bg-gray-50 min-h-screen font-sans">
                 <div className="mx-auto max-w-4xl sm:px-6 lg:px-8 space-y-6">
@@ -136,7 +136,7 @@ export default function Dashboard({ auth, posts, searchedUsers = [], filters = {
                             <div>
                                 <textarea 
                                     value={data.content} 
-                                    placeholder="วันนี้มีเรื่องอะไรน่าสนใจบ้างคะเซนเซ?" 
+                                    placeholder="วันนี้มีเรื่องอะไรน่าสนใจบ้าง..." 
                                     className="w-full border-gray-200 rounded-lg h-32 focus:ring-indigo-500" 
                                     onChange={e => setData('content', e.target.value)}
                                 />

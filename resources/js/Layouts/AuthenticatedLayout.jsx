@@ -1,4 +1,3 @@
-import ApplicationLogo from '@/Components/ApplicationLogo';
 import Dropdown from '@/Components/Dropdown';
 import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
@@ -7,30 +6,41 @@ import { useState, useEffect, useRef } from 'react';
 
 /**
  * @component AuthenticatedLayout
- * @description เลย์เอาต์หลักสำหรับหน้าที่ต้องผ่านการเข้าสู่ระบบ จัดการระบบนำทาง ข้อมูลผู้ใช้ และการแจ้งเตือนแบบ Real-time
+ * @description เลย์เอาต์หลักสำหรับผู้ใช้ที่เข้าสู่ระบบแล้ว (Authenticated)
+ * ทำหน้าที่จัดการระบบนำทางหลัก (Navigation) ข้อมูลผู้ใช้งาน และการรับการแจ้งเตือนแบบเรียลไทม์ (Real-time Notifications)
+ * * @param {Object} props
+ * @param {React.ReactNode} props.header - ส่วนหัวของหน้าเพจ (Page Header)
+ * @param {React.ReactNode} props.children - เนื้อหาหลักของหน้าเพจ
  */
 export default function AuthenticatedLayout({ header, children }) {
     /**
-     * ดึงข้อมูลผู้ใช้จาก Inertia Page Props
+     * ดึงข้อมูลผู้ใช้งานปัจจุบันจาก Inertia Page Props
      */
     const user = usePage().props.auth.user;
 
-    /** * @state isVisible - สถานะการแสดงผลของ Navbar (ซ่อน/แสดง)
-     * @state lastScrollY - ตำแหน่งการเลื่อนแกน Y ล่าสุด เพื่อใช้คำนวณทิศทาง
-     * @state showingNavigationDropdown - สถานะการเปิด/ปิดเมนูบน Mobile
+    /**
+     * สถานะสำหรับการจัดการ UI
+     * @state {boolean} isVisible - ควบคุมการแสดงผลของแถบนำทาง (Navbar) ซ่อนเมื่อเลื่อนลง แสดงเมื่อเลื่อนขึ้น
+     * @state {boolean} showingNavigationDropdown - ควบคุมการแสดงผลเมนูนำทางบนหน้าจอขนาดเล็ก (Mobile)
      */
     const [isVisible, setIsVisible] = useState(true);
-    const lastScrollY = useRef(0);
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
+    
+    /**
+     * อ้างอิงตำแหน่งการเลื่อนหน้าจอล่าสุด เพื่อคำนวณทิศทางการเลื่อน (Scroll Direction)
+     */
+    const lastScrollY = useRef(0);
 
     /**
-     * ✨ Real-time Notifications Listener
-     * จัดการเชื่อมต่อ Laravel Echo เพื่อดักฟังการแจ้งเตือนใหม่
+     * การจัดการ Real-time Notifications ผ่าน Laravel Echo
+     * เชื่อมต่อกับ Private Channel ของผู้ใช้งานเพื่อดักฟังการแจ้งเตือนใหม่
      */
     useEffect(() => {
-        window.Echo.private(`App.Models.User.${user.id}`)
+        const channelName = `App.Models.User.${user.id}`;
+        window.Echo.private(channelName)
             .notification((notification) => {
-                console.log('🔔 แจ้งเตือนใหม่มาแล้ว!');
+                console.log('รับการแจ้งเตือนใหม่:', notification);
+                // โหลดข้อมูลคอมโพเนนต์ใหม่โดยรักษาตำแหน่งการเลื่อนหน้าจอและสถานะเดิมไว้
                 router.reload({ 
                     only: ['auth'], 
                     preserveScroll: true, 
@@ -38,16 +48,19 @@ export default function AuthenticatedLayout({ header, children }) {
                 });
             });
 
-        return () => window.Echo.leave(`App.Models.User.${user.id}`);
+        // ยกเลิกการเชื่อมต่อเมื่อคอมโพเนนต์ถูกทำลาย (Unmount) เพื่อป้องกัน Memory Leak
+        return () => window.Echo.leave(channelName);
     }, [user.id]);
 
     /**
-     * ✨ Sticky & Auto-hide Navbar Logic
+     * การจัดการ Sticky & Auto-hide Navbar
+     * ตรวจจับการเลื่อนหน้าจอเพื่อซ่อน Navbar เมื่อเลื่อนลง และแสดงกลับมาเมื่อเลื่อนขึ้น
      */
     useEffect(() => {
         const controlNavbar = () => {
             if (typeof window !== 'undefined') {
                 const currentScrollY = window.scrollY;
+                // หากเลื่อนลงเกิน 100px ให้ซ่อน Navbar
                 if (currentScrollY > lastScrollY.current && currentScrollY > 100) {
                     setIsVisible(false);
                 } else {
@@ -63,18 +76,24 @@ export default function AuthenticatedLayout({ header, children }) {
 
     return (
         <div className="min-h-screen bg-gray-100">
+            {/* Navigation Bar */}
             <nav className={`fixed top-0 z-50 w-full border-b border-gray-100 bg-white transition-transform duration-300 ease-in-out ${
                 isVisible ? 'translate-y-0' : '-translate-y-full'
             }`}>
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div className="flex h-16 justify-between">
                         <div className="flex">
+                            {/* บริเวณโลโก้แอปพลิเคชัน */}
                             <div className="flex shrink-0 items-center">
-                                <Link href="/">
-                                    <ApplicationLogo className="block h-9 w-auto fill-current text-gray-800" />
+                                <Link 
+                                    href="/" 
+                                    className="text-2xl font-black tracking-wider text-gray-800 uppercase"
+                                >
+                                    MINI FORUM
                                 </Link>
                             </div>
 
+                            {/* ลิงก์นำทางสำหรับหน้าจอขนาดใหญ่ (Desktop Navigation) */}
                             <div className="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                                 <NavLink
                                     href={route('dashboard')}
@@ -85,6 +104,7 @@ export default function AuthenticatedLayout({ header, children }) {
                             </div>
                         </div>
 
+                        {/* เมนูผู้ใช้งานมุมขวาบน (User Dropdown Menu) */}
                         <div className="hidden sm:ms-6 sm:flex sm:items-center">
                             <div className="relative ms-3">
                                 <Dropdown>
@@ -95,10 +115,10 @@ export default function AuthenticatedLayout({ header, children }) {
                                                 className="inline-flex items-center rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none"
                                             >
                                                 <span className="relative inline-flex items-center">
-                                                    {/* ✨ แสดงรูปโปรไฟล์ใน Dropdown (Desktop) */}
+                                                    {/* รูปโปรไฟล์ผู้ใช้งาน (User Avatar) */}
                                                     {user.avatar ? (
                                                         <img 
-                                                            src={`/storage/${user.avatar}?t=${new Date().getTime()}`} // ✨ เพิ่ม ?t=... เพื่อล้าง Cache
+                                                            src={`/storage/${user.avatar}?t=${new Date().getTime()}`} // ป้องกันการแคชรูปภาพเก่า
                                                             className="h-8 w-8 rounded-full object-cover mr-2 border border-gray-200" 
                                                             alt={user.name}
                                                         />
@@ -110,6 +130,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                                     
                                                     {user.name}
 
+                                                    {/* ตัวแสดงจำนวนการแจ้งเตือนที่ยังไม่ได้อ่าน (Unread Notifications Badge) */}
                                                     {user.unread_notifications_count > 0 && (
                                                         <Link 
                                                             href={route('notifications.index')}
@@ -120,6 +141,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                                     )}
                                                 </span>
 
+                                                {/* ไอคอนลูกศรชี้ลง */}
                                                 <svg
                                                     className="-me-0.5 ms-2 h-4 w-4"
                                                     xmlns="http://www.w3.org/2000/svg"
@@ -142,6 +164,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                             Notifications
                                         </Dropdown.Link>
 
+                                        {/* แสดงเมนู Admin Panel เฉพาะผู้ดูแลระบบเท่านั้น */}
                                         {user.is_admin && (
                                             <a href="/admin" className="block w-full px-4 py-2 text-start text-sm leading-5 text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 transition duration-150 ease-in-out">
                                                 Admin Panel
@@ -156,6 +179,7 @@ export default function AuthenticatedLayout({ header, children }) {
                             </div>
                         </div>
 
+                        {/* ปุ่มเปิด/ปิดเมนูสำหรับหน้าจอขนาดเล็ก (Mobile Hamburger Button) */}
                         <div className="-me-2 flex items-center sm:hidden">
                             <button
                                 onClick={() => setShowingNavigationDropdown((previousState) => !previousState)}
@@ -178,6 +202,8 @@ export default function AuthenticatedLayout({ header, children }) {
                                             d="M6 18L18 6M6 6l12 12"
                                         />
                                     </svg>
+                                    
+                                    {/* จุดสีแดงแจ้งเตือนบนไอคอนเมนู (Notification Indicator for Mobile) */}
                                     {!showingNavigationDropdown && user.unread_notifications_count > 0 && (
                                         <span className="absolute -top-1 -right-1 flex h-3 w-3">
                                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
@@ -190,6 +216,7 @@ export default function AuthenticatedLayout({ header, children }) {
                     </div>
                 </div>
 
+                {/* เมนูนำทางสำหรับหน้าจอขนาดเล็ก (Mobile Navigation Menu) */}
                 <div className={(showingNavigationDropdown ? 'block' : 'hidden') + ' sm:hidden'}>
                     <div className="space-y-1 pb-3 pt-2">
                         <ResponsiveNavLink href={route('dashboard')} active={route().current('dashboard')}>
@@ -200,13 +227,13 @@ export default function AuthenticatedLayout({ header, children }) {
                         </ResponsiveNavLink>
                     </div>
 
+                    {/* ข้อมูลผู้ใช้งานบนหน้าจอขนาดเล็ก (Mobile User Info) */}
                     <div className="border-t border-gray-200 pb-1 pt-4">
                         <div className="flex items-center px-4">
-                            {/* ✨ แสดงรูปโปรไฟล์ใน Mobile Menu */}
                             <div className="shrink-0">
                                 {user.avatar ? (
                                     <img 
-                                        src={`/storage/${user.avatar}?t=${new Date().getTime()}`} // ✨ เพิ่มเหมือนกันค่ะ
+                                        src={`/storage/${user.avatar}?t=${new Date().getTime()}`}
                                         className="h-10 w-10 rounded-full object-cover border border-gray-200" 
                                         alt={user.name}
                                     />
@@ -235,6 +262,7 @@ export default function AuthenticatedLayout({ header, children }) {
                 </div>
             </nav>
 
+            {/* พื้นที่เนื้อหาหลัก (Main Content Area) */}
             <div className="pt-16">
                 {header && (
                     <header className="bg-white shadow">

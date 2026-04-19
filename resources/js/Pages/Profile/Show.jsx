@@ -5,16 +5,19 @@ import PostItem from '@/Components/PostItem';
 /**
  * @component ProfileShow
  * @description หน้าแสดงโปรไฟล์ผู้ใช้ (Public Profile) 
- * แสดงข้อมูลพื้นฐานของผู้ใช้และรายการโพสต์ทั้งหมดที่ผู้ใช้คนนี้เคยสร้าง
- * * @param {Object} props
- * @param {Object} props.auth - ข้อมูลการเข้าสู่ระบบของผู้ใช้ปัจจุบัน
+ * หน้าต่างนี้ใช้สำหรับแสดงข้อมูลพื้นฐานของผู้ใช้และรายการโพสต์ทั้งหมดที่ผู้ใช้คนนี้เคยสร้าง
+ *
+ * @param {Object} props - ข้อมูล Props ที่รับมาจาก Inertia
+ * @param {Object} props.auth - ข้อมูลการเข้าสู่ระบบของผู้ใช้งานปัจจุบัน
  * @param {Object} props.user - ข้อมูลเจ้าของโปรไฟล์ที่กำลังแสดงผล
  * @param {Array}  props.posts - รายการโพสต์ทั้งหมดของเจ้าของโปรไฟล์นี้
  */
 export default function Show({ auth, user, posts }) {
     
-    /** * ตรวจสอบว่าผู้ใช้ที่กำลังล็อกอินอยู่ คือเจ้าของโปรไฟล์นี้หรือไม่
-     * เพื่อใช้ในการตัดสินใจแสดงปุ่ม "แก้ไขโปรไฟล์"
+    /**
+     * ตรวจสอบสิทธิ์การเป็นเจ้าของโปรไฟล์
+     * ใช้สำหรับควบคุมการแสดงผลปุ่ม "ตั้งค่าโปรไฟล์"
+     * @type {boolean}
      */
     const isOwnProfile = auth.user.id === user.id;
 
@@ -22,21 +25,20 @@ export default function Show({ auth, user, posts }) {
         <AuthenticatedLayout
             header={
                 <h2 className="font-semibold text-xl text-gray-800 leading-tight">
-                    {isOwnProfile ? 'โปรไฟล์ของฉัน' : `โปรไฟล์ของ ${user.name}`} ✨
+                    {isOwnProfile ? 'โปรไฟล์ของฉัน' : `โปรไฟล์ของ ${user.name}`} 
                 </h2>
             }
         >
-            {/* กำหนด Meta Title สำหรับ Browser Tab */}
+            {/* กำหนด Meta Title สำหรับแสดงบนแท็บของเบราว์เซอร์ */}
             <Head title={`Profile - ${user.name}`} />
 
             <div className="py-12 bg-gray-50 min-h-screen">
                 <div className="max-w-4xl mx-auto sm:px-6 lg:px-8 space-y-6">
                     
-                    {/* --- ส่วนหัวโปรไฟล์ (User Header Card) --- */}
-                    {/* ✨ โซนหน้าปก + โปรไฟล์ (รวมไว้ในการ์ดเดียวกันเพื่อความสวยงาม) */}
+                    {/* ส่วนแสดงข้อมูลส่วนตัวของผู้ใช้ (User Profile Header) */}
                     <section className="bg-white shadow-sm sm:rounded-3xl overflow-hidden border border-gray-100">
                         
-                        {/* 1. ส่วนรูปหน้าปก (Cover Photo) */}
+                        {/* พื้นที่แสดงรูปภาพหน้าปก (Cover Photo) */}
                         <div className="h-48 sm:h-64 w-full relative">
                             {user.cover_photo ? (
                                 <img 
@@ -49,11 +51,11 @@ export default function Show({ auth, user, posts }) {
                             )}
                         </div>
 
-                        {/* 2. ส่วนข้อมูลผู้ใช้และรูปโปรไฟล์ (ดึงรูปขึ้นไปทับหน้าปกด้วย -mt-16) */}
+                        {/* พื้นที่แสดงข้อมูลผู้ใช้และรูปโปรไฟล์ส่วนตัว */}
                         <div className="px-6 sm:px-10 pb-8 relative">
                             <div className="flex flex-col sm:flex-row gap-6">
                                 
-                                {/* รูปโปรไฟล์: ขยับขึ้นไปทับหน้าปก */}
+                                {/* รูปภาพโปรไฟล์ (Avatar) - จัดวางให้ซ้อนทับบริเวณหน้าปก */}
                                 <div className="relative shrink-0 -mt-16 sm:-mt-20">
                                     {user.avatar ? (
                                         <img 
@@ -68,7 +70,7 @@ export default function Show({ auth, user, posts }) {
                                     )}
                                 </div>
 
-                                {/* ข้อมูลชื่อและอีเมล */}
+                                {/* ข้อมูลชื่อผู้ใช้ อีเมล และวันที่เข้าร่วม */}
                                 <div className="flex-1 mt-2 sm:mt-4">
                                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                                         <div>
@@ -78,7 +80,7 @@ export default function Show({ auth, user, posts }) {
                                             </p>
                                         </div>
 
-                                        {/* ปุ่มแก้ไขโปรไฟล์ */}
+                                        {/* ปุ่มสำหรับไปหน้าตั้งค่าโปรไฟล์ (แสดงเฉพาะเจ้าของบัญชี) */}
                                         {isOwnProfile && (
                                             <Link 
                                                 href={route('profile.edit')} 
@@ -93,7 +95,7 @@ export default function Show({ auth, user, posts }) {
                         </div>
                     </section>
 
-                    {/* --- ส่วนรายการโพสต์ (User Activity Feed) --- */}
+                    {/* ส่วนแสดงรายการโพสต์ของผู้ใช้ (User Activity Feed) */}
                     <div className="space-y-6">
                         <header className="flex items-center justify-between px-2">
                             <h4 className="font-bold text-gray-700 text-lg border-l-4 border-indigo-500 pl-3">
@@ -104,8 +106,9 @@ export default function Show({ auth, user, posts }) {
                             </span>
                         </header>
                         
-                        {/* รายการฟีด: วนลูปแสดง PostItem ถ้ามีข้อมูล 
-                            หากไม่มีข้อมูลจะแสดงสถานะ Empty State
+                        {/* ตรวจสอบและแสดงรายการโพสต์ 
+                            - หากมีโพสต์: นำข้อมูลแต่ละโพสต์ไปเรนเดอร์ในคอมโพเนนต์ PostItem 
+                            - หากไม่มีโพสต์: แสดงหน้าต่างแจ้งเตือนว่ายังไม่มีข้อมูล (Empty State)
                         */}
                         {posts.length > 0 ? (
                             posts.map(post => (
@@ -113,7 +116,7 @@ export default function Show({ auth, user, posts }) {
                             ))
                         ) : (
                             <div className="bg-white p-16 text-center rounded-2xl border-2 border-dashed border-gray-200 text-gray-400">
-                                <p className="text-lg italic">ยังไม่มีเรื่องราวที่โพสต์เลยค่ะ... 💦</p>
+                                <p className="text-lg italic">ยังไม่มีเรื่องราวที่โพสต์...</p>
                             </div>
                         )}
                     </div>

@@ -4,32 +4,38 @@ import { useState, useEffect } from 'react';
 import CommentItem from '@/Components/CommentItem';
 
 /**
- * Post Show Component (หน้าดูกระทู้ฉบับเต็ม)
- * @description แสดงรายละเอียดโพสต์เต็มรูปแบบ รูปภาพแกลเลอรี ระบบถูกใจ และระบบจัดการคอมเมนต์
- * @param {Object} props
- * @param {Object} props.auth - ข้อมูลผู้ใช้งานปัจจุบัน
- * @param {Object} props.post - ข้อมูลโพสต์พร้อมคอมเมนต์และรายการถูกใจ
- * @param {number|string|null} props.highlightId - ID ของคอมเมนต์เป้าหมายที่ต้องการไฮไลท์
+ * @component PostShow
+ * @description หน้าแสดงรายละเอียดกระทู้ฉบับเต็ม ทำหน้าที่แสดงเนื้อหาโพสต์ แกลเลอรีรูปภาพ ระบบถูกใจ (Like) และระบบจัดการความคิดเห็น (Comment)
+ *
+ * @param {Object} props - ข้อมูล Props ที่ได้รับมาจากเซิร์ฟเวอร์
+ * @param {Object} props.auth - ข้อมูลผู้ใช้งานปัจจุบันที่เข้าสู่ระบบ
+ * @param {Object} props.post - ข้อมูลรายละเอียดโพสต์ รายการความคิดเห็น และรายการถูกใจ
+ * @param {number|string|null} props.highlightId - รหัส (ID) ของความคิดเห็นเป้าหมายที่ต้องการเน้นแสดงผล
  * @returns {JSX.Element}
  */
 export default function Show({ auth, post, highlightId }) {
     // ==========================================
-    // State & Form Management
+    // State & Form Management (การจัดการสถานะและฟอร์ม)
     // ==========================================
 
-    /** @type {[Object|null, Function]} replyingTo - เก็บข้อมูลคอมเมนต์ที่กำลังต้องการตอบกลับ (Reply) */
+    /** * @state {Object|null} replyingTo - เก็บข้อมูลความคิดเห็นที่ผู้ใช้กำลังเลือกเพื่อตอบกลับ 
+     */
     const [replyingTo, setReplyingTo] = useState(null);
     
-    /** @type {[Object|null, Function]} editingComment - เก็บข้อมูลคอมเมนต์ที่กำลังอยู่ในโหมดแก้ไข (Edit) */
+    /** * @state {Object|null} editingComment - เก็บข้อมูลความคิดเห็นที่ผู้ใช้กำลังแก้ไข 
+     */
     const [editingComment, setEditingComment] = useState(null);
 
-    /** @type {[boolean, Function]} localIsLiked - สถานะการกดถูกใจในเครื่อง (Optimistic UI) */
+    /** * @state {boolean} localIsLiked - สถานะการกดถูกใจบนฝั่งไคลเอนต์ (Optimistic UI) 
+     */
     const [localIsLiked, setLocalIsLiked] = useState(false);
 
-    /** @type {[number, Function]} localLikeCount - จำนวนการกดถูกใจในเครื่อง (Optimistic UI) */
+    /** * @state {number} localLikeCount - จำนวนยอดถูกใจสะสมบนฝั่งไคลเอนต์ (Optimistic UI) 
+     */
     const [localLikeCount, setLocalLikeCount] = useState(0);
 
-    /** @type {Object} commentForm - จัดการฟอร์มสำหรับสร้างหรือแก้ไขคอมเมนต์ */
+    /** * @description การจัดการฟอร์มสำหรับสร้างหรือแก้ไขความคิดเห็นผ่าน Inertia.js
+     */
     const { 
         data: commentForm, 
         setData: setCommentForm, 
@@ -43,27 +49,29 @@ export default function Show({ auth, post, highlightId }) {
     });
 
     // ==========================================
-    // Effects (Synchronization)
+    // Effects (การซิงโครไนซ์ข้อมูล)
     // ==========================================
 
     /**
-     * @effect Sync Like State
-     * @description ซิงค์ข้อมูล Local State กับข้อมูลที่ได้รับมาจาก Server (Props) เมื่อมีการอัปเดต
+     * @description ซิงโครไนซ์สถานะการถูกใจ (Like) ระหว่างข้อมูล Local และข้อมูลจาก Server
+     * ทำงานทุกครั้งที่ข้อมูล post.likes หรือผู้ใช้งานเปลี่ยนไป
      */
     useEffect(() => {
-        // ตรวจสอบว่าผู้ใช้ปัจจุบันกดถูกใจโพสต์นี้ไปแล้วหรือยัง
         const isLiked = post.likes?.some(like => like.user_id === auth.user.id) || false;
         setLocalIsLiked(isLiked);
         setLocalLikeCount(post.likes?.length || 0);
     }, [post.likes, auth.user.id]);
 
     // ==========================================
-    // Helper Functions
+    // Helper Functions (ฟังก์ชันช่วยเหลือ)
     // ==========================================
 
     /**
      * @function containsHighlight
-     * @description ตรวจสอบว่าคอมเมนต์หรือคอมเมนต์ลูกมี targetId หรือไม่ (Recursive Search)
+     * @description ค้นหาว่าในความคิดเห็นหลัก หรือความคิดเห็นย่อย (Replies) มีรายการที่ตรงกับ targetId หรือไม่ (ค้นหาแบบ Recursive)
+     * @param {Object} comment - ข้อมูลความคิดเห็นที่ต้องการตรวจสอบ
+     * @param {number|string} targetId - รหัสความคิดเห็นที่ต้องการค้นหา
+     * @returns {boolean} คืนค่า true หากพบความคิดเห็นที่ตรงกัน
      */
     const containsHighlight = (comment, targetId) => {
         if (comment.id === targetId) return true;
@@ -74,11 +82,11 @@ export default function Show({ auth, post, highlightId }) {
     };
 
     // ==========================================
-    // Data Processing
+    // Data Processing (การประมวลผลข้อมูลก่อนแสดงผล)
     // ==========================================
 
-    /** * @constant sortedComments 
-     * @description จัดเรียงคอมเมนต์โดยดันรายการที่ถูกไฮไลท์ขึ้นมาไว้ด้านบนสุด
+    /** * @constant {Array} sortedComments 
+     * @description จัดเรียงลำดับความคิดเห็น โดยดึงรายการที่มีการไฮไลต์ (หรือมีคอมเมนต์ย่อยที่ถูกไฮไลต์) ขึ้นมาไว้บนสุด
      */
     const sortedComments = [...(post.comments || [])].sort((a, b) => {
         const aHasHighlight = containsHighlight(a, highlightId);
@@ -90,25 +98,25 @@ export default function Show({ auth, post, highlightId }) {
     });
 
     // ==========================================
-    // Handlers
+    // Handlers (ฟังก์ชันจัดการเหตุการณ์)
     // ==========================================
 
     /**
      * @function handleLike
-     * @description จัดการการกดถูกใจด้วยเทคนิค Optimistic UI (เปลี่ยนสถานะทันทีในเครื่องก่อนส่งไป Server)
+     * @description จัดการการกดถูกใจโพสต์ โดยอัปเดตหน้าจอทันที (Optimistic UI) ก่อนส่งคำขอไปยังเซิร์ฟเวอร์
      */
     const handleLike = () => {
-        // เปลี่ยนสถานะทันทีเพื่อให้ผู้ใช้รู้สึกว่าระบบเร็ว
+        // อัปเดตสถานะบนหน้าจอทันทีเพื่อความลื่นไหลในการใช้งาน
         const newIsLiked = !localIsLiked;
         setLocalIsLiked(newIsLiked);
         setLocalLikeCount(newIsLiked ? localLikeCount + 1 : localLikeCount - 1);
 
-        // ส่งข้อมูลไปยัง Backend
+        // ส่งข้อมูลอัปเดตไปยัง Backend
         router.post(route('posts.like', post.id), {}, {
-            preserveScroll: true, // ป้องกันหน้าเลื่อน
-            preserveState: true,
+            preserveScroll: true, // รักษาระดับการเลื่อนหน้าจอไว้ตำแหน่งเดิม
+            preserveState: true,  // รักษาสถานะ Component ปัจจุบัน
             onError: () => {
-                // หากเกิดข้อผิดพลาด ให้ย้อนสถานะกลับเป็นค่าเดิม
+                // ย้อนกลับเป็นสถานะเดิมหากเกิดข้อผิดพลาดในการส่งข้อมูล
                 setLocalIsLiked(localIsLiked);
                 setLocalLikeCount(localLikeCount);
             }
@@ -117,11 +125,14 @@ export default function Show({ auth, post, highlightId }) {
 
     /**
      * @function handleCommentSubmit
-     * @description จัดการการส่งฟอร์มคอมเมนต์
+     * @description จัดการการส่งฟอร์มความคิดเห็น (รองรับทั้งการสร้างใหม่และการแก้ไข)
+     * @param {Event} e - Form Submit Event
      */
     const handleCommentSubmit = (e) => {
         e.preventDefault();
+        
         if (editingComment) {
+            // โหมดแก้ไขความคิดเห็นเดิม
             patchComment(route('comments.update', editingComment.id), {
                 onSuccess: () => { 
                     setEditingComment(null); 
@@ -130,6 +141,7 @@ export default function Show({ auth, post, highlightId }) {
                 preserveScroll: true,
             });
         } else {
+            // โหมดสร้างความคิดเห็นใหม่ (หรือตอบกลับ)
             postComment(route('comments.store', post.id), {
                 onSuccess: () => { 
                     setReplyingTo(null); 
@@ -141,7 +153,7 @@ export default function Show({ auth, post, highlightId }) {
     };
 
     // ==========================================
-    // Render
+    // Render (ส่วนแสดงผล)
     // ==========================================
 
     return (
@@ -151,11 +163,11 @@ export default function Show({ auth, post, highlightId }) {
                 <div className="mx-auto max-w-4xl sm:px-6 lg:px-8">
                     <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 mb-6">
                         
-                        {/* Section: เนื้อหาหลักของโพสต์ */}
+                        {/* --- ส่วนเนื้อหาหลักของโพสต์ --- */}
                         <h3 className="text-3xl font-bold mb-4">{post.title}</h3>
                         <p className="text-gray-700 whitespace-pre-wrap mb-8 text-lg">{post.content}</p>
 
-                        {/* รูปภาพ Gallery (รองรับหลายรูป) */}
+                        {/* --- ส่วนแสดงแกลเลอรีรูปภาพ --- */}
                         {post.images && post.images.length > 0 && (
                             <div className={`grid gap-2 mb-8 ${post.images.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
                                 {post.images.map(img => (
@@ -169,7 +181,7 @@ export default function Show({ auth, post, highlightId }) {
                             </div>
                         )}
 
-                        {/* ✨ Section: แถบปุ่มถูกใจ (Like Section) */}
+                        {/* --- ส่วนปุ่มจัดการถูกใจ (Like Section) --- */}
                         <div className="flex items-center py-4 border-y border-gray-100 mb-6">
                             <button 
                                 onClick={handleLike} 
@@ -194,11 +206,12 @@ export default function Show({ auth, post, highlightId }) {
                             </button>
                         </div>
 
-                        {/* Section: ส่วนแสดงความคิดเห็น */}
+                        {/* --- ส่วนแสดงรายการความคิดเห็น --- */}
                         <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100 shadow-inner">
                             <h4 className="text-xs font-bold text-gray-400 uppercase mb-6 tracking-widest">Comments</h4>
                             
                             <div className="space-y-2">
+                                {/* กรองเฉพาะความคิดเห็นหลัก (ไม่มี parent_id) แล้วนำมาแสดงผล */}
                                 {sortedComments.filter(c => !c.parent_id).map(comment => (
                                     <CommentItem 
                                         key={comment.id} 
@@ -216,7 +229,7 @@ export default function Show({ auth, post, highlightId }) {
                                             setCommentForm('content', c.content); 
                                         }}
                                         onDelete={(id) => {
-                                            if (confirm('แน่ใจนะคะว่าจะลบคอมเมนต์นี้? 🥺')) {
+                                            if (confirm('ลบคอมเมนต์นี้?')) {
                                                 router.delete(route('comments.destroy', id), { preserveScroll: true });
                                             }
                                         }}
@@ -224,8 +237,10 @@ export default function Show({ auth, post, highlightId }) {
                                 ))}
                             </div>
 
-                            {/* Section: ฟอร์มแสดงความคิดเห็น */}
+                            {/* --- ส่วนฟอร์มส่ง/แก้ไขความคิดเห็น --- */}
                             <div className="mt-8 pt-6 border-t border-gray-200">
+                                
+                                {/* แถบสถานะ: กำลังตอบกลับ */}
                                 {replyingTo && (
                                     <div className="mb-2 flex justify-between items-center bg-indigo-50 px-3 py-1 rounded-lg text-xs text-indigo-600 font-medium">
                                         <span>กำลังตอบกลับ <b>@{replyingTo.user.name}</b></span>
@@ -233,6 +248,7 @@ export default function Show({ auth, post, highlightId }) {
                                     </div>
                                 )}
 
+                                {/* แถบสถานะ: กำลังแก้ไข */}
                                 {editingComment && (
                                     <div className="mb-2 flex justify-between items-center bg-amber-50 px-3 py-1 rounded-lg text-xs text-amber-600 font-medium">
                                         <span>กำลังแก้ไขคอมเมนต์ของตัวเอง ✍️</span>

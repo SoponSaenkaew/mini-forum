@@ -1,6 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm, Link } from '@inertiajs/react';
-import CommentItem from '@/Components/CommentItem'; // ✨ เรียกใช้ตัวกลางเดียวกับ Dashboard/Post
+import CommentItem from '@/Components/CommentItem';
 
 /**
  * Reply Page Component
@@ -23,7 +23,7 @@ export default function ReplyPage({ auth, targetComment }) {
      */
     const { data, setData, post, processing, reset } = useForm({
         content: '',
-        parent_id: targetComment.id, // ✨ ล็อก ID ไว้ตอบตัวนี้โดยเฉพาะ
+        parent_id: targetComment.id, // ล็อก ID ไว้ตอบตัวนี้โดยเฉพาะ
     });
 
     // ==========================================
@@ -57,7 +57,7 @@ export default function ReplyPage({ auth, targetComment }) {
                 <div className="max-w-2xl mx-auto sm:px-6 lg:px-8">
                     
                     {/* --- Section: แสดงคอมเมนต์เป้าหมาย (Target Comment) --- */}
-                    {/* ✨ ออกแบบกรอบให้เป็นสีทอง (amber) เพื่อเน้นย้ำผู้ใช้ว่ากำลังตอบกลับใครอยู่ */}
+                    {/* ออกแบบกรอบให้เป็นสีทอง (amber) เพื่อเน้นย้ำผู้ใช้ว่ากำลังตอบกลับใครอยู่ */}
                     <div className="bg-white p-6 rounded-2xl shadow-sm border border-amber-200 mb-6">
                         <h4 className="text-[10px] font-bold text-amber-600 uppercase mb-4 tracking-widest">
                             คอมเมนต์เป้าหมาย
@@ -69,7 +69,7 @@ export default function ReplyPage({ auth, targetComment }) {
                         <CommentItem 
                             comment={targetComment} 
                             auth={auth} 
-                            highlightId={targetComment.id} // ✨ สั่งให้ไฮไลท์ตัวนี้
+                            highlightId={targetComment.id} // สั่งให้ไฮไลท์ตัวนี้
                             onReply={() => {}} // ปล่อยว่างไว้เพราะอยู่ในหน้าตอบกลับอยู่แล้ว ป้องกันผู้ใช้กดซ้ำซ้อน
                         />
                     </div>

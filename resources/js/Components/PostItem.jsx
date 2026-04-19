@@ -133,7 +133,7 @@ export default function PostItem({ post, auth, highlightId = null }) {
     };
 
     const handleDeletePost = () => {
-        if (confirm('แน่ใจนะคะว่าจะลบโพสต์นี้? ลบทิ้งแล้วกู้คืนไม่ได้น้า~ 🥺')) {
+        if (confirm('แน่ใจหรือไม่ว่าจะลบโพสต์นี้?')) {
             router.delete(route('posts.destroy', post.id), { preserveScroll: true, preserveState: true });
         }
     };
@@ -264,7 +264,7 @@ export default function PostItem({ post, auth, highlightId = null }) {
                                 setCommentForm('content', c.content); 
                             }} 
                             onDelete={(id) => {
-                                if (confirm('แน่ใจนะคะว่าจะลบคอมเมนต์นี้? 🥺')) {
+                                if (confirm('แน่ใจหรือไม่ว่าจะลบคอมเมนต์นี้?')) {
                                     router.delete(route('comments.destroy', id), { preserveScroll: true, preserveState: true });
                                 }
                             }} 

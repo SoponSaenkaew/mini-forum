@@ -7,7 +7,7 @@
 [![Laravel](https://img.shields.io/badge/Laravel-11.x-FF2D20?style=for-the-badge\&logo=laravel)](https://laravel.com)
 [![React](https://img.shields.io/badge/React-18.x-61DAFB?style=for-the-badge\&logo=react)](https://reactjs.org)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-18-4169E1?style=for-the-badge\&logo=postgresql)](https://www.postgresql.org/)
-[![Docker](https://img.shields.io/badge/Docker_Sail-2496ED?style=for-the-badge\&logo=docker)](https://www.docker.com/)
+[![Docker](https://img.shields.io/badge/Docker_Sail-4169E1?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
 
 ระบบคอมมูนิตี้ฟีด / เว็บบอร์ดขนาดย่อม
 ที่เน้นความรวดเร็วและประสบการณ์ผู้ใช้ (UX) ที่ลื่นไหลเหมือน SPA

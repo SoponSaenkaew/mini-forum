@@ -169,6 +169,14 @@ cp .env.example .env
 
 ---
 
+### 8. เปิดการทำงานของ Queue Worker (สำหรับ Background Jobs)
+เปิด Terminal WSL ขึ้นมา **อีก 1 หน้าต่าง** เพื่อให้ระบบจัดการคิวทำงานเบื้องหลัง (เช่น การส่งอีเมล หรือระบบแจ้งเตือน):
+```bash
+./vendor/bin/sail artisan queue:work
+```
+
+---
+
 # 🌐 การเข้าใช้งาน (Accessing the Application)
 
 เมื่อระบบรันสมบูรณ์แล้ว
@@ -205,6 +213,6 @@ http://localhost/admin
 ---
 
 
-<em>Developed with ❤️ by [Your Name]</em>
+<em>Developed with ❤️ by [SoponSaenkaew]</em>
 
 </div>

@@ -19,7 +19,7 @@ use Filament\Panel;
  * @class User
  * @description โมเดลสำหรับจัดการข้อมูลผู้ใช้งานและสิทธิ์การเข้าถึงระบบ
  */
-class User extends Authenticatable implements FilamentUser//, MustVerifyEmail
+class User extends Authenticatable implements FilamentUser, MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;

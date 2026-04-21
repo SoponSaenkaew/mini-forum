@@ -89,7 +89,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                     href="/" 
                                     className="text-2xl font-black tracking-wider text-gray-800 uppercase"
                                 >
-                                    MINI FORUM
+                                    TUNA FORUM
                                 </Link>
                             </div>
 

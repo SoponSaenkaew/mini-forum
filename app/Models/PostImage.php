@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Casts\Attribute; 
+use Illuminate\Support\Facades\Storage;   
 
 class PostImage extends Model
 {
@@ -21,8 +23,11 @@ class PostImage extends Model
     protected function imagePath(): Attribute
     {
         return Attribute::get(function ($value) {
-            // ถ้ามันขึ้นต้นด้วย http อยู่แล้วก็ส่งคืนเลย แต่ถ้าไม่ ก็ให้ดึง URL จาก S3
-            return str_starts_with($value, 'http') ? $value : Storage::disk('s3')->url($value);
+            if (empty($value)) return null;
+
+            return str_starts_with($value, 'http') 
+                ? $value 
+                : Storage::disk('s3')->url($value);
         });
     }
 }

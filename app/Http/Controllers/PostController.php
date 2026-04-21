@@ -37,7 +37,7 @@ class PostController extends Controller
         // 2. ตรวจสอบและบันทึกรูปภาพ (รองรับการอัปโหลดหลายไฟล์พร้อมกัน)
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $file) {
-                $path = $file->store('posts', 'public');
+                $path = $file->store('posts', 's3');
                 $post->images()->create(['image_path' => $path]);
             }
         }
@@ -63,7 +63,7 @@ class PostController extends Controller
 
         // ทำการลบไฟล์รูปภาพออกจากเซิร์ฟเวอร์ (Storage) ก่อน เพื่อไม่ให้เกิดไฟล์ขยะตกค้าง
         foreach ($post->images as $img) {
-            Storage::disk('public')->delete($img->image_path);
+            Storage::disk('s3')->delete($img->image_path);
         }
 
         $post->delete();
@@ -100,13 +100,13 @@ class PostController extends Controller
             
             // ลบรูปภาพชุดเก่าออกจากเซิร์ฟเวอร์และฐานข้อมูลให้หมดก่อน
             foreach ($post->images as $img) {
-                Storage::disk('public')->delete($img->image_path);
+                Storage::disk('s3')->delete($img->image_path);
                 $img->delete();
             }
             
             // อัปโหลดและบันทึกรูปภาพชุดใหม่เข้าไปแทนที่
             foreach ($request->file('images') as $file) {
-                $path = $file->store('posts', 'public');
+                $path = $file->store('posts', 's3');
                 $post->images()->create(['image_path' => $path]);
             }
         }

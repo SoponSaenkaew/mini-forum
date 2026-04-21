@@ -1,6 +1,6 @@
 FROM php:8.4-apache
 
-# 1. ติดตั้ง System Dependencies (เพิ่ม libicu-dev และ intl)
+# 1. ติดตั้ง System Dependencies
 RUN apt-get update && apt-get install -y \
     libpq-dev \
     libzip-dev \
@@ -25,11 +25,20 @@ COPY . .
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 RUN composer install --no-dev --optimize-autoloader
 
-# 6. ติดตั้ง Node.js และ Build Frontend Assets (เพิ่ม --legacy-peer-deps ตรงนี้ค่ะ!)
+# --- แก้ไขส่วนที่ 6 ตรงนี้ค่ะ ---
+# 6. รับค่า Argument จาก Render เพื่อใช้ตอน Build Frontend
+ARG VITE_PUSHER_APP_KEY
+ARG VITE_PUSHER_APP_CLUSTER
+
+# ติดตั้ง Node.js และ Build Frontend Assets 
+# โดยส่งค่า ARG เข้าไปให้ npm run build มองเห็นตัวแปร VITE_
 RUN curl -sL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y nodejs \
     && npm install --legacy-peer-deps \
-    && npm run build
+    && VITE_PUSHER_APP_KEY=${VITE_PUSHER_APP_KEY} \
+       VITE_PUSHER_APP_CLUSTER=${VITE_PUSHER_APP_CLUSTER} \
+       npm run build
+# ------------------------------
 
 # 7. ตั้งค่าสิทธิ์ไฟล์
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache

@@ -37,7 +37,7 @@ class PostController extends Controller
         // 2. ตรวจสอบและบันทึกรูปภาพ (รองรับการอัปโหลดหลายไฟล์พร้อมกัน)
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $file) {
-                $path = $file->store('posts', 's3');
+                $path = $file->store('', 's3');
                 $post->images()->create(['image_path' => $path]);
             }
         }
@@ -106,7 +106,7 @@ class PostController extends Controller
             
             // อัปโหลดและบันทึกรูปภาพชุดใหม่เข้าไปแทนที่
             foreach ($request->file('images') as $file) {
-                $path = $file->store('posts', 's3');
+                $path = $file->store('', 's3');
                 $post->images()->create(['image_path' => $path]);
             }
         }

@@ -1,4 +1,4 @@
-FROM php:8.3-apache
+FROM php:8.4-apache
 
 # ติดตั้ง System Dependencies สำหรับ PostgreSQL และ PHP extensions
 # ติดตั้ง System Dependencies ที่จำเป็น (เพิ่ม libicu-dev และ intl)

@@ -14,7 +14,7 @@ export default function Welcome({ auth, latestPosts }) {
     return (
         <>
             {/* กำหนด Meta Title สำหรับแสดงผลบนแท็บของเบราว์เซอร์ */}
-            <Head title="ยินดีต้อนรับสู่ Mini Forum" />
+            <Head title="ยินดีต้อนรับสู่ TUNA FORUM" />
             
             <div className="min-h-screen bg-white text-gray-900 selection:bg-indigo-500 selection:text-white">
                 
@@ -22,7 +22,7 @@ export default function Welcome({ auth, latestPosts }) {
                 <nav className="flex justify-between items-center p-6 max-w-7xl mx-auto">
                     {/* โลโก้แอปพลิเคชัน */}
                     <div className="text-2xl font-black text-indigo-600 tracking-tighter">
-                        MINI FORUM <span className="text-gray-300">/</span>
+                        TUNA FORUM <span className="text-gray-300">/</span>
                     </div>
                     
                     {/* เมนูการเข้าสู่ระบบ / สมัครสมาชิก */}

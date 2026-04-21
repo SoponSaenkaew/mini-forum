@@ -52,3 +52,4 @@ EXPOSE 80
 
 # 9. Migrate และเริ่ม Apache
 CMD php artisan migrate --force && apache2-foreground
+RUN php artisan storage:link

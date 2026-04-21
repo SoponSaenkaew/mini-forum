@@ -1,6 +1,7 @@
 FROM php:8.3-apache
 
 # ติดตั้ง System Dependencies สำหรับ PostgreSQL และ PHP extensions
+# ติดตั้ง System Dependencies ที่จำเป็น (เพิ่ม libicu-dev และ intl)
 RUN apt-get update && apt-get install -y \
     libpq-dev \
     libzip-dev \
@@ -8,7 +9,9 @@ RUN apt-get update && apt-get install -y \
     unzip \
     git \
     curl \
-    && docker-php-ext-install pdo pdo_pgsql zip
+    libicu-dev \
+    && docker-php-ext-configure intl \
+    && docker-php-ext-install pdo pdo_pgsql zip intl
 
 # เปิดใช้งาน Apache Rewrite Module
 RUN a2enmod rewrite

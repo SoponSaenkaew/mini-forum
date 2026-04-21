@@ -24,7 +24,7 @@ COPY . .
 
 # 5. ติดตั้ง Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-RUN composer install --no-dev --optimize-autoloader
+RUN composer update --no-dev --optimize-autoloader
 
 # 6. รับค่า Argument จาก Render เพื่อใช้ตอน Build Frontend
 ARG VITE_PUSHER_APP_KEY

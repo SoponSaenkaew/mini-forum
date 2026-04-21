@@ -41,15 +41,16 @@ RUN curl -sL https://deb.nodesource.com/setup_20.x | bash - \
 # ------------------------------
 
 # 7. ตั้งค่าสิทธิ์ไฟล์
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
-
+RUN php artisan storage:link \
+    && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/public/storage
 # 8. ตั้งค่า Apache Document Root
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
+RUN php artisan storage:link
 
 EXPOSE 80
 
 # 9. Migrate และเริ่ม Apache
 CMD php artisan migrate --force && apache2-foreground
-RUN php artisan storage:link
+

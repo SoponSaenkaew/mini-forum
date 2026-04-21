@@ -71,12 +71,12 @@ Route::get('/dashboard', function (Request $request) {
         'searchedUsers' => $search ? User::where('name', 'like', "%{$search}%")->limit(5)->get() : [],
         'filters' => ['search' => $search],
     ]);
-})->middleware(['auth', 'verified'])->name('dashboard');
+})->middleware(['auth' /*, 'verified'*/])->name('dashboard');
 
 // ==========================================
 // Authenticated Routes (กลุ่มเส้นทางที่ต้องเข้าสู่ระบบก่อนเข้าถึง)
 // ==========================================
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth' /*, 'verified'*/])->group(function () {
     
     /**
      * @group Profile Management (การจัดการโปรไฟล์ผู้ใช้งาน)

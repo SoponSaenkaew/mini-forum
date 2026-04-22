@@ -76,7 +76,7 @@ export default function Welcome({ auth, latestPosts }) {
                                     {post.images && post.images.length > 0 && (
                                         <div className="w-full h-48 overflow-hidden bg-gray-100">
                                             <img 
-                                                src={post.images[0].image_path} 
+                                                src={post.images[0].image_url + `?t=${new Date().getTime()}`}
                                                 alt="Post Preview" 
                                                 className="w-full h-full object-cover hover:scale-110 transition-transform duration-500"
                                             />

@@ -84,17 +84,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    Route::get('/user/{user}', [ProfileController::class, 'show'])->name('profile.show'); // หน้าแสดงโปรไฟล์สาธารณะของผู้ใช้
+    Route::get('/profile/{user}', [ProfileController::class, 'show'])->name('profile.show');
     Route::post('/profile/avatar', [ProfileController::class, 'updateAvatar'])->name('profile.avatar.update');
     Route::post('/profile/cover', [ProfileController::class, 'updateCoverPhoto'])->name('profile.cover.update');
 
     /**
      * @group Post Management (การจัดการกระดานสนทนาและโพสต์)
      */
-    Route::get('/posts/{post}', [PostController::class, 'show'])->name('posts.show'); // ดูรายละเอียดโพสต์ (มักถูกเรียกจากลิงก์ระบบแจ้งเตือน)
+    Route::get('/posts/{post}', [PostController::class, 'show'])->name('posts.show')->whereNumber('post'); // ดูรายละเอียดโพสต์ (มักถูกเรียกจากลิงก์ระบบแจ้งเตือน)
     Route::post('/posts', [PostController::class, 'store'])->name('posts.store');
-    Route::patch('/posts/{post}', [PostController::class, 'update'])->name('posts.update');
-    Route::delete('/posts/{post}', [PostController::class, 'destroy'])->name('posts.destroy');
+    Route::match(['put', 'patch'], '/posts/{post}', [PostController::class, 'update'])->name('posts.update')->whereNumber('post');
+    Route::delete('/posts/{post}', [PostController::class, 'destroy'])->name('posts.destroy')->whereNumber('post');
 
     /**
      * @group Comment Management (การจัดการความคิดเห็น)

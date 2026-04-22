@@ -70,7 +70,7 @@ export default function UpdateAvatarForm({ currentAvatar }) {
                         {previewUrl ? (
                             <img src={previewUrl} className="h-full w-full object-cover" alt="Preview" />
                         ) : currentAvatar ? (
-                            <img src={`/storage/${currentAvatar}`} className="h-full w-full object-cover" alt="Current Avatar" />
+                            <img src={currentAvatar} className="h-full w-full object-cover" alt="Current Avatar" />
                         ) : (
                             <div className="h-full w-full flex items-center justify-center text-indigo-300 font-bold">?</div>
                         )}

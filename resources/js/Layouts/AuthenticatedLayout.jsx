@@ -116,9 +116,9 @@ export default function AuthenticatedLayout({ header, children }) {
                                             >
                                                 <span className="relative inline-flex items-center">
                                                     {/* รูปโปรไฟล์ผู้ใช้งาน (User Avatar) */}
-                                                    {user.avatar ? (
+                                                    {user.avatar_url ? (
                                                         <img 
-                                                            src={`{user.avatar}?t=${new Date().getTime()}`} // ป้องกันการแคชรูปภาพเก่า
+                                                            src={`${user.avatar_url}?t=${new Date().getTime()}`} // ป้องกันการแคชรูปภาพเก่า
                                                             className="h-8 w-8 rounded-full object-cover mr-2 border border-gray-200" 
                                                             alt={user.name}
                                                         />
@@ -231,9 +231,9 @@ export default function AuthenticatedLayout({ header, children }) {
                     <div className="border-t border-gray-200 pb-1 pt-4">
                         <div className="flex items-center px-4">
                             <div className="shrink-0">
-                                {user.avatar ? (
+                                {user.avatar_url ? (
                                     <img 
-                                        src={`{user.avatar}?t=${new Date().getTime()}`}
+                                        src={`${user.avatar_url}?t=${new Date().getTime()}`}
                                         className="h-10 w-10 rounded-full object-cover border border-gray-200" 
                                         alt={user.name}
                                     />

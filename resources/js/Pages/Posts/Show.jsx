@@ -173,7 +173,7 @@ export default function Show({ auth, post, highlightId }) {
                                 {post.images.map(img => (
                                     <img 
                                         key={img.id} 
-                                        src={img.image_path} 
+                                        src={`${img.image_url}?t=${new Date().getTime()}`}
                                         alt="content" 
                                         className="w-full rounded-2xl shadow-sm border object-cover max-h-[500px]" 
                                     />

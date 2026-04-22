@@ -67,7 +67,7 @@ export default function UpdateCoverPhotoForm({ currentCover }) {
                     {previewUrl ? (
                         <img src={previewUrl} className="h-full w-full object-cover" alt="Preview" />
                     ) : currentCover ? (
-                        <img src={`/storage/${currentCover}`} className="h-full w-full object-cover" alt="Current Cover" />
+                        <img src={currentCover} className="h-full w-full object-cover" alt="Current Cover" />
                     ) : (
                         <div className="h-full w-full bg-gradient-to-r from-indigo-200 to-purple-200 flex items-center justify-center text-indigo-500 font-bold">
                             ยังไม่มีหน้าปก

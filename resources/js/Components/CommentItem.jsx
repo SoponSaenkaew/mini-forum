@@ -98,8 +98,8 @@ export default function CommentItem({
                         {/* --- ข้อมูลเจ้าของคอมเมนต์ --- */}
                         <div className="flex items-center gap-2 mb-1">
                             <Link href={route('profile.show', comment.user.id)} className="flex items-center gap-2 group/user">
-                                {comment.user.avatar ? (
-                                    <img src={`{comment.user.avatar}`} className="h-6 w-6 rounded-full object-cover border border-gray-100 shadow-sm" />
+                                {comment.user.avatar_url ? (
+                                    <img src={`${comment.user.avatar_url}?t=${new Date().getTime()}`} className="h-6 w-6 rounded-full object-cover border border-gray-100 shadow-sm" />
                                 ) : (
                                     <div className="h-6 w-6 bg-indigo-100 rounded-full flex items-center justify-center text-[10px] text-indigo-600 font-bold">
                                         {comment.user.name[0]}

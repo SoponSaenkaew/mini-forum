@@ -40,6 +40,8 @@ class HandleInertiaRequests extends Middleware
                     'cover_photo' => $request->user()->cover_photo,
 
                     'unread_notifications_count' => $request->user()->unreadNotifications->count(),
+                    'avatar_url' => $request->user()->avatar_url,
+                    'cover_photo_url' => $request->user()->cover_photo_url,
                 ] : null,
             ],
         ];

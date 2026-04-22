@@ -148,8 +148,8 @@ export default function PostItem({ post, auth, highlightId = null }) {
             <div className="flex justify-between items-start mb-4">
                 <div className="flex items-center gap-3">
                     {/* ปรับให้โชว์รูปโปรไฟล์จริง */}
-                    {post.user.avatar ? (
-                        <img src={post.user.avatar} className="h-10 w-10 rounded-full object-cover border border-gray-100" />
+                    {post.user.avatar_url ? (
+                        <img src={`${post.user.avatar_url}?t=${new Date().getTime()}`} className="h-10 w-10 rounded-full object-cover border border-gray-100" />
                     ) : (
                         <div className="h-10 w-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-700 font-bold">
                             {post.user.name[0]}
@@ -203,7 +203,7 @@ export default function PostItem({ post, auth, highlightId = null }) {
                     {post.images && post.images.length > 0 && (
                         <div className={`grid gap-2 mb-4 ${post.images.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
                             {post.images.map(img => (
-                                <img key={img.id} src={img.image_path} alt="content" className="w-full rounded-xl shadow-sm border object-contain bg-gray-50 max-h-[400px]"/>
+                                <img key={img.id} src={`${img.image_url}?t=${new Date().getTime()}`} alt="content" className="w-full rounded-xl shadow-sm border object-contain bg-gray-50 max-h-[400px]"/>
                             ))}
                         </div>
                     )}

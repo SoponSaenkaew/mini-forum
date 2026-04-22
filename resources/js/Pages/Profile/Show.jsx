@@ -40,9 +40,9 @@ export default function Show({ auth, user, posts }) {
                         
                         {/* พื้นที่แสดงรูปภาพหน้าปก (Cover Photo) */}
                         <div className="h-48 sm:h-64 w-full relative">
-                            {user.cover_photo ? (
+                            {user.cover_photo_url ? (
                                 <img 
-                                    src={user.cover_photo} 
+                                    src={`${user.cover_photo_url}?t=${new Date().getTime()}`}
                                     className="w-full h-full object-cover" 
                                     alt="Cover" 
                                 />
@@ -57,9 +57,9 @@ export default function Show({ auth, user, posts }) {
                                 
                                 {/* รูปภาพโปรไฟล์ (Avatar) - จัดวางให้ซ้อนทับบริเวณหน้าปก */}
                                 <div className="relative shrink-0 -mt-16 sm:-mt-20">
-                                    {user.avatar ? (
+                                    {user.avatar_url ? (
                                         <img 
-                                            src={user.avatar} 
+                                            src={`${user.avatar_url}?t=${new Date().getTime()}`}
                                             className="h-32 w-32 sm:h-40 sm:w-40 rounded-full object-cover border-4 border-white shadow-md bg-white"
                                             alt={user.name}
                                         />

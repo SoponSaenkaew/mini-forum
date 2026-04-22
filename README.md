@@ -73,7 +73,7 @@ docker run --rm \
     -w /var/www/html \
     laravelsail/php83-composer:latest \
     composer install --ignore-platform-reqs
-````
+```
 
 ---
 
@@ -83,9 +83,9 @@ docker run --rm \
 cp .env.example .env
 ```
 
-> **Note:**
-> หากต้องการใช้งานระบบอัปโหลดรูปภาพผ่าน Supabase
-> ต้องตั้งค่า `FILESYSTEM_DISK=supabase`
+> **Note:**  
+> หากต้องการใช้งานระบบอัปโหลดรูปภาพผ่าน Supabase  
+> ต้องตั้งค่า `FILESYSTEM_DISK=supabase`  
 > และระบุค่า `SUPABASE_STORAGE_URL`, `SUPABASE_STORAGE_KEY` ในไฟล์ `.env`
 
 ---
@@ -130,9 +130,9 @@ cp .env.example .env
 
 โปรเจกต์นี้ได้รับการปรับแต่งเพื่อรองรับการ Deploy ผ่าน Docker บน Render อย่างสมบูรณ์
 
-* **Dockerfile Optimized** — จัดการ Permission ของโฟลเดอร์ `storage` และ `cache` โดยอัตโนมัติ
-* **Secure Asset Delivery** — บังคับใช้งาน HTTPS และจัดการ Mixed Content ผ่าน `AppServiceProvider`
-* **Hybrid URL Generation** — ระบบ Accessors ใน Model จะสลับ URL ระหว่าง Local และ Cloud อัตโนมัติ
+- **Dockerfile Optimized** — จัดการ Permission ของโฟลเดอร์ `storage` และ `cache` โดยอัตโนมัติ
+- **Secure Asset Delivery** — บังคับใช้งาน HTTPS และจัดการ Mixed Content ผ่าน `AppServiceProvider`
+- **Hybrid URL Generation** — ระบบ Accessors ใน Model จะสลับ URL ระหว่าง Local และ Cloud อัตโนมัติ
 
 ---
 
@@ -173,4 +173,4 @@ Password: password
 <em>Developed with ❤️ by SoponSaenkaew</em>
 
 </div>
-```
+````

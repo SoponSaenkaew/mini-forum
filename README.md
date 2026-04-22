@@ -1,4 +1,3 @@
-````markdown
 <div align="center">
 
 # 🚀 Mini Forum
@@ -173,4 +172,3 @@ Password: password
 <em>Developed with ❤️ by SoponSaenkaew</em>
 
 </div>
-````

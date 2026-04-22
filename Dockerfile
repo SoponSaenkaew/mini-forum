@@ -1,14 +1,16 @@
-FROM php:8.3-apache
+FROM php:8.4-apache
 
-# 1. ติดตั้งส่วนเสริมที่จำเป็นสำหรับ Laravel และ PostgreSQL
+# 1. ติดตั้งส่วนเสริมที่จำเป็นสำหรับ Laravel, PostgreSQL และ Filament (intl)
 RUN apt-get update && apt-get install -y \
     libpq-dev \
     libzip-dev \
+    libicu-dev \
     unzip \
     git \
     nodejs \
     npm \
-    && docker-php-ext-install pdo_pgsql zip
+    && docker-php-ext-configure intl \
+    && docker-php-ext-install pdo_pgsql zip intl
 
 # 2. เปิดใช้งาน mod_rewrite สำหรับ URL ของ Laravel
 RUN a2enmod rewrite

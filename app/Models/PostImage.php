@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Storage;
 
 class PostImage extends Model
 {
@@ -15,7 +16,7 @@ class PostImage extends Model
 
     public function getImageUrlAttribute()
     {
-        return $this->image_path ? \Illuminate\Support\Facades\Storage::url($this->image_path) : null;
+        return Storage::disk('supabase')->url($this->image_path) : null;
     }
 
     protected $guarded = [];

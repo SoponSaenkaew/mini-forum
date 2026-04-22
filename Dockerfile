@@ -30,20 +30,21 @@ COPY . .
 
 # 6. ติดตั้ง Package (แก้ปัญหา Error Code 1)
 # --- ปรับจุดนี้ค่ะ: ใช้ --no-scripts เพื่อไม่ให้มันระเบิดตอน Build ---
-RUN composer install --no-dev --optimize-autoloader --no-scripts
-RUN npm install --legacy-peer-deps
-RUN npm run build
+RUN composer install --no-dev --no-scripts --no-autoloader
 
 # 7. เตรียมระบบให้พร้อม (บังคับสร้างแคชใหม่)
 # --- เพิ่มจุดนี้ค่ะ: สร้างไฟล์ .env ชั่วคราวเพื่อให้ artisan รันได้ ---
-RUN cp .env.example .env && \
-    php artisan package:discover --ansi && \
-    php artisan optimize:clear
+RUN composer dump-autoload --optimize --no-scripts --no-dev
 
 # 8. ตั้งสิทธิ์การเข้าถึงไฟล์
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+RUN cp .env.example .env && \
+    php artisan vendor:publish --tag=ziggy-assets --force || true && \
+    php artisan storage:link || true
 
-# 9. เปิดพอร์ต 80
+# 9. Build ไฟล์หน้าบ้าน
+RUN npm install --legacy-peer-deps && npm run build
+
+# 10. เปิดพอร์ต 80
 EXPOSE 80
 
 # 10. สั่งรันคำสั่งสำคัญก่อนเริ่มงาน

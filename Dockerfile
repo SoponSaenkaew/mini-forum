@@ -38,3 +38,6 @@ RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cac
 
 # 8. เปิดพอร์ต 80
 EXPOSE 80
+
+# 9. สั่งรัน Migration อัตโนมัติก่อนสตาร์ทเซิร์ฟเวอร์ Apache
+CMD php artisan migrate --force && apache2-foreground

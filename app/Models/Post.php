@@ -104,4 +104,11 @@ class Post extends Model
             event(new FeedUpdated());
         });
     }
+
+    protected $appends = ['image_url'];
+
+    public function getImageUrlAttribute()
+    {
+        return $this->image_path ? \Illuminate\Support\Facades\Storage::url($this->image_path) : null;
+    }
 }

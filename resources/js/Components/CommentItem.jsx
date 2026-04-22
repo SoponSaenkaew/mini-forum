@@ -99,7 +99,7 @@ export default function CommentItem({
                         <div className="flex items-center gap-2 mb-1">
                             <Link href={route('profile.show', comment.user.id)} className="flex items-center gap-2 group/user">
                                 {comment.user.avatar ? (
-                                    <img src={`/storage/${comment.user.avatar}`} className="h-6 w-6 rounded-full object-cover border border-gray-100 shadow-sm" />
+                                    <img src={`{comment.user.avatar}`} className="h-6 w-6 rounded-full object-cover border border-gray-100 shadow-sm" />
                                 ) : (
                                     <div className="h-6 w-6 bg-indigo-100 rounded-full flex items-center justify-center text-[10px] text-indigo-600 font-bold">
                                         {comment.user.name[0]}

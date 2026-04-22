@@ -119,11 +119,11 @@ class ProfileController extends Controller
         if ($request->hasFile('avatar')) {
             // ทำการลบรูปโปรไฟล์เก่าออกจากระบบ (Storage) ก่อน เพื่อไม่ให้เปลืองพื้นที่เซิร์ฟเวอร์
             if ($user->avatar) {
-                Storage::disk('public')->delete($user->avatar);
+                Storage::delete($user->avatar);
             }
 
             // บันทึกไฟล์รูปภาพใหม่ลงในโฟลเดอร์ 'avatars'
-            $path = $request->file('avatar')->store('avatars', 'public');
+            $path = $request->file('avatar')->store('avatars');
             
             // อัปเดตที่อยู่ไฟล์ (Path) ลงในฐานข้อมูลของผู้ใช้งาน
             $user->update(['avatar' => $path]);
@@ -150,11 +150,11 @@ class ProfileController extends Controller
         if ($request->hasFile('cover_photo')) {
             // ทำการลบรูปหน้าปกเก่าออกจากระบบเพื่อคืนพื้นที่ว่าง
             if ($user->cover_photo) {
-                Storage::disk('public')->delete($user->cover_photo);
+                Storage::delete($user->cover_photo);
             }
 
             // บันทึกไฟล์รูปลงในโฟลเดอร์ 'covers'
-            $path = $request->file('cover_photo')->store('covers', 'public');
+            $path = $request->file('cover_photo')->store('covers');
             
             // อัปเดตข้อมูลที่อยู่ไฟล์ในฐานข้อมูล
             $user->update(['cover_photo' => $path]);

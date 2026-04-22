@@ -118,7 +118,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                                     {/* รูปโปรไฟล์ผู้ใช้งาน (User Avatar) */}
                                                     {user.avatar ? (
                                                         <img 
-                                                            src={`/storage/${user.avatar}?t=${new Date().getTime()}`} // ป้องกันการแคชรูปภาพเก่า
+                                                            src={`{user.avatar}?t=${new Date().getTime()}`} // ป้องกันการแคชรูปภาพเก่า
                                                             className="h-8 w-8 rounded-full object-cover mr-2 border border-gray-200" 
                                                             alt={user.name}
                                                         />
@@ -233,7 +233,7 @@ export default function AuthenticatedLayout({ header, children }) {
                             <div className="shrink-0">
                                 {user.avatar ? (
                                     <img 
-                                        src={`/storage/${user.avatar}?t=${new Date().getTime()}`}
+                                        src={`{user.avatar}?t=${new Date().getTime()}`}
                                         className="h-10 w-10 rounded-full object-cover border border-gray-200" 
                                         alt={user.name}
                                     />

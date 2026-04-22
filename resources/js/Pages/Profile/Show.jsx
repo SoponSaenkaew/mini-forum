@@ -42,7 +42,7 @@ export default function Show({ auth, user, posts }) {
                         <div className="h-48 sm:h-64 w-full relative">
                             {user.cover_photo ? (
                                 <img 
-                                    src={`/storage/${user.cover_photo}`} 
+                                    src={`{user.cover_photo}`} 
                                     className="w-full h-full object-cover" 
                                     alt="Cover" 
                                 />
@@ -59,7 +59,7 @@ export default function Show({ auth, user, posts }) {
                                 <div className="relative shrink-0 -mt-16 sm:-mt-20">
                                     {user.avatar ? (
                                         <img 
-                                            src={`/storage/${user.avatar}`} 
+                                            src={`{user.avatar}`} 
                                             className="h-32 w-32 sm:h-40 sm:w-40 rounded-full object-cover border-4 border-white shadow-md bg-white"
                                             alt={user.name}
                                         />

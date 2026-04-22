@@ -25,6 +25,21 @@ class User extends Authenticatable implements FilamentUser
     use HasFactory, Notifiable;
 
     /**
+     * แนบตัวแปรนี้ไปกับ JSON เสมอ
+     */
+    protected $appends = ['avatar_url', 'cover_photo_url'];
+
+    public function getAvatarUrlAttribute()
+    {
+        return $this->avatar ? Storage::url($this->avatar) : null;
+    }
+
+    public function getCoverPhotoUrlAttribute()
+    {
+        return $this->cover_photo ? Storage::url($this->cover_photo) : null;
+    }
+
+    /**
      * รายการฟิลด์ที่อนุญาตให้บันทึกข้อมูลแบบเป็นชุด (Mass Assignment)
      * @var array<int, string>
      */

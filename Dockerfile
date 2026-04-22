@@ -30,7 +30,7 @@ COPY . .
 
 # 6. ติดตั้ง Package และ Build ไฟล์ React หน้าบ้าน
 RUN composer install --no-dev --optimize-autoloader
-RUN npm install
+RUN npm install --legacy-peer-deps
 RUN npm run build
 
 # 7. ตั้งสิทธิ์ให้ระบบสามารถเขียนไฟล์ Cache และ Log ได้

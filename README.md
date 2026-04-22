@@ -9,9 +9,10 @@
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-18-4169E1?style=for-the-badge&logo=postgresql)](https://www.postgresql.org/)
 [![Supabase](https://img.shields.io/badge/Supabase-Storage-3ECF8E?style=for-the-badge&logo=supabase)](https://supabase.com/)
 [![Render](https://img.shields.io/badge/Render-Deployment-46E3B7?style=for-the-badge&logo=render)](https://render.com/)
+[![Pusher](https://img.shields.io/badge/Pusher-WebSocket-633194?style=for-the-badge&logo=pusher)](https://pusher.com/)
 
 ระบบคอมมูนิตี้ฟีด / เว็บบอร์ดขนาดย่อมที่เน้นความรวดเร็วและประสบการณ์ผู้ใช้ (UX) ที่ลื่นไหลเหมือน SPA  
-พร้อมระบบฝากรูปภาพบน Cloud และการทำงานแบบ Real-time ขับเคลื่อนด้วย Docker บน WSL
+พร้อมระบบฝากรูปภาพบน Cloud และการทำงาน Real-time แบบ Hybrid (Reverb สำหรับ Local และ Pusher สำหรับ Production)
 
 </div>
 
@@ -20,11 +21,11 @@
 # ✨ Key Features (ฟีเจอร์เด่น)
 
 - **💬 Infinity Nested Comments** — ระบบคอมเมนต์ซ้อนกันได้ไม่จำกัดชั้น เพื่อการสนทนาที่ลึกซึ้ง
-- **⚡ Real-time Notifications** — แจ้งเตือนทันทีเมื่อมีการโต้ตอบด้วยเทคโนโลยี WebSockets (`Laravel Reverb`)
+- **⚡ Hybrid Real-time Notifications** — แจ้งเตือนทันทีด้วย `Laravel Reverb` (Local) และสลับไปใช้ `Pusher` เมื่ออยู่บน Production
 - **🖼️ Cloud Asset Management** — ระบบจัดการรูปภาพโปรไฟล์และโพสต์ผ่าน `Supabase Storage` (S3 Compatible)
 - **❤️ Polymorphic Likes** — สถาปัตยกรรม Database ที่ยืดหยุ่น รองรับการกดไลก์ได้ทั้งระดับ Post และ Comment
 - **🛠️ Powerful Admin Panel** — จัดการเนื้อหา สมาชิก และสถิติผ่าน Dashboard ด้วย `Filament PHP v3`
-- **🔒 Robust Security** — ระบบสมาชิกและการจัดการเซสชันที่ปลอดภัยผ่าน `Laravel Sanctum`
+- **🔒 Robust Security** — ระบบสมาชิกและการจัดการเซสชันที่ปลอดภัยผ่าน `Laravel Built-in Authentication (Session-based)`
 
 ---
 
@@ -62,7 +63,7 @@
 ### 1. Clone Project & Install Dependencies
 
 ```bash
-git clone <your-repository-url>
+git clone https://github.com/SoponSaenkaew/mini-forum.git
 cd mini-forum
 
 # ติดตั้ง Composer dependencies ผ่าน Container ชั่วคราว
@@ -70,7 +71,7 @@ docker run --rm \
     -u "$(id -u):$(id -g)" \
     -v "$(pwd):/var/www/html" \
     -w /var/www/html \
-    laravelsail/php83-composer:latest \
+    laravelsail/php84-composer:latest \
     composer install --ignore-platform-reqs
 ```
 

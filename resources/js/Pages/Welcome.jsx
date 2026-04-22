@@ -14,7 +14,7 @@ export default function Welcome({ auth, latestPosts }) {
     return (
         <>
             {/* กำหนด Meta Title สำหรับแสดงผลบนแท็บของเบราว์เซอร์ */}
-            <Head title="ยินดีต้อนรับสู่ Mini Forum" />
+            <Head title="ยินดีต้อนรับสู่ Tuna Forum" />
             
             <div className="min-h-screen bg-white text-gray-900 selection:bg-indigo-500 selection:text-white">
                 
@@ -22,7 +22,7 @@ export default function Welcome({ auth, latestPosts }) {
                 <nav className="flex justify-between items-center p-6 max-w-7xl mx-auto">
                     {/* โลโก้แอปพลิเคชัน */}
                     <div className="text-2xl font-black text-indigo-600 tracking-tighter">
-                        MINI FORUM <span className="text-gray-300">/</span>
+                        TUNA FORUM <span className="text-gray-300">/</span>
                     </div>
                     
                     {/* เมนูการเข้าสู่ระบบ / สมัครสมาชิก */}
@@ -51,7 +51,7 @@ export default function Welcome({ auth, latestPosts }) {
                         <span className="text-indigo-600 underline decoration-indigo-200">ให้โลกได้รู้</span>
                     </h1>
                     <p className="max-w-2xl text-lg text-gray-500 mb-10 leading-relaxed">
-                        ยินดีต้อนรับสู่โปรเจกต์ Mini Forum ของเซนเซย์! พื้นที่เล็กๆ สำหรับการพูดคุย แลกเปลี่ยน และสร้างสรรค์สังคมที่น่ารักไปด้วยกัน ✨
+                        ยินดีต้อนรับสู่โปรเจกต์ Tuna Forum ของเซนเซย์! พื้นที่เล็กๆ สำหรับการพูดคุย แลกเปลี่ยน และสร้างสรรค์สังคมที่น่ารักไปด้วยกัน ✨
                     </p>
                     
                     {/* ปุ่ม Call to Action เพื่อกระตุ้นให้ผู้ใช้งานเริ่มต้นใช้งาน */}
@@ -109,7 +109,7 @@ export default function Welcome({ auth, latestPosts }) {
 
                 {/* --- ส่วนท้ายของหน้าเว็บ (Footer) --- */}
                 <footer className="py-10 text-center text-gray-400 text-xs border-t border-gray-50">
-                    &copy; 2026 Mini Forum Project. Crafted by PhieTao
+                    &copy; 2026 Tuna Forum Project. Crafted by PhieTao
                 </footer>
             </div>
         </>

@@ -1,17 +1,18 @@
+````markdown
 <div align="center">
 
 # 🚀 Mini Forum
 
 **A Modern Community Platform built with Laravel 11, React (Inertia), and PostgreSQL**
 
-[![Laravel](https://img.shields.io/badge/Laravel-11.x-FF2D20?style=for-the-badge\&logo=laravel)](https://laravel.com)
-[![React](https://img.shields.io/badge/React-18.x-61DAFB?style=for-the-badge\&logo=react)](https://reactjs.org)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-18-4169E1?style=for-the-badge\&logo=postgresql)](https://www.postgresql.org/)
-[![Docker](https://img.shields.io/badge/Docker_Sail-4169E1?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
+[![Laravel](https://img.shields.io/badge/Laravel-11.x-FF2D20?style=for-the-badge&logo=laravel)](https://laravel.com)
+[![React](https://img.shields.io/badge/React-18.x-61DAFB?style=for-the-badge&logo=react)](https://reactjs.org)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-18-4169E1?style=for-the-badge&logo=postgresql)](https://www.postgresql.org/)
+[![Supabase](https://img.shields.io/badge/Supabase-Storage-3ECF8E?style=for-the-badge&logo=supabase)](https://supabase.com/)
+[![Render](https://img.shields.io/badge/Render-Deployment-46E3B7?style=for-the-badge&logo=render)](https://render.com/)
 
-ระบบคอมมูนิตี้ฟีด / เว็บบอร์ดขนาดย่อม
-ที่เน้นความรวดเร็วและประสบการณ์ผู้ใช้ (UX) ที่ลื่นไหลเหมือน SPA
-พร้อมระบบโต้ตอบแบบ Real-time ขับเคลื่อนด้วยสถาปัตยกรรมคอนเทนเนอร์ (Docker) บน WSL
+ระบบคอมมูนิตี้ฟีด / เว็บบอร์ดขนาดย่อมที่เน้นความรวดเร็วและประสบการณ์ผู้ใช้ (UX) ที่ลื่นไหลเหมือน SPA  
+พร้อมระบบฝากรูปภาพบน Cloud และการทำงานแบบ Real-time ขับเคลื่อนด้วย Docker บน WSL
 
 </div>
 
@@ -19,200 +20,157 @@
 
 # ✨ Key Features (ฟีเจอร์เด่น)
 
-* **💬 Infinity Nested Comments**
-  ระบบคอมเมนต์ซ้อนกันได้ไม่จำกัดชั้น
-
-* **⚡ Real-time Notifications**
-  ระบบแจ้งเตือนทันทีเมื่อมีการโต้ตอบ
-  ด้วยเทคโนโลยี WebSockets (`Laravel Reverb`)
-
-* **❤️ Polymorphic Likes**
-  สถาปัตยกรรม Database ที่รองรับการกดไลก์ได้ทั้งระดับ Post และ Comment
-
-* **🛠️ Powerful Admin Panel**
-  จัดการเนื้อหาและสถิติผ่าน Dashboard
-  ด้วย `Filament PHP (v3)`
-
-* **🔒 Robust Security**
-  ระบบสมาชิกยืนยันตัวตนและการจัดการ API
-  ผ่าน `Laravel Sanctum`
+- **💬 Infinity Nested Comments** — ระบบคอมเมนต์ซ้อนกันได้ไม่จำกัดชั้น เพื่อการสนทนาที่ลึกซึ้ง
+- **⚡ Real-time Notifications** — แจ้งเตือนทันทีเมื่อมีการโต้ตอบด้วยเทคโนโลยี WebSockets (`Laravel Reverb`)
+- **🖼️ Cloud Asset Management** — ระบบจัดการรูปภาพโปรไฟล์และโพสต์ผ่าน `Supabase Storage` (S3 Compatible)
+- **❤️ Polymorphic Likes** — สถาปัตยกรรม Database ที่ยืดหยุ่น รองรับการกดไลก์ได้ทั้งระดับ Post และ Comment
+- **🛠️ Powerful Admin Panel** — จัดการเนื้อหา สมาชิก และสถิติผ่าน Dashboard ด้วย `Filament PHP v3`
+- **🔒 Robust Security** — ระบบสมาชิกและการจัดการเซสชันที่ปลอดภัยผ่าน `Laravel Sanctum`
 
 ---
 
 # 🛠️ Tech Stack
 
-## Backend
+## Backend & Frontend
 
-* PHP 8.3+ (รันบน Container PHP 8.5)
-* Laravel Framework 11
-* Laravel Reverb (WebSocket Server)
-* Filament PHP 3.2 (Admin Panel)
+- **PHP 8.4** (Containerized)
+- **Laravel 11**
+- **React 18 + Inertia.js**
+- **Tailwind CSS**
+- **Filament PHP 3.2** (Admin Panel)
 
-## Frontend
+## Infrastructure & Storage
 
-* React (Inertia.js)
-* Tailwind CSS
-
-## Infrastructure & Database
-
-* Docker (Laravel Sail)
-* PostgreSQL 18 (Primary Database)
-* Redis (Caching & Sessions)
+- **Docker (Laravel Sail)** สำหรับจำลอง Environment ให้เหมือนกันทุกเครื่อง
+- **PostgreSQL 18** (Primary Database)
+- **Redis** (Caching & Sessions)
+- **Supabase Storage** สำหรับเก็บ Assets บน Cloud เพื่อความเสถียรระดับ Production
+- **Render** สำหรับ Deploy ระบบขึ้น Cloud
 
 ---
 
-# 💻 การติดตั้งและการรันโปรเจกต์บน WSL (Ubuntu/Debian)
+# 💻 การติดตั้งและการรันโปรเจกต์ (Local Development)
 
-เนื่องจากโปรเจกต์นี้ใช้ **Laravel Sail (Docker)**
-การติดตั้งบน Windows จึงแนะนำให้รันผ่าน **WSL 2**
-เพื่อประสิทธิภาพสูงสุด และลดปัญหาเรื่อง Environment
+## 📌 สิ่งที่ต้องเตรียม
 
----
-
-## 📌 สิ่งที่ต้องเตรียม (Prerequisites)
-
-1. ติดตั้ง [WSL 2](https://learn.microsoft.com/en-us/windows/wsl/install) บน Windows
-
-2. ติดตั้ง [Docker Desktop](https://www.docker.com/products/docker-desktop/)
-
-3. เปิดใช้งาน **WSL Integration**
-   และผูก Docker กับ Linux Distro ที่ใช้งาน
-   (เช่น Ubuntu)
+1. [WSL 2](https://learn.microsoft.com/en-us/windows/wsl/install) (สำหรับ Windows Users)
+2. [Docker Desktop](https://www.docker.com/products/docker-desktop/)
 
 ---
 
-## 🚀 ขั้นตอนการติดตั้ง (Installation Steps)
+## 🚀 ขั้นตอนการติดตั้ง
 
-### 1. Clone โปรเจกต์ลงใน WSL
-
-เปิด Terminal ของ WSL (เช่น Ubuntu) แล้วรันคำสั่ง:
+### 1. Clone Project & Install Dependencies
 
 ```bash
 git clone <your-repository-url>
 cd mini-forum
-```
 
----
-
-### 2. ติดตั้ง Composer Dependencies (ผ่าน Docker Container)
-
-หากใน WSL ยังไม่มี PHP 8.3+
-สามารถใช้ Container สำหรับติดตั้ง Composer dependencies ได้ทันที:
-
-```bash
+# ติดตั้ง Composer dependencies ผ่าน Container ชั่วคราว
 docker run --rm \
     -u "$(id -u):$(id -g)" \
     -v "$(pwd):/var/www/html" \
     -w /var/www/html \
     laravelsail/php83-composer:latest \
     composer install --ignore-platform-reqs
-```
+````
 
 ---
 
-### 3. ตั้งค่า Environment Variables
-
-คัดลอกไฟล์ `.env`
+### 2. Environment Configuration
 
 ```bash
 cp .env.example .env
 ```
 
-> หมายเหตุ:
-> ระบบฐานข้อมูลตั้งค่าเริ่มต้นเป็น PostgreSQL (Port 5432)
-> และ Laravel Reverb ใช้ Port 8081
+> **Note:**
+> หากต้องการใช้งานระบบอัปโหลดรูปภาพผ่าน Supabase
+> ต้องตั้งค่า `FILESYSTEM_DISK=supabase`
+> และระบุค่า `SUPABASE_STORAGE_URL`, `SUPABASE_STORAGE_KEY` ในไฟล์ `.env`
 
 ---
 
-### 4. เริ่มต้น Docker Containers ด้วย Laravel Sail
-
-สร้างและเปิดใช้งาน Containers ทั้งหมด:
-
-* App
-* PostgreSQL
-* Redis
+### 3. Start Containers & Setup Database
 
 ```bash
 ./vendor/bin/sail up -d
-```
-
----
-
-### 5. สร้าง Application Key และเตรียมฐานข้อมูล
-
-```bash
 ./vendor/bin/sail artisan key:generate
 ./vendor/bin/sail artisan migrate --seed
+./vendor/bin/sail artisan storage:link
 ```
 
 ---
 
-### 6. ติดตั้งและ Build Frontend Dependencies
+### 4. Frontend & Background Services
+
+เปิด Terminal 3 หน้าต่าง เพื่อรัน Service ต่อไปนี้:
+
+#### Terminal 1 — Vite Dev Server
 
 ```bash
 ./vendor/bin/sail npm install
 ./vendor/bin/sail npm run dev
 ```
 
-> ให้ปล่อยหน้าต่าง Terminal นี้รันค้างไว้
-> สำหรับ Hot Reload ของ Frontend
-
----
-
-### 7. เปิดการทำงานของ WebSockets (Real-time Engine)
-
-เปิด Terminal WSL ขึ้นมาอีก 1 หน้าต่าง แล้วรัน:
+#### Terminal 2 — WebSocket Server (Reverb)
 
 ```bash
 ./vendor/bin/sail artisan reverb:start --host=0.0.0.0 --port=8081
 ```
 
----
+#### Terminal 3 — Queue Worker
 
-### 8. เปิดการทำงานของ Queue Worker (สำหรับ Background Jobs)
-เปิด Terminal WSL ขึ้นมา **อีก 1 หน้าต่าง** เพื่อให้ระบบจัดการคิวทำงานเบื้องหลัง (เช่น การส่งอีเมล หรือระบบแจ้งเตือน):
 ```bash
 ./vendor/bin/sail artisan queue:work
 ```
 
 ---
 
-# 🌐 การเข้าใช้งาน (Accessing the Application)
+# 🚀 Production Deployment (Render)
 
-เมื่อระบบรันสมบูรณ์แล้ว
-สามารถเข้าใช้งานผ่าน Browser บน Windows ได้ทันที
+โปรเจกต์นี้ได้รับการปรับแต่งเพื่อรองรับการ Deploy ผ่าน Docker บน Render อย่างสมบูรณ์
 
-## Main Application
-
-http://localhost
-
-## Admin Panel
-
-http://localhost/admin
-
-## Additional Services
-
-* Vite (Frontend Dev Server): Port 5173
-* Reverb (WebSocket): Port 8081
+* **Dockerfile Optimized** — จัดการ Permission ของโฟลเดอร์ `storage` และ `cache` โดยอัตโนมัติ
+* **Secure Asset Delivery** — บังคับใช้งาน HTTPS และจัดการ Mixed Content ผ่าน `AppServiceProvider`
+* **Hybrid URL Generation** — ระบบ Accessors ใน Model จะสลับ URL ระหว่าง Local และ Cloud อัตโนมัติ
 
 ---
 
-# 🛑 การปิดระบบ (Stopping the Environment)
+# 🌐 การเข้าใช้งาน (Default Accounts)
 
-เมื่อต้องการหยุดการทำงาน:
+## Main Application
 
-1. กด `Ctrl + C`
-   ในหน้าต่างที่รัน `npm` และ `reverb`
+```text
+http://localhost
+```
 
-2. ปิด Docker Containers
+## Admin Panel
 
-```bash
-./vendor/bin/sail down
+```text
+http://localhost/admin
+```
+
+## Default Accounts
+
+### Admin Account
+
+```text
+Email: admin@example.com
+Password: password
+```
+
+### Test User
+
+```text
+Email: user@example.com
+Password: password
 ```
 
 ---
 
+<div align="center">
 
-<em>Developed with ❤️ by [SoponSaenkaew]</em>
+<em>Developed with ❤️ by SoponSaenkaew</em>
 
 </div>
+```

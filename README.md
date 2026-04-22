@@ -164,7 +164,7 @@ cp .env.example .env
 เปิด Terminal WSL ขึ้นมาอีก 1 หน้าต่าง แล้วรัน:
 
 ```bash
-./vendor/bin/sail artisan reverb:start
+./vendor/bin/sail artisan reverb:start --host=0.0.0.0 --port=8081
 ```
 
 ---

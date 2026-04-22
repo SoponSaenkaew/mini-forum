@@ -16,7 +16,7 @@ class PostImage extends Model
 
     public function getImageUrlAttribute()
     {
-        return $this->image_url ? Storage::disk('supabase')->url($this->image_url) : null;
+        return $this->image_path ? Storage::disk('supabase')->url($this->image_path) : null;
     }
 
     protected $guarded = [];

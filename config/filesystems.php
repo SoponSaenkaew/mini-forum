@@ -68,6 +68,7 @@ return [
             'endpoint' => env('SUPABASE_STORAGE_ENDPOINT'),
             'use_path_style_endpoint' => true,
             'visibility' => 'public',
+            'url' => env('SUPABASE_STORAGE_URL') . '/storage/v1/object/public/' . env('SUPABASE_STORAGE_BUCKET'),
         ],
 
     ],

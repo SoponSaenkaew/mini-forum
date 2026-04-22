@@ -32,12 +32,12 @@ class User extends Authenticatable implements FilamentUser
 
     public function getAvatarUrlAttribute()
     {
-        return Storage::disk('supabase')->url($this->avatar) : null;
+        return $this->avatar ? Storage::disk('supabase')->url($this->avatar) : null;
     }
 
     public function getCoverPhotoUrlAttribute()
     {
-        return Storage::disk('supabase')->url($this->cover_photo) : null;
+        return $this->cover_photo ? Storage::disk('supabase')->url($this->cover_photo) : null;
     }
 
     /**

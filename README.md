@@ -1,58 +1,179 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+<div align="center">
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+# 🚀 Mini Forum
 
-## About Laravel
+**A Modern Community Platform built with Laravel 11, React (Inertia), and PostgreSQL**
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+[![Laravel](https://img.shields.io/badge/Laravel-11.x-FF2D20?style=for-the-badge&logo=laravel)](https://laravel.com)
+[![React](https://img.shields.io/badge/React-18.x-61DAFB?style=for-the-badge&logo=react)](https://reactjs.org)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-18-4169E1?style=for-the-badge&logo=postgresql)](https://www.postgresql.org/)
+[![Supabase](https://img.shields.io/badge/Supabase-Storage-3ECF8E?style=for-the-badge&logo=supabase)](https://supabase.com/)
+[![Render](https://img.shields.io/badge/Render-Deployment-46E3B7?style=for-the-badge&logo=render)](https://render.com/)
+[![Pusher](https://img.shields.io/badge/Pusher-WebSocket-633194?style=for-the-badge&logo=pusher)](https://pusher.com/)
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+ระบบคอมมูนิตี้ฟีด / เว็บบอร์ดขนาดย่อมที่เน้นความรวดเร็วและประสบการณ์ผู้ใช้ (UX) ที่ลื่นไหลเหมือน SPA  
+พร้อมระบบฝากรูปภาพบน Cloud และการทำงาน Real-time แบบ Hybrid (Reverb สำหรับ Local และ Pusher สำหรับ Production)
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+</div>
 
-## Learning Laravel
+---
+## 🌐 Live Demo
+ลองใช้งานระบบจริงได้ที่นี่: [**Mini Forum - Live Preview**](https://tuna-forum.onrender.com)
+> **Note:** เนื่องจาก Deploy บน Render (Free Plan) ตัว Server อาจจะใช้เวลา "Wake up" ประมาณ 30-60 วินาทีในการโหลดครั้งแรก 😴
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+# ✨ Key Features (ฟีเจอร์เด่น)
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- **💬 Infinity Nested Comments** — ระบบคอมเมนต์ซ้อนกันได้ไม่จำกัดชั้น เพื่อการสนทนาที่ลึกซึ้ง
+- **⚡ Hybrid Real-time Notifications** — แจ้งเตือนทันทีด้วย `Laravel Reverb` (Local) และสลับไปใช้ `Pusher` เมื่ออยู่บน Production
+- **🖼️ Cloud Asset Management** — ระบบจัดการรูปภาพโปรไฟล์และโพสต์ผ่าน `Supabase Storage` (S3 Compatible)
+- **❤️ Polymorphic Likes** — สถาปัตยกรรม Database ที่ยืดหยุ่น รองรับการกดไลก์ได้ทั้งระดับ Post และ Comment
+- **🛠️ Powerful Admin Panel** — จัดการเนื้อหา สมาชิก และสถิติผ่าน Dashboard ด้วย `Filament PHP v3`
+- **🔒 Robust Security** — ระบบสมาชิกและการจัดการเซสชันที่ปลอดภัยผ่าน `Laravel Built-in Authentication (Session-based)`
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+---
 
-## Agentic Development
+# 🛠️ Tech Stack
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+## Backend & Frontend
+
+- **PHP 8.4** (Containerized)
+- **Laravel 11**
+- **React 18 + Inertia.js**
+- **Tailwind CSS**
+- **Filament PHP 3.2** (Admin Panel)
+
+## Infrastructure & Storage
+
+- **Docker (Laravel Sail)** สำหรับจำลอง Environment ให้เหมือนกันทุกเครื่อง
+- **PostgreSQL 18** (Primary Database)
+- **Redis** (Caching & Sessions)
+- **Supabase Storage** สำหรับเก็บ Assets บน Cloud เพื่อความเสถียรระดับ Production
+- **Render** สำหรับ Deploy ระบบขึ้น Cloud
+
+---
+
+# 💻 การติดตั้งและการรันโปรเจกต์ (Local Development)
+
+## 📌 สิ่งที่ต้องเตรียม
+
+1. [WSL 2](https://learn.microsoft.com/en-us/windows/wsl/install) (สำหรับ Windows Users)
+2. [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+
+---
+
+## 🚀 ขั้นตอนการติดตั้ง
+
+### 1. Clone Project & Install Dependencies
 
 ```bash
-composer require laravel/boost --dev
+git clone https://github.com/SoponSaenkaew/mini-forum.git
+cd mini-forum
 
-php artisan boost:install
+# ติดตั้ง Composer dependencies ผ่าน Container ชั่วคราว
+docker run --rm \
+    -u "$(id -u):$(id -g)" \
+    -v "$(pwd):/var/www/html" \
+    -w /var/www/html \
+    laravelsail/php84-composer:latest \
+    composer install --ignore-platform-reqs
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+---
 
-## Contributing
+### 2. Environment Configuration
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```bash
+cp .env.example .env
+```
 
-## Code of Conduct
+> **Note:**  
+> หากต้องการใช้งานระบบอัปโหลดรูปภาพผ่าน Supabase  
+> ต้องตั้งค่า `FILESYSTEM_DISK=supabase`  
+> และระบุค่า `SUPABASE_STORAGE_URL`, `SUPABASE_STORAGE_KEY` ในไฟล์ `.env`
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+---
 
-## Security Vulnerabilities
+### 3. Start Containers & Setup Database
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```bash
+./vendor/bin/sail up -d
+./vendor/bin/sail artisan key:generate
+./vendor/bin/sail artisan migrate --seed
+./vendor/bin/sail artisan storage:link
+```
 
-## License
+---
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### 4. Frontend & Background Services
+
+เปิด Terminal 3 หน้าต่าง เพื่อรัน Service ต่อไปนี้:
+
+#### Terminal 1 — Vite Dev Server
+
+```bash
+./vendor/bin/sail npm install
+./vendor/bin/sail npm run dev
+```
+
+#### Terminal 2 — WebSocket Server (Reverb)
+
+```bash
+./vendor/bin/sail artisan reverb:start --host=0.0.0.0 --port=8081
+```
+
+#### Terminal 3 — Queue Worker
+
+```bash
+./vendor/bin/sail artisan queue:work
+```
+
+---
+
+# 🚀 Production Deployment (Render)
+
+โปรเจกต์นี้ได้รับการปรับแต่งเพื่อรองรับการ Deploy ผ่าน Docker บน Render อย่างสมบูรณ์
+
+- **Dockerfile Optimized** — จัดการ Permission ของโฟลเดอร์ `storage` และ `cache` โดยอัตโนมัติ
+- **Secure Asset Delivery** — บังคับใช้งาน HTTPS และจัดการ Mixed Content ผ่าน `AppServiceProvider`
+- **Hybrid URL Generation** — ระบบ Accessors ใน Model จะสลับ URL ระหว่าง Local และ Cloud อัตโนมัติ
+
+---
+
+# 🌐 การเข้าใช้งาน (Default Accounts)
+
+## Main Application
+
+```text
+http://localhost
+```
+
+## Admin Panel
+
+```text
+http://localhost/admin
+```
+
+## Default Accounts
+
+### Admin Account
+
+```text
+Email: admin@example.com
+Password: password
+```
+
+### Test User
+
+```text
+Email: user@example.com
+Password: password
+```
+
+---
+
+<div align="center">
+
+<em>Developed with ❤️ by SoponSaenkaew</em>
+
+</div>

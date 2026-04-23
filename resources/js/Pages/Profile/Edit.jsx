@@ -3,8 +3,10 @@ import { Head } from '@inertiajs/react';
 import DeleteUserForm from './Partials/DeleteUserForm';
 import UpdatePasswordForm from './Partials/UpdatePasswordForm';
 import UpdateProfileInformationForm from './Partials/UpdateProfileInformationForm';
+import UpdateAvatarForm from './Partials/UpdateAvatarForm';
+import UpdateCoverPhotoForm from './Partials/UpdateCoverPhotoForm';
 
-export default function Edit({ mustVerifyEmail, status }) {
+export default function Edit({ mustVerifyEmail, status, auth }) {
     return (
         <AuthenticatedLayout
             header={
@@ -17,6 +19,17 @@ export default function Edit({ mustVerifyEmail, status }) {
 
             <div className="py-12">
                 <div className="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
+                    <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
+                        <UpdateAvatarForm 
+                            currentAvatar={auth.user.avatar_url} 
+                            className="max-w-xl" 
+                        />
+                    </div>
+                    <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
+                        <UpdateCoverPhotoForm 
+                            currentCover={auth.user.cover_photo_url} 
+                        />
+                    </div>
                     <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
                         <UpdateProfileInformationForm
                             mustVerifyEmail={mustVerifyEmail}

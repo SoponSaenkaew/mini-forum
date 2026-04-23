@@ -10,4 +10,15 @@ export default defineConfig({
         }),
         react(),
     ],
+
+    server: { // ✨ เพิ่มส่วนนี้เข้าไปค่ะ
+        hmr: {
+            host: 'localhost',
+        },
+        watch: {
+            usePolling: true,
+        },
+        host: '0.0.0.0', // ✨ บังคับให้ Vite ฟังทุกสัญญาณ
+        port: 5173,
+    },
 });

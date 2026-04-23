@@ -33,6 +33,14 @@ RUN composer install --no-dev --no-scripts --no-autoloader
 RUN composer dump-autoload --optimize --no-scripts --no-dev
 
 # 7. Build ไฟล์หน้าบ้าน
+ARG VITE_BROADCAST_CONNECTION
+ARG VITE_PUSHER_APP_KEY
+ARG VITE_PUSHER_APP_CLUSTER
+
+ENV VITE_BROADCAST_CONNECTION=$VITE_BROADCAST_CONNECTION
+ENV VITE_PUSHER_APP_KEY=$VITE_PUSHER_APP_KEY
+ENV VITE_PUSHER_APP_CLUSTER=$VITE_PUSHER_APP_CLUSTER
+
 RUN npm install --legacy-peer-deps && npm run build
 
 # 8. สร้างโฟลเดอร์ที่จำเป็นและมอบสิทธิ์ให้ www-data ทันทีตอน Build

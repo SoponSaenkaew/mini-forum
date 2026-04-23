@@ -31,9 +31,6 @@ COPY . .
 # 6. ติดตั้ง Package และประกอบร่าง (ข้ามจุดที่อาจจะ Error ตอน Build)
 RUN composer install --no-dev --no-scripts --no-autoloader
 RUN composer dump-autoload --optimize --no-scripts --no-dev
-RUN cp .env.example .env && \
-    php artisan vendor:publish --tag=ziggy-assets --force || true && \
-    php artisan storage:link || true
 
 # 7. Build ไฟล์หน้าบ้าน
 RUN npm install --legacy-peer-deps && npm run build

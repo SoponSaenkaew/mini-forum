@@ -17,6 +17,10 @@
 </div>
 
 ---
+## 🌐 Live Demo
+ลองใช้งานระบบจริงได้ที่นี่: [**Mini Forum - Live Preview**](https://tuna-forum.onrender.com)
+> **Note:** เนื่องจาก Deploy บน Render (Free Plan) ตัว Server อาจจะใช้เวลา "Wake up" ประมาณ 30-60 วินาทีในการโหลดครั้งแรก 😴
+---
 
 # ✨ Key Features (ฟีเจอร์เด่น)
 

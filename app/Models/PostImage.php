@@ -17,14 +17,12 @@ class PostImage extends Model
     public function getImageUrlAttribute()
     {
         if (!$this->image_path) return null;
-
-        $disk = config('filesystems.default'); 
         
-        if ($disk === 'supabase' && config('filesystems.disks.supabase.bucket')) {
+        if (config('filesystems.disks.supabase.key')) {
             return Storage::disk('supabase')->url($this->image_path);
         }
 
-        return Storage::url($this->image_path);
+        return Storage::disk('public')->url($this->image_path);
     }
 
     protected $guarded = [];

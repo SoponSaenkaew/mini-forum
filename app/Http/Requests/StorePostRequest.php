@@ -24,7 +24,7 @@ class StorePostRequest extends FormRequest
             'title'   => ['required', 'string', 'max:255'],
             'content' => ['required', 'string'],
             'images'  => ['nullable', 'array', 'max:5'], // จำกัดไม่เกิน 5 รูป
-            'images.*' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:5120'], // ไฟล์ละไม่เกิน 5MB
+            'images.*' => ['nullable', 'image', 'mimes:jpeg, jpg, png, webp, avif, gif', 'max:5120'], // ไฟล์ละไม่เกิน 5MB
         ];
     }
 }

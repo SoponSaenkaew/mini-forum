@@ -22,17 +22,17 @@
 ---
 ## 🌐 Live Demo
 ลองใช้งานระบบจริงได้ที่นี่: <a href="https://tuna-forum.onrender.com" target="_blank"><strong>Mini Forum - Live Preview</strong></a>
-> **Note:** เนื่องจาก Deploy บน Render (Free Plan) ตัว Server อาจจะใช้เวลา "Wake up" ประมาณ 30-60 วินาทีในการโหลดครั้งแรก 😴
+> **Note:** เนื่องจาก Deploy บน Render (Free Plan) ตัว Server อาจจะใช้เวลา "Wake up" ประมาณ 30-60 วินาทีในการโหลดครั้งแรก 
 ---
 
 # ✨ Key Features (ฟีเจอร์เด่น)
 
-- **💬 Infinity Nested Comments** — ระบบคอมเมนต์ซ้อนกันได้ไม่จำกัดชั้น เพื่อการสนทนาที่ลึกซึ้ง
-- **⚡ Hybrid Real-time Notifications** — แจ้งเตือนทันทีด้วย `Laravel Reverb` (Local) และสลับไปใช้ `Pusher` เมื่ออยู่บน Production
-- **🖼️ Cloud Asset Management** — ระบบจัดการรูปภาพโปรไฟล์และโพสต์ผ่าน `Supabase Storage` (S3 Compatible)
-- **❤️ Polymorphic Likes** — สถาปัตยกรรม Database ที่ยืดหยุ่น รองรับการกดไลก์ได้ทั้งระดับ Post และ Comment
-- **🛠️ Powerful Admin Panel** — จัดการเนื้อหา สมาชิก และสถิติผ่าน Dashboard ด้วย `Filament PHP v3`
-- **🔒 Robust Security** — ระบบสมาชิกและการจัดการเซสชันที่ปลอดภัยผ่าน `Laravel Built-in Authentication (Session-based)`
+- **Infinity Nested Comments** — ระบบคอมเมนต์ซ้อนกันได้ไม่จำกัดชั้น เพื่อการสนทนาที่ลึกซึ้ง
+- **Hybrid Real-time Notifications** — แจ้งเตือนทันทีด้วย `Laravel Reverb` (Local) และสลับไปใช้ `Pusher` เมื่ออยู่บน Production
+- **Cloud Asset Management** — ระบบจัดการรูปภาพโปรไฟล์และโพสต์ผ่าน `Supabase Storage` (S3 Compatible)
+- **Polymorphic Likes** — สถาปัตยกรรม Database ที่ยืดหยุ่น รองรับการกดไลก์ได้ทั้งระดับ Post และ Comment
+- **Powerful Admin Panel** — จัดการเนื้อหา สมาชิก และสถิติผ่าน Dashboard ด้วย `Filament PHP v3`
+- **Robust Security** — ระบบสมาชิกและการจัดการเซสชันที่ปลอดภัยผ่าน `Laravel Built-in Authentication (Session-based)`
 
 ---
 
@@ -189,10 +189,10 @@ Password: password
 
 ### 💡 Key Highlights
 
-* **🔄 Nested Comments:** ใช้การเรียกตัวเอง (Self-referencing) ผ่าน `parent_id` ในตาราง `comments` เพื่อรองรับการตอบกลับซ้อนกัน
-* **✨ Polymorphic Likes:** ตาราง `likes` ใช้โครงสร้าง Polymorphic (`likeable_id`, `likeable_type`) เพื่อเก็บข้อมูลการถูกใจทั้งระดับ "Post" และ "Comment" ในตารางเดียว
-* **🛡️ Soft Deletes:** โพสต์ คอมเมนต์ และรูปภาพ จะถูกประทับเวลาใน `deleted_at` แทนการลบข้อมูลจริง เพื่อป้องกันข้อมูลสูญหายและสามารถกู้คืนได้
-* **🔑 UUID Notifications:** ตาราง `notifications` ใช้ Primary Key แบบ UUID ตามมาตรฐาน Laravel เพื่อความปลอดภัยจากการถูกคาดเดารหัส
+* **Nested Comments:** ใช้การเรียกตัวเอง (Self-referencing) ผ่าน `parent_id` ในตาราง `comments` เพื่อรองรับการตอบกลับซ้อนกัน
+* **Polymorphic Likes:** ตาราง `likes` ใช้โครงสร้าง Polymorphic (`likeable_id`, `likeable_type`) เพื่อเก็บข้อมูลการถูกใจทั้งระดับ "Post" และ "Comment" ในตารางเดียว
+* **Soft Deletes:** โพสต์ คอมเมนต์ และรูปภาพ จะถูกประทับเวลาใน `deleted_at` แทนการลบข้อมูลจริง เพื่อป้องกันข้อมูลสูญหายและสามารถกู้คืนได้
+* **UUID Notifications:** ตาราง `notifications` ใช้ Primary Key แบบ UUID ตามมาตรฐาน Laravel เพื่อความปลอดภัยจากการถูกคาดเดารหัส
 
 ---
 

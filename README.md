@@ -6,7 +6,10 @@
 
 [![Laravel](https://img.shields.io/badge/Laravel-11.x-FF2D20?style=for-the-badge&logo=laravel)](https://laravel.com)
 [![React](https://img.shields.io/badge/React-18.x-61DAFB?style=for-the-badge&logo=react)](https://reactjs.org)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com)
+[![Inertia.js](https://img.shields.io/badge/Inertia.js-9553E9?style=for-the-badge&logo=inertia&logoColor=white)](https://inertiajs.com)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-18-4169E1?style=for-the-badge&logo=postgresql)](https://www.postgresql.org/)
+[![Redis](https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white)](https://redis.io)
 [![Supabase](https://img.shields.io/badge/Supabase-Storage-3ECF8E?style=for-the-badge&logo=supabase)](https://supabase.com/)
 [![Render](https://img.shields.io/badge/Render-Deployment-46E3B7?style=for-the-badge&logo=render)](https://render.com/)
 [![Pusher](https://img.shields.io/badge/Pusher-WebSocket-633194?style=for-the-badge&logo=pusher)](https://pusher.com/)
@@ -50,6 +53,7 @@
 - **Redis** (Caching & Sessions)
 - **Supabase Storage** สำหรับเก็บ Assets บน Cloud เพื่อความเสถียรระดับ Production
 - **Render** สำหรับ Deploy ระบบขึ้น Cloud
+- **Pusher** Cloud-based WebSocket Service ที่ใช้เป็น Production Driver สำหรับระบบ Real-time เพื่อข้ามขีดจำกัดเรื่องการคงสภาพการเชื่อมต่อบน Cloud Platform (เช่น Render) ทำให้การแจ้งเตือนเสถียร 100%
 
 ---
 

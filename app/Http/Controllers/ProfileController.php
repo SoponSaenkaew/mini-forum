@@ -111,7 +111,7 @@ class ProfileController extends Controller
     public function updateAvatar(Request $request)
     {
         $request->validate([
-            'avatar' => ['required', 'image', 'max:2048'], // จำกัดขนาดไฟล์รูปโปรไฟล์สูงสุดที่ 2MB
+            'avatar' => ['required', 'image','mimes:jpeg, jpg, png, webp, avif, gif', 'max:2048'], // จำกัดขนาดไฟล์รูปโปรไฟล์สูงสุดที่ 2MB
         ]);
 
         $user = $request->user();
@@ -142,7 +142,7 @@ class ProfileController extends Controller
     {
         $request->validate([
             // หน้าปกมีขนาดพื้นที่กว้างกว่า อาโรน่าจึงเผื่อขีดจำกัดไฟล์ไว้ที่ 4MB (4096 KB) นะคะ
-            'cover_photo' => ['required', 'image', 'max:4096'], 
+            'cover_photo' => ['required', 'image','mimes:jpeg, jpg, png, webp, avif, gif', 'max:4096'], 
         ]);
 
         $user = $request->user();

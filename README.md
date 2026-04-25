@@ -176,7 +176,53 @@ Password: password
 
 ---
 
+## 🗄️ Database Architecture
+
+ระบบฐานข้อมูลถูกออกแบบมาเพื่อรองรับฟีเจอร์คอมมูนิตี้บอร์ดโดยเฉพาะ เน้นความยืดหยุ่น ความเร็ว และความปลอดภัยของข้อมูล
+
+<details>
+<summary><b>📊 ดูแผนภาพ ER Diagram (คลิกเพื่อขยาย)</b></summary>
+
 ![ER Diagram](./docs/images/er-diagram.svg)
+
+</details>
+
+### 💡 Key Highlights
+
+* **🔄 Nested Comments:** ใช้การเรียกตัวเอง (Self-referencing) ผ่าน `parent_id` ในตาราง `comments` เพื่อรองรับการตอบกลับซ้อนกัน
+* **✨ Polymorphic Likes:** ตาราง `likes` ใช้โครงสร้าง Polymorphic (`likeable_id`, `likeable_type`) เพื่อเก็บข้อมูลการถูกใจทั้งระดับ "Post" และ "Comment" ในตารางเดียว
+* **🛡️ Soft Deletes:** โพสต์ คอมเมนต์ และรูปภาพ จะถูกประทับเวลาใน `deleted_at` แทนการลบข้อมูลจริง เพื่อป้องกันข้อมูลสูญหายและสามารถกู้คืนได้
+* **🔑 UUID Notifications:** ตาราง `notifications` ใช้ Primary Key แบบ UUID ตามมาตรฐาน Laravel เพื่อความปลอดภัยจากการถูกคาดเดารหัส
+
+---
+
+## 🔌 API & Routes Reference
+
+การรับส่งข้อมูลใช้มาตรฐาน Session-based และรองรับการทำงานผ่าน CSRF Protection เพื่อความปลอดภัยสูงสุด (เส้นทางส่วนใหญ่ถูกปกป้องด้วย Middleware `auth`)
+
+<details>
+<summary><b>📍 ดูเส้นทางทั้งหมด (คลิกเพื่อขยาย)</b></summary>
+
+| Method | Route | Description |
+| :--- | :--- | :--- |
+| **Posts** | | |
+| `GET` | `/` | หน้าแรก (ดึงโพสต์ล่าสุด 3 รายการ) |
+| `GET` | `/dashboard` | หน้าฟีดหลัก (รองรับการค้นหาและ Pagination) |
+| `POST` | `/posts` | สร้างโพสต์ใหม่ (รองรับการอัปโหลดรูปภาพ) |
+| `POST` | `/posts/{post}/like` | กดถูกใจ / ยกเลิกถูกใจ (Polymorphic) |
+| **Comments** | | |
+| `POST` | `/posts/{post}/comments` | เขียนคอมเมนต์ใหม่ใต้โพสต์ |
+| `GET` | `/comments/{comment}/reply`| หน้าตอบกลับความคิดเห็นย่อย (Nested) |
+| `POST` | `/comments/{comment}/like` | กดถูกใจ / ยกเลิกถูกใจ คอมเมนต์ |
+| **Notifications** | | |
+| `GET` | `/notifications` | ดูรายการแจ้งเตือนทั้งหมด |
+| `PATCH`| `/notifications/{id}/read` | ทำเครื่องหมายว่าอ่านแล้ว (รายข้อ) |
+| `POST` | `/notifications/read-all` | ทำเครื่องหมายว่าอ่านแล้วทั้งหมด |
+
+</details>
+
+---
+
 
 <div align="center">
 

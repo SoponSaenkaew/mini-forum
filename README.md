@@ -176,6 +176,8 @@ Password: password
 
 ---
 
+![ER Diagram](./docs/images/er-diagram.svg)
+
 <div align="center">
 
 <em>Developed with ❤️ by SoponSaenkaew</em>

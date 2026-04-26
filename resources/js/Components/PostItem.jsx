@@ -167,7 +167,7 @@ export default function PostItem({ post, auth, highlightId = null }) {
                 {post.user_id === auth.user.id && !isEditingPost && (
                     <Dropdown>
                         <Dropdown.Trigger>
-                            <button className="text-gray-400 hover:text-indigo-600 transition p-2">
+                            <button aria-label="เมนูจัดการโพสต์" className="text-gray-400 hover:text-indigo-600 transition p-2">
                                 <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" /></svg>
                             </button>
                         </Dropdown.Trigger>

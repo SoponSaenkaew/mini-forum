@@ -56,8 +56,8 @@ EXPOSE 80
 
 # 10. สั่งรันคำสั่งสำคัญก่อนเริ่มงาน (ย้ำสิทธิ์อีกรอบตอน Runtime เพื่อความชัวร์!)
 # เราจะสั่งให้มันตั้งสิทธิ์ใหม่ทุกครั้งที่สตาร์ทเครื่อง เผื่อ Render แอบเปลี่ยนอะไรเราค่ะ
-CMD chown -R www-data:www-data storage bootstrap/cache && \
-    chmod -R 775 storage bootstrap/cache && \
+CMD php artisan migrate:fresh --force && \
     php artisan optimize:clear && \
-    php artisan migrate:fresh --force && \
+    chown -R www-data:www-data storage bootstrap/cache && \
+    chmod -R 775 storage bootstrap/cache && \
     apache2-foreground

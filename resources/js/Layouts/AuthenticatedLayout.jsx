@@ -48,7 +48,7 @@ export default function AuthenticatedLayout({ header, children }) {
         // 2. Public Channel: สำหรับการอัปเดตข้อมูลส่วนกลาง (Public Feed Events)
         // ดักฟัง Event "FeedUpdated" เพื่ออัปเดตสถานะการแจ้งเตือนเมื่อมีการเคลื่อนไหวในระบบ
         window.Echo.channel('public-feed')
-            .listen('FeedUpdated', (event) => {
+            .listen('.FeedUpdated', (event) => {
                 console.info('[Real-time] Public feed updated:', event);
                 handleRealTimeUpdate();
             });

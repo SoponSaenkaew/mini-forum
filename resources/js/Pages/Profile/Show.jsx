@@ -29,14 +29,17 @@ export default function Show({ auth, user, posts }) {
                 </h2>
             }
         >
-            {/* กำหนด Meta Title สำหรับแสดงบนแท็บของเบราว์เซอร์ */}
-            <Head title={`Profile - ${user.name}`} />
+            {/* ✨ [Optimization: SEO] กำหนด Meta Title และ Description สำหรับแสดงบนแท็บและแชร์ลง Social */}
+            <Head>
+                <title>{`Profile - ${user.name}`}</title>
+                <meta name="description" content={`ดูโปรไฟล์และโพสต์ล่าสุดของ ${user.name} บน Tuna Forum`} />
+            </Head>
 
             <div className="py-12 bg-gray-50 min-h-screen">
                 <div className="max-w-4xl mx-auto sm:px-6 lg:px-8 space-y-6">
                     
                     {/* ส่วนแสดงข้อมูลส่วนตัวของผู้ใช้ (User Profile Header) */}
-                    <section className="bg-white shadow-sm sm:rounded-3xl overflow-hidden border border-gray-100">
+                    <section aria-label="ข้อมูลส่วนตัว" className="bg-white shadow-sm sm:rounded-3xl overflow-hidden border border-gray-100">
                         
                         {/* พื้นที่แสดงรูปภาพหน้าปก (Cover Photo) */}
                         <div className="h-48 sm:h-64 w-full relative">
@@ -44,7 +47,7 @@ export default function Show({ auth, user, posts }) {
                                 <img 
                                     src={`${user.cover_photo_url}?t=${new Date().getTime()}`}
                                     className="w-full h-full object-cover" 
-                                    alt="Cover" 
+                                    alt={`รูปภาพหน้าปกของ ${user.name}`} // ✨ [Optimization] ปรับให้สื่อความหมายมากขึ้น
                                 />
                             ) : (
                                 <div className="w-full h-full bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400"></div>
@@ -61,10 +64,13 @@ export default function Show({ auth, user, posts }) {
                                         <img 
                                             src={`${user.avatar_url}?t=${new Date().getTime()}`}
                                             className="h-32 w-32 sm:h-40 sm:w-40 rounded-full object-cover border-4 border-white shadow-md bg-white"
-                                            alt={user.name}
+                                            alt={`รูปโปรไฟล์ของ ${user.name}`} // ✨ [Optimization]
                                         />
                                     ) : (
-                                        <div className="h-32 w-32 sm:h-40 sm:w-40 bg-indigo-500 rounded-full flex items-center justify-center text-4xl text-white font-black shadow-md border-4 border-white">
+                                        <div 
+                                            aria-hidden="true" // ✨ [Optimization] ป้องกัน Screen Reader อ่านตัวหนังสือซ้ำซ้อน
+                                            className="h-32 w-32 sm:h-40 sm:w-40 bg-indigo-500 rounded-full flex items-center justify-center text-4xl text-white font-black shadow-md border-4 border-white"
+                                        >
                                             {user.name[0]}
                                         </div>
                                     )}
@@ -76,7 +82,8 @@ export default function Show({ auth, user, posts }) {
                                         <div>
                                             <h3 className="text-3xl font-black text-gray-900 tracking-tight">{user.name}</h3>
                                             <p className="text-gray-500 font-medium">
-                                                {user.email} <span className="mx-2 text-gray-300">•</span> เข้าร่วมเมื่อ {new Date(user.created_at).toLocaleDateString('th-TH')}
+                                                {user.email} <span className="mx-2 text-gray-400" aria-hidden="true">•</span> เข้าร่วมเมื่อ <time dateTime={user.created_at}>{new Date(user.created_at).toLocaleDateString('th-TH')}</time>
+                                                {/* ✨ [Optimization] ปรับจุดเป็นสีเทาเข้มขึ้น (400) และใช้ <time> แท็ก */}
                                             </p>
                                         </div>
 
@@ -84,9 +91,11 @@ export default function Show({ auth, user, posts }) {
                                         {isOwnProfile && (
                                             <Link 
                                                 href={route('profile.edit')} 
-                                                className="inline-flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-2.5 rounded-full font-bold transition-all text-sm shrink-0"
+                                                aria-label="ไปที่หน้าการตั้งค่าโปรไฟล์" // ✨ [Optimization]
+                                                className="inline-flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-2.5 rounded-full font-bold transition-all text-sm shrink-0 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                             >
-                                                ⚙️ ตั้งค่าโปรไฟล์
+                                                <span aria-hidden="true" className="mr-2">⚙️</span> 
+                                                ตั้งค่าโปรไฟล์
                                             </Link>
                                         )}
                                     </div>
@@ -101,7 +110,7 @@ export default function Show({ auth, user, posts }) {
                             <h4 className="font-bold text-gray-700 text-lg border-l-4 border-indigo-500 pl-3">
                                 โพสต์ล่าสุด
                             </h4>
-                            <span className="text-sm text-gray-400 bg-gray-200 px-3 py-1 rounded-full">
+                            <span className="text-sm text-gray-600 font-medium bg-gray-200 px-3 py-1 rounded-full"> {/* ✨ [Optimization] ปรับสี text-gray-400 -> 600 เพื่อ Contrast */}
                                 {posts.length} โพสต์
                             </span>
                         </header>
@@ -115,7 +124,7 @@ export default function Show({ auth, user, posts }) {
                                 <PostItem key={post.id} post={post} auth={auth} />
                             ))
                         ) : (
-                            <div className="bg-white p-16 text-center rounded-2xl border-2 border-dashed border-gray-200 text-gray-400">
+                            <div className="bg-white p-16 text-center rounded-2xl border-2 border-dashed border-gray-200 text-gray-500"> {/* ✨ [Optimization] ปรับสี text-gray-400 -> 500 */}
                                 <p className="text-lg italic">ยังไม่มีเรื่องราวที่โพสต์...</p>
                             </div>
                         )}

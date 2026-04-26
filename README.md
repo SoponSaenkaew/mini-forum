@@ -6,7 +6,10 @@
 
 [![Laravel](https://img.shields.io/badge/Laravel-11.x-FF2D20?style=for-the-badge&logo=laravel)](https://laravel.com)
 [![React](https://img.shields.io/badge/React-18.x-61DAFB?style=for-the-badge&logo=react)](https://reactjs.org)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com)
+[![Inertia.js](https://img.shields.io/badge/Inertia.js-9553E9?style=for-the-badge&logo=inertia&logoColor=white)](https://inertiajs.com)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-18-4169E1?style=for-the-badge&logo=postgresql)](https://www.postgresql.org/)
+[![Redis](https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white)](https://redis.io)
 [![Supabase](https://img.shields.io/badge/Supabase-Storage-3ECF8E?style=for-the-badge&logo=supabase)](https://supabase.com/)
 [![Render](https://img.shields.io/badge/Render-Deployment-46E3B7?style=for-the-badge&logo=render)](https://render.com/)
 [![Pusher](https://img.shields.io/badge/Pusher-WebSocket-633194?style=for-the-badge&logo=pusher)](https://pusher.com/)
@@ -18,18 +21,18 @@
 
 ---
 ## 🌐 Live Demo
-ลองใช้งานระบบจริงได้ที่นี่: [**Mini Forum - Live Preview**](https://tuna-forum.onrender.com)
-> **Note:** เนื่องจาก Deploy บน Render (Free Plan) ตัว Server อาจจะใช้เวลา "Wake up" ประมาณ 30-60 วินาทีในการโหลดครั้งแรก 😴
+ลองใช้งานระบบจริงได้ที่นี่: <a href="https://tuna-forum.onrender.com" target="_blank"><strong>Mini Forum - Live Preview</strong></a>
+> **Note:** เนื่องจาก Deploy บน Render (Free Plan) ตัว Server อาจจะใช้เวลา "Wake up" ประมาณ 30-60 วินาทีในการโหลดครั้งแรก 
 ---
 
 # ✨ Key Features (ฟีเจอร์เด่น)
 
-- **💬 Infinity Nested Comments** — ระบบคอมเมนต์ซ้อนกันได้ไม่จำกัดชั้น เพื่อการสนทนาที่ลึกซึ้ง
-- **⚡ Hybrid Real-time Notifications** — แจ้งเตือนทันทีด้วย `Laravel Reverb` (Local) และสลับไปใช้ `Pusher` เมื่ออยู่บน Production
-- **🖼️ Cloud Asset Management** — ระบบจัดการรูปภาพโปรไฟล์และโพสต์ผ่าน `Supabase Storage` (S3 Compatible)
-- **❤️ Polymorphic Likes** — สถาปัตยกรรม Database ที่ยืดหยุ่น รองรับการกดไลก์ได้ทั้งระดับ Post และ Comment
-- **🛠️ Powerful Admin Panel** — จัดการเนื้อหา สมาชิก และสถิติผ่าน Dashboard ด้วย `Filament PHP v3`
-- **🔒 Robust Security** — ระบบสมาชิกและการจัดการเซสชันที่ปลอดภัยผ่าน `Laravel Built-in Authentication (Session-based)`
+- **Infinity Nested Comments** — ระบบคอมเมนต์ซ้อนกันได้ไม่จำกัดชั้น เพื่อการสนทนาที่ลึกซึ้ง
+- **Hybrid Real-time Notifications** — แจ้งเตือนทันทีด้วย `Laravel Reverb` (Local) และสลับไปใช้ `Pusher` เมื่ออยู่บน Production
+- **Cloud Asset Management** — ระบบจัดการรูปภาพโปรไฟล์และโพสต์ผ่าน `Supabase Storage` (S3 Compatible)
+- **Polymorphic Likes** — สถาปัตยกรรม Database ที่ยืดหยุ่น รองรับการกดไลก์ได้ทั้งระดับ Post และ Comment
+- **Powerful Admin Panel** — จัดการเนื้อหา สมาชิก และสถิติผ่าน Dashboard ด้วย `Filament PHP v3`
+- **Robust Security** — ระบบสมาชิกและการจัดการเซสชันที่ปลอดภัยผ่าน `Laravel Built-in Authentication (Session-based)`
 
 ---
 
@@ -50,6 +53,7 @@
 - **Redis** (Caching & Sessions)
 - **Supabase Storage** สำหรับเก็บ Assets บน Cloud เพื่อความเสถียรระดับ Production
 - **Render** สำหรับ Deploy ระบบขึ้น Cloud
+- **Pusher** Cloud-based WebSocket Service ที่ใช้เป็น Production Driver สำหรับระบบ Real-time เพื่อข้ามขีดจำกัดเรื่องการคงสภาพการเชื่อมต่อบน Cloud Platform (เช่น Render) ทำให้การแจ้งเตือนเสถียร 100%
 
 ---
 
@@ -172,8 +176,66 @@ Password: password
 
 ---
 
+## 🗄️ Database Architecture
+
+ระบบฐานข้อมูลถูกออกแบบมาเพื่อรองรับฟีเจอร์คอมมูนิตี้บอร์ดโดยเฉพาะ เน้นความยืดหยุ่น ความเร็ว และความปลอดภัยของข้อมูล
+
+<details>
+<summary><b>📊 ดูแผนภาพ ER Diagram (คลิกเพื่อขยาย)</b></summary>
+
+![ER Diagram](./docs/images/er-diagram.svg)
+
+</details>
+
+### 💡 Key Highlights
+
+* **Nested Comments:** ใช้การเรียกตัวเอง (Self-referencing) ผ่าน `parent_id` ในตาราง `comments` เพื่อรองรับการตอบกลับซ้อนกัน
+* **Polymorphic Likes:** ตาราง `likes` ใช้โครงสร้าง Polymorphic (`likeable_id`, `likeable_type`) เพื่อเก็บข้อมูลการถูกใจทั้งระดับ "Post" และ "Comment" ในตารางเดียว
+* **Soft Deletes:** โพสต์ คอมเมนต์ และรูปภาพ จะถูกประทับเวลาใน `deleted_at` แทนการลบข้อมูลจริง เพื่อป้องกันข้อมูลสูญหายและสามารถกู้คืนได้
+* **UUID Notifications:** ตาราง `notifications` ใช้ Primary Key แบบ UUID ตามมาตรฐาน Laravel เพื่อความปลอดภัยจากการถูกคาดเดารหัส
+
+---
+
+## 🔌 API & Routes Reference
+
+การรับส่งข้อมูลใช้มาตรฐาน Session-based และรองรับการทำงานผ่าน CSRF Protection เพื่อความปลอดภัยสูงสุด (เส้นทางส่วนใหญ่ถูกปกป้องด้วย Middleware `auth`)
+
+<details>
+<summary><b>📍 ดูเส้นทางทั้งหมด (คลิกเพื่อขยาย)</b></summary>
+
+| Method | Route | Description |
+| :--- | :--- | :--- |
+| **Posts** | | |
+| `GET` | `/` | หน้าแรก (ดึงโพสต์ล่าสุด 3 รายการ) |
+| `GET` | `/dashboard` | หน้าฟีดหลัก (รองรับการค้นหาและ Pagination) |
+| `POST` | `/posts` | สร้างโพสต์ใหม่ (รองรับการอัปโหลดรูปภาพ) |
+| `POST` | `/posts/{post}/like` | กดถูกใจ / ยกเลิกถูกใจ (Polymorphic) |
+| **Comments** | | |
+| `POST` | `/posts/{post}/comments` | เขียนคอมเมนต์ใหม่ใต้โพสต์ |
+| `GET` | `/comments/{comment}/reply`| หน้าตอบกลับความคิดเห็นย่อย (Nested) |
+| `POST` | `/comments/{comment}/like` | กดถูกใจ / ยกเลิกถูกใจ คอมเมนต์ |
+| **Notifications** | | |
+| `GET` | `/notifications` | ดูรายการแจ้งเตือนทั้งหมด |
+| `PATCH`| `/notifications/{id}/read` | ทำเครื่องหมายว่าอ่านแล้ว (รายข้อ) |
+| `POST` | `/notifications/read-all` | ทำเครื่องหมายว่าอ่านแล้วทั้งหมด |
+
+</details>
+
+---
+
+
 <div align="center">
 
 <em>Developed with ❤️ by SoponSaenkaew</em>
 
+[![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/SoponSaenkaew)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/your-profile)
+[![Email](https://img.shields.io/badge/Email-D14836?style=for-the-badge&logo=gmail&logoColor=white)](mailto:soponseankeaw@gmail.com)
+
 </div>
+
+---
+
+## 📄 License
+
+The Mini Forum project is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).

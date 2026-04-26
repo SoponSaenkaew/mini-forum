@@ -15,7 +15,7 @@ RUN apt-get update && apt-get install -y \
     npm \
     && docker-php-ext-configure intl \
     && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
-    && docker-php-ext-install pdo_pgsql zip intl
+    && docker-php-ext-install pdo_pgsql zip intl gd
 
 # 2. เปิดใช้งาน mod_rewrite
 RUN a2enmod rewrite

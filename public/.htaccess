@@ -23,7 +23,7 @@
         ExpiresByType font/ttf "access plus 1 year"
 
         # บังคับ Header ให้เป็น Public เพื่อให้เบราว์เซอร์ยอมเก็บไฟล์
-        Header set Cache-Control "public, no-transform"
+        Header set Cache-Control "public, max-age=31536000, immutable"
     </IfModule>
 
     RewriteEngine On

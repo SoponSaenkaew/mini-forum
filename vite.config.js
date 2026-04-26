@@ -24,24 +24,26 @@ export default defineConfig({
     },
 
     build: {
-        //  [Performance] บีบอัดไฟล์ให้เล็กที่สุด
-        minify: 'esbuild',
-        cssCodeSplit: true, // แยกไฟล์ CSS ของแต่ละหน้าออกจากกัน
-        chunkSizeWarningLimit: 500, // แจ้งเตือนถ้าไฟล์ไหนใหญ่เกิน 500kb
+        // 🌟 [Performance] แก้ปัญหา Warning เรื่อง esbuild
+        minify: 'terser', // ใช้ terser แทนเพื่อให้บีบอัดโค้ดได้เล็กลงอีกนิด
+        cssCodeSplit: true,
         
         rollupOptions: {
             output: {
-                //  [Vendor Splitting]
-                // แยก Library ที่ไม่ค่อยเปลี่ยน (React/Inertia) ออกจากโค้ดของโปรเจกต์
-                // เพื่อให้เบราว์เซอร์ใช้ไฟล์ที่แคชไว้ใน .htaccess ได้ยาวๆ 1 ปีเต็ม
-                manualChunks: {
-                    'react-vendor': ['react', 'react-dom'],
-                    'inertia-vendor': ['@inertiajs/react'],
-                    // ถ้ามี Library อื่นๆ ที่ใหญ่ๆ เช่น axios หรือ framer-motion 
-                    // สามารถเอามาใส่แยกเป็นอีก Chunk ได้ตรงนี้
+                // 🌟 [The Fix] เปลี่ยนจาก Object เป็น Function เพื่อแก้ TypeError
+                manualChunks(id) {
+                    if (id.includes('node_modules')) {
+                        // แยก React และ Inertia ออกมาเป็นก้อนใหญ่
+                        if (id.includes('react') || id.includes('react-dom')) {
+                            return 'react-vendor';
+                        }
+                        if (id.includes('@inertiajs')) {
+                            return 'inertia-vendor';
+                        }
+                        // ที่เหลือรวมเป็น vendor
+                        return 'vendor';
+                    }
                 },
-                
-                // กำหนดรูปแบบชื่อไฟล์ให้คงที่เพื่อให้ระบบ Caching ทำงานได้แม่นยำ
                 chunkFileNames: 'assets/js/[name]-[hash].js',
                 entryFileNames: 'assets/js/[name]-[hash].js',
                 assetFileNames: 'assets/[ext]/[name]-[hash].[ext]',

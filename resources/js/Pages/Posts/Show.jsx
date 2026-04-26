@@ -158,13 +158,21 @@ export default function Show({ auth, post, highlightId }) {
 
     return (
         <AuthenticatedLayout header={<h2 className="text-xl font-semibold text-gray-800">กระทู้ฉบับเต็ม ✨</h2>}>
-            <Head title={`Post: ${post.title}`} />
+            {/* ✨ [Optimization: SEO] เพิ่ม Meta Description เพื่อการแชร์และผลการค้นหาที่ดีขึ้น */}
+            <Head>
+                <title>{`Post: ${post.title}`}</title>
+                <meta name="description" content={post.content.substring(0, 150) + '...'} />
+            </Head>
+            
             <div className="py-12 bg-gray-50 min-h-screen">
                 <div className="mx-auto max-w-4xl sm:px-6 lg:px-8">
-                    <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 mb-6">
+                    {/* ✨ [Optimization: Accessibility] ใช้ Semantic <article> แทน <div> */}
+                    <article className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 mb-6">
                         
                         {/* --- ส่วนเนื้อหาหลักของโพสต์ --- */}
-                        <h3 className="text-3xl font-bold mb-4">{post.title}</h3>
+                        <header>
+                            <h3 className="text-3xl font-bold mb-4">{post.title}</h3>
+                        </header>
                         <p className="text-gray-700 whitespace-pre-wrap mb-8 text-lg">{post.content}</p>
 
                         {/* --- ส่วนแสดงแกลเลอรีรูปภาพ --- */}
@@ -174,7 +182,8 @@ export default function Show({ auth, post, highlightId }) {
                                     <img 
                                         key={img.id} 
                                         src={`${img.image_url}?t=${new Date().getTime()}`}
-                                        alt="content" 
+                                        alt={`รูปภาพประกอบโพสต์หัวข้อ: ${post.title}`} // ✨ [Optimization] ปรับ Alt text ให้สื่อความหมาย
+                                        loading="lazy" // ✨ [Optimization] เพิ่ม Lazy loading
                                         className="w-full rounded-2xl shadow-sm border object-cover max-h-[500px]" 
                                     />
                                 ))}
@@ -185,8 +194,9 @@ export default function Show({ auth, post, highlightId }) {
                         <div className="flex items-center py-4 border-y border-gray-100 mb-6">
                             <button 
                                 onClick={handleLike} 
-                                className={`flex items-center gap-2 font-bold transition-all duration-300 ${
-                                    localIsLiked ? 'text-rose-500 scale-105' : 'text-gray-400 hover:text-rose-400'
+                                aria-label={localIsLiked ? "เลิกถูกใจโพสต์นี้" : "ถูกใจโพสต์นี้"} // ✨ [Optimization] Accessible Name
+                                className={`flex items-center gap-2 font-bold transition-all duration-300 p-2 -m-2 ${ // ✨ [Optimization] เพิ่ม p-2 -m-2 ขยาย Touch target
+                                    localIsLiked ? 'text-rose-500 scale-105' : 'text-gray-500 hover:text-rose-400' // ปรับ text-gray-400 เป็น 500
                                 }`}
                             >
                                 <svg 
@@ -194,6 +204,7 @@ export default function Show({ auth, post, highlightId }) {
                                     fill={localIsLiked ? "currentColor" : "none"} 
                                     stroke="currentColor" 
                                     viewBox="0 0 24 24"
+                                    aria-hidden="true"
                                 >
                                     <path 
                                         strokeLinecap="round" 
@@ -207,8 +218,9 @@ export default function Show({ auth, post, highlightId }) {
                         </div>
 
                         {/* --- ส่วนแสดงรายการความคิดเห็น --- */}
-                        <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100 shadow-inner">
-                            <h4 className="text-xs font-bold text-gray-400 uppercase mb-6 tracking-widest">Comments</h4>
+                        {/* ✨ [Optimization] ใช้ <section> เพื่อแบ่งสัดส่วนเนื้อหาให้ชัดเจน */}
+                        <section aria-label="ความคิดเห็นทั้งหมด" className="bg-gray-50 rounded-2xl p-6 border border-gray-100 shadow-inner">
+                            <h4 className="text-xs font-bold text-gray-500 uppercase mb-6 tracking-widest">Comments</h4> {/* ปรับเป็น text-gray-500 */}
                             
                             <div className="space-y-2">
                                 {/* กรองเฉพาะความคิดเห็นหลัก (ไม่มี parent_id) แล้วนำมาแสดงผล */}
@@ -244,7 +256,13 @@ export default function Show({ auth, post, highlightId }) {
                                 {replyingTo && (
                                     <div className="mb-2 flex justify-between items-center bg-indigo-50 px-3 py-1 rounded-lg text-xs text-indigo-600 font-medium">
                                         <span>กำลังตอบกลับ <b>@{replyingTo.user.name}</b></span>
-                                        <button onClick={() => { setReplyingTo(null); resetComment(); }} className="font-bold hover:text-indigo-800">✕</button>
+                                        <button 
+                                            onClick={() => { setReplyingTo(null); resetComment(); }} 
+                                            aria-label="ยกเลิกการตอบกลับ" // ✨ [Optimization]
+                                            className="font-bold hover:text-indigo-800 p-2 -m-2"
+                                        >
+                                            ✕
+                                        </button>
                                     </div>
                                 )}
 
@@ -252,12 +270,23 @@ export default function Show({ auth, post, highlightId }) {
                                 {editingComment && (
                                     <div className="mb-2 flex justify-between items-center bg-amber-50 px-3 py-1 rounded-lg text-xs text-amber-600 font-medium">
                                         <span>กำลังแก้ไขคอมเมนต์ของตัวเอง ✍️</span>
-                                        <button onClick={() => { setEditingComment(null); resetComment(); }} className="font-bold hover:text-amber-800">✕</button>
+                                        <button 
+                                            onClick={() => { setEditingComment(null); resetComment(); }} 
+                                            aria-label="ยกเลิกการแก้ไข" // ✨ [Optimization]
+                                            className="font-bold hover:text-amber-800 p-2 -m-2"
+                                        >
+                                            ✕
+                                        </button>
                                     </div>
                                 )}
 
                                 <form onSubmit={handleCommentSubmit} className="flex gap-2">
+                                    {/* ✨ [Optimization] เพิ่ม Label แบบซ่อนตัวเพื่อ Accessibility */}
+                                    <label htmlFor="post-comment-input" className="sr-only">
+                                        {editingComment ? 'แก้ไขความคิดเห็น' : 'ร่วมแสดงความคิดเห็น'}
+                                    </label>
                                     <textarea 
+                                        id="post-comment-input"
                                         value={commentForm.content} 
                                         onChange={e => setCommentForm('content', e.target.value)} 
                                         className="flex-1 rounded-xl border-gray-200 resize-y focus:ring-indigo-500" 
@@ -272,8 +301,8 @@ export default function Show({ auth, post, highlightId }) {
                                     </button>
                                 </form>
                             </div>
-                        </div>
-                    </div>
+                        </section>
+                    </article>
                 </div>
             </div>
         </AuthenticatedLayout>

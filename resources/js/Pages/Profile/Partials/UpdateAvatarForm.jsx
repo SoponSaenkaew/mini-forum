@@ -80,6 +80,7 @@ export default function UpdateAvatarForm({ currentAvatar }) {
                     <div className="flex-1">
                         <input 
                             type="file" 
+                            aria-label="อัปโหลดรูปโปรไฟล์"
                             accept="image/*"
                             onChange={handleFileChange}
                             className="block w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 transition-colors"

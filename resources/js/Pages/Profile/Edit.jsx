@@ -80,7 +80,7 @@ export default function Edit({ mustVerifyEmail, status, auth }) {
                         <a 
                             href="#section-danger" 
                             onClick={(e) => scrollToSection(e, 'section-danger')} 
-                            className="block w-full text-left px-4 py-2 rounded-xl text-sm font-bold text-rose-600 hover:bg-rose-50 transition-all mt-4 focus:outline-none focus:ring-2 focus:ring-rose-500"
+                            className="block w-full text-left px-4 py-2 rounded-xl text-sm font-bold text-rose-700 hover:bg-rose-50 transition-all mt-4 focus:outline-none focus:ring-2 focus:ring-rose-500"
                         >
                             ลบบัญชีผู้ใช้งาน
                         </a>

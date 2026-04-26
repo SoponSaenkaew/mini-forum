@@ -210,7 +210,7 @@ const PostItem = memo(({ post, auth, highlightId = null, isFirst = false }) => {
                                 // กำหนดความกว้างที่เหมาะสม (เช่น 450px สำหรับ grid และ 800px สำหรับรูปเดี่ยว)
                                 const isSingleImage = post.images.length === 1;
                                 const optimizedWidth = isSingleImage ? 800 : 450;
-                                const optimizedUrl = `${img.image_url}?width=${optimizedWidth}&quality=80&format=webp`;
+                                const optimizedUrl = `${img.image_url}?width=${optimizedWidth}&quality=70&format=webp`;
 
                                 return (
                                     <img 

@@ -77,10 +77,11 @@ EXPOSE 80
 
 # 10. 🌟 Runtime Optimization (ลด TTFB และเตรียมความพร้อม)
 CMD php artisan migrate --force && \
-    # รันคำสั่ง Optimize เพื่อแคช Config/Route/View ทันทีตอนเริ่มงาน
-    php artisan config:cache && \
+    # เคลียร์แคชเก่าออกเพื่อให้ Laravel ดึงค่าจาก Environment ล่าสุดของ Render
+    php artisan config:clear && \
     php artisan route:cache && \
     php artisan view:cache && \
+    # ตรวจสอบสิทธิ์อีกครั้ง
     chown -R www-data:www-data storage bootstrap/cache && \
     chmod -R 775 storage bootstrap/cache && \
     apache2-foreground

@@ -158,7 +158,7 @@ export default function CommentItem({
                     {comment.user_id === auth.user.id && !isBeingEdited && (
                         <Dropdown>
                             <Dropdown.Trigger>
-                                <button className="text-gray-300 hover:text-gray-600 opacity-0 group-hover:opacity-100 transition">
+                                <button aria-label="เมนูจัดการคอมเมนต์" className="text-gray-300 hover:text-gray-600 opacity-0 group-hover:opacity-100 transition">
                                     <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" /></svg>
                                 </button>
                             </Dropdown.Trigger>

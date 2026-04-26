@@ -158,7 +158,7 @@ export default function Show({ auth, post, highlightId }) {
 
     return (
         <AuthenticatedLayout header={<h2 className="text-xl font-semibold text-gray-800">กระทู้ฉบับเต็ม ✨</h2>}>
-            {/* ✨ [Optimization: SEO] เพิ่ม Meta Description เพื่อการแชร์และผลการค้นหาที่ดีขึ้น */}
+            
             <Head>
                 <title>{`Post: ${post.title}`}</title>
                 <meta name="description" content={post.content.substring(0, 150) + '...'} />
@@ -166,7 +166,7 @@ export default function Show({ auth, post, highlightId }) {
             
             <div className="py-12 bg-gray-50 min-h-screen">
                 <div className="mx-auto max-w-4xl sm:px-6 lg:px-8">
-                    {/* ✨ [Optimization: Accessibility] ใช้ Semantic <article> แทน <div> */}
+                    
                     <article className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 mb-6">
                         
                         {/* --- ส่วนเนื้อหาหลักของโพสต์ --- */}
@@ -182,8 +182,8 @@ export default function Show({ auth, post, highlightId }) {
                                     <img 
                                         key={img.id} 
                                         src={`${img.image_url}?t=${new Date().getTime()}`}
-                                        alt={`รูปภาพประกอบโพสต์หัวข้อ: ${post.title}`} // ✨ [Optimization] ปรับ Alt text ให้สื่อความหมาย
-                                        loading="lazy" // ✨ [Optimization] เพิ่ม Lazy loading
+                                        alt={`รูปภาพประกอบโพสต์หัวข้อ: ${post.title}`} 
+                                        loading="lazy" 
                                         className="w-full rounded-2xl shadow-sm border object-cover max-h-[500px]" 
                                     />
                                 ))}
@@ -194,8 +194,8 @@ export default function Show({ auth, post, highlightId }) {
                         <div className="flex items-center py-4 border-y border-gray-100 mb-6">
                             <button 
                                 onClick={handleLike} 
-                                aria-label={localIsLiked ? "เลิกถูกใจโพสต์นี้" : "ถูกใจโพสต์นี้"} // ✨ [Optimization] Accessible Name
-                                className={`flex items-center gap-2 font-bold transition-all duration-300 p-2 -m-2 ${ // ✨ [Optimization] เพิ่ม p-2 -m-2 ขยาย Touch target
+                                aria-label={localIsLiked ? "เลิกถูกใจโพสต์นี้" : "ถูกใจโพสต์นี้"}
+                                className={`flex items-center gap-2 font-bold transition-all duration-300 p-2 -m-2 ${ 
                                     localIsLiked ? 'text-rose-500 scale-105' : 'text-gray-500 hover:text-rose-400' // ปรับ text-gray-400 เป็น 500
                                 }`}
                             >
@@ -218,7 +218,7 @@ export default function Show({ auth, post, highlightId }) {
                         </div>
 
                         {/* --- ส่วนแสดงรายการความคิดเห็น --- */}
-                        {/* ✨ [Optimization] ใช้ <section> เพื่อแบ่งสัดส่วนเนื้อหาให้ชัดเจน */}
+                        
                         <section aria-label="ความคิดเห็นทั้งหมด" className="bg-gray-50 rounded-2xl p-6 border border-gray-100 shadow-inner">
                             <h4 className="text-xs font-bold text-gray-500 uppercase mb-6 tracking-widest">Comments</h4> {/* ปรับเป็น text-gray-500 */}
                             
@@ -258,7 +258,7 @@ export default function Show({ auth, post, highlightId }) {
                                         <span>กำลังตอบกลับ <b>@{replyingTo.user.name}</b></span>
                                         <button 
                                             onClick={() => { setReplyingTo(null); resetComment(); }} 
-                                            aria-label="ยกเลิกการตอบกลับ" // ✨ [Optimization]
+                                            aria-label="ยกเลิกการตอบกลับ" 
                                             className="font-bold hover:text-indigo-800 p-2 -m-2"
                                         >
                                             ✕
@@ -272,7 +272,7 @@ export default function Show({ auth, post, highlightId }) {
                                         <span>กำลังแก้ไขคอมเมนต์ของตัวเอง ✍️</span>
                                         <button 
                                             onClick={() => { setEditingComment(null); resetComment(); }} 
-                                            aria-label="ยกเลิกการแก้ไข" // ✨ [Optimization]
+                                            aria-label="ยกเลิกการแก้ไข" 
                                             className="font-bold hover:text-amber-800 p-2 -m-2"
                                         >
                                             ✕
@@ -281,7 +281,7 @@ export default function Show({ auth, post, highlightId }) {
                                 )}
 
                                 <form onSubmit={handleCommentSubmit} className="flex gap-2">
-                                    {/* ✨ [Optimization] เพิ่ม Label แบบซ่อนตัวเพื่อ Accessibility */}
+                                    
                                     <label htmlFor="post-comment-input" className="sr-only">
                                         {editingComment ? 'แก้ไขความคิดเห็น' : 'ร่วมแสดงความคิดเห็น'}
                                     </label>

@@ -224,6 +224,7 @@ const PostItem = memo(({ post, auth, highlightId = null, isFirst = false }) => {
                                         height={isSingleImage ? 450 : 300}
                                         loading={isLCP ? "eager" : "lazy"}
                                         fetchpriority={isLCP ? "high" : "auto"}
+                                        crossOrigin="anonymous"
                                         decoding="async"
                                         // 🌟 [CLS] รักษา Aspect Ratio และความสูงขั้นต่ำ
                                         className="w-full h-auto min-h-[150px] shadow-sm border object-cover bg-gray-100 max-h-[500px]"

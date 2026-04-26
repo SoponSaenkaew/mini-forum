@@ -11,8 +11,6 @@
 
         <link rel="preconnect" href="https://fonts.bunny.net" crossorigin>
         <link rel="dns-prefetch" href="https://fonts.bunny.net">
-        <link rel="preload" href="https://fonts.bunny.net/files/figtree-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
-        <link rel="preload" href="https://fonts.bunny.net/files/figtree-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin>
         
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,900&display=swap" rel="stylesheet" />
 

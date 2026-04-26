@@ -51,14 +51,19 @@ export default function ReplyPage({ auth, targetComment }) {
 
     return (
         <AuthenticatedLayout header={<h2 className="font-semibold text-xl text-gray-800">ตอบกลับความคิดเห็น ✨</h2>}>
-            <Head title="Reply to Comment" />
+            
+            <Head>
+                <title>{`ตอบกลับ @${targetComment.user.name} - Tuna Forum`}</title>
+                <meta name="description" content={`ตอบกลับความคิดเห็นของ ${targetComment.user.name} บน Tuna Forum`} />
+            </Head>
             
             <div className="py-12 bg-gray-50 min-h-screen">
                 <div className="max-w-2xl mx-auto sm:px-6 lg:px-8">
                     
                     {/* --- Section: แสดงคอมเมนต์เป้าหมาย (Target Comment) --- */}
                     {/* ออกแบบกรอบให้เป็นสีทอง (amber) เพื่อเน้นย้ำผู้ใช้ว่ากำลังตอบกลับใครอยู่ */}
-                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-amber-200 mb-6">
+                    
+                    <section aria-label="คอมเมนต์เป้าหมาย" className="bg-white p-6 rounded-2xl shadow-sm border border-amber-200 mb-6">
                         <h4 className="text-[10px] font-bold text-amber-600 uppercase mb-4 tracking-widest">
                             คอมเมนต์เป้าหมาย
                         </h4>
@@ -72,17 +77,19 @@ export default function ReplyPage({ auth, targetComment }) {
                             highlightId={targetComment.id} // สั่งให้ไฮไลท์ตัวนี้
                             onReply={() => {}} // ปล่อยว่างไว้เพราะอยู่ในหน้าตอบกลับอยู่แล้ว ป้องกันผู้ใช้กดซ้ำซ้อน
                         />
-                    </div>
+                    </section>
 
                     {/* --- Section: ฟอร์มสำหรับพิมพ์ตอบกลับ (Reply Form) --- */}
-                    <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                    <section aria-label="ฟอร์มตอบกลับ" className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
                         <form onSubmit={submit} className="space-y-4">
                             
-                            <label className="block text-sm font-bold text-gray-700">
+                           
+                            <label htmlFor="reply-content" className="block text-sm font-bold text-gray-700">
                                 พิมพ์คำตอบกลับถึง @{targetComment.user.name}
                             </label>
                             
                             <textarea 
+                                id="reply-content" 
                                 value={data.content} 
                                 onChange={e => setData('content', e.target.value)} 
                                 className="w-full border-gray-200 rounded-xl h-32 focus:ring-indigo-500 resize-y" 
@@ -93,19 +100,20 @@ export default function ReplyPage({ auth, targetComment }) {
                             <div className="flex justify-end gap-2 items-center">
                                 <Link 
                                     href={route('notifications.index')} 
-                                    className="px-4 py-2 text-sm text-gray-400 hover:text-gray-600 transition font-medium"
+                                    className="px-4 py-2 text-sm text-gray-500 hover:text-gray-700 transition font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-md"
+                                   
                                 >
                                     ยกเลิก
                                 </Link>
                                 <button 
                                     disabled={processing || !data.content.trim()} 
-                                    className="bg-indigo-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-indigo-700 transition disabled:opacity-50 shadow-sm"
+                                    className="bg-indigo-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-indigo-700 transition disabled:opacity-50 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1"
                                 >
                                     ส่งคำตอบกลับ
                                 </button>
                             </div>
                         </form>
-                    </div>
+                    </section>
                 </div>
             </div>
         </AuthenticatedLayout>

@@ -31,7 +31,7 @@ export default function Index({ auth, notifications }) {
      * @param {number|string} id - รหัส (ID) ของการแจ้งเตือนที่ต้องการลบ
      */
     const deleteNotification = (id) => {
-        if (confirm('ลบประวัตินี้ทิ้ง)) {
+        if (confirm('ลบประวัตินี้ทิ้ง')) {
             router.delete(route('notifications.destroy', id), { 
                 preserveScroll: true 
             });

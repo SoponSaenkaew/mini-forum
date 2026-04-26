@@ -6,26 +6,33 @@ import { useState, useEffect, useRef } from 'react';
 
 /**
  * @component AuthenticatedLayout
- * @description เลย์เอาต์หลักที่รวมระบบนำทาง, ช่องค้นหาส่วนกลาง, การแจ้งเตือนแบบเรียลไทม์ และผ่านการปรับแต่ง Lighthouse (A11y & Performance)
- * @author Arona (Helper)
+ * @description เลย์เอาต์หลักสำหรับผู้ใช้ที่เข้าสู่ระบบแล้ว (Authenticated Layout)
+ * ควบคุมระบบนำทาง (Navigation), แถบค้นหาส่วนกลาง, การเชื่อมต่อ WebSockets (Laravel Echo) 
+ * และได้รับการปรับแต่งสถาปัตยกรรม UI ให้สอดคล้องกับมาตรฐาน Lighthouse (Performance & Accessibility)
  */
 export default function AuthenticatedLayout({ header, children }) {
-    // ดึงข้อมูล Global Props จาก Inertia
+    // ดึงข้อมูล Global Props และสถานะผู้ใช้งานจาก Inertia.js
     const { auth, filters } = usePage().props;
     const user = auth.user;
 
-    // --- การจัดการสถานะ (State Management) ---
+    // ==========================================
+    // 1. การจัดการสถานะ (State Management)
+    // ==========================================
     const [isVisible, setIsVisible] = useState(true);
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
     
-    /** @state {string} searchQuery - สถานะคำค้นหาที่ซิงค์กับ URL */
+    /** @state {string} searchQuery - จัดเก็บคำค้นหาและเชื่อมโยงกับ Query Parameters */
     const [searchQuery, setSearchQuery] = useState(filters?.search || '');
     const lastScrollY = useRef(0);
 
+    // ==========================================
+    // 2. ฟังก์ชันจัดการเหตุการณ์ (Event Handlers)
+    // ==========================================
+    
     /**
      * @function handleSearch
-     * @description ส่งคำค้นหาไปยังหน้า Dashboard โดยไม่ Refresh หน้าเว็บ (Partial Reload)
-     * @param {Event} e - Form Event
+     * @description ดำเนินการค้นหาข้อมูลโดยการรีโหลดเฉพาะส่วน (Partial Reload) ผ่าน Inertia
+     * @param {Event} e - Form Submission Event
      */
     const handleSearch = (e) => {
         e.preventDefault();
@@ -35,28 +42,37 @@ export default function AuthenticatedLayout({ header, children }) {
         );
     };
 
-    /**
-     * @section Real-time Setup
-     * จัดการ Laravel Echo เพื่อรับการแจ้งเตือนทันที
-     */
+    // ==========================================
+    // 3. การเชื่อมต่อข้อมูลแบบเรียลไทม์ (Real-time Integration)
+    // ==========================================
+    
     useEffect(() => {
         const privateChannel = `App.Models.User.${user.id}`;
+        
+        // ติดตามการแจ้งเตือนส่วนบุคคล (Private Notifications)
         window.Echo.private(privateChannel).notification(() => handleReload());
+        
+        // ติดตามการอัปเดตฟีดสาธารณะ (Public Feed Events)
         window.Echo.channel('public-feed').listen('.FeedUpdated', () => handleReload());
 
         const handleReload = () => router.reload({ only: ['auth'], preserveScroll: true });
 
+        // ยกเลิกการเชื่อมต่อเมื่อคอมโพเนนต์ถูกทำลาย (Cleanup / Unmount)
         return () => {
             window.Echo.leave(privateChannel);
             window.Echo.leave('public-feed');
         };
     }, [user.id]);
 
-    /**
-     * @section Scroll Behavior
-     * จัดการซ่อน/แสดง Navbar เมื่อเลื่อนหน้าจอ
-     */
+    // ==========================================
+    // 4. การจัดการพฤติกรรมหน้าจอ (Scroll Behavior)
+    // ==========================================
+    
     useEffect(() => {
+        /**
+         * @function controlNavbar
+         * @description ควบคุมการแสดง/ซ่อนแถบนำทางอัตโนมัติตามทิศทางการเลื่อนหน้าจอ
+         */
         const controlNavbar = () => {
             const currentScrollY = window.scrollY;
             if (currentScrollY > lastScrollY.current && currentScrollY > 100) {
@@ -66,12 +82,19 @@ export default function AuthenticatedLayout({ header, children }) {
             }
             lastScrollY.current = currentScrollY;
         };
+        
+        // ใช้ { passive: true } เพื่อไม่ให้กีดขวางประสิทธิภาพการเลื่อนหน้าจอ (Scrolling Performance)
         window.addEventListener('scroll', controlNavbar, { passive: true });
         return () => window.removeEventListener('scroll', controlNavbar);
     }, []);
 
+    // ==========================================
+    // 5. การแสดงผล (Render)
+    // ==========================================
+
     return (
         <div className="min-h-screen bg-gray-100 font-sans">
+            {/* แถบนำทางหลัก (Main Navigation) */}
             <nav 
                 aria-label="เมนูนำทางหลัก" 
                 className={`fixed top-0 z-50 w-full border-b border-gray-100 bg-white transition-transform duration-300 ${
@@ -80,7 +103,7 @@ export default function AuthenticatedLayout({ header, children }) {
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div className="flex h-16 justify-between items-center gap-4">
                         
-                        {/* ส่วนโลโก้และช่องค้นหา (Desktop) */}
+                        {/* ส่วนแสดงโลโก้และช่องค้นหา (Desktop) */}
                         <div className="flex items-center flex-1">
                             <Link href="/" aria-label="กลับสู่หน้าแรก" className="text-xl font-black text-indigo-600 uppercase tracking-tighter focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-md p-1">
                                 TUNA
@@ -88,7 +111,6 @@ export default function AuthenticatedLayout({ header, children }) {
 
                             {/* ลิงก์นำทางสำหรับหน้าจอขนาดใหญ่ (Desktop Navigation) */}
                             <div className="hidden space-x-6 sm:-my-px sm:ms-8 sm:flex">
-                                {/* ✨ เพิ่มปุ่มหน้าหลักตรงนี้ค่ะ */}
                                 <NavLink href="/">
                                     หน้าหลัก
                                 </NavLink>
@@ -100,6 +122,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                 </NavLink>
                             </div>
 
+                            {/* ฟอร์มค้นหาสำหรับหน้าจอขนาดใหญ่ */}
                             <div className="hidden md:flex ml-8 flex-1 max-w-md">
                                 <form onSubmit={handleSearch} className="relative w-full">
                                     <input 
@@ -110,14 +133,14 @@ export default function AuthenticatedLayout({ header, children }) {
                                         aria-label="ช่องค้นหา"
                                         className="w-full bg-gray-100 border-none rounded-full py-2 pl-4 pr-10 text-sm focus:ring-2 focus:ring-indigo-500"
                                     />
-                                    <button type="submit" aria-label="ค้นหา" className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-indigo-600">
+                                    <button type="submit" aria-label="ดำเนินการค้นหา" className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-indigo-600">
                                         🔍
                                     </button>
                                 </form>
                             </div>
                         </div>
 
-                        {/* เมนูผู้ใช้และการแจ้งเตือน */}
+                        {/* เมนูผู้ใช้และการแจ้งเตือน (User & Notification Actions) */}
                         <div className="hidden sm:flex items-center gap-3">
                             <Link 
                                 href={route('notifications.index')} 
@@ -138,7 +161,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                 <Dropdown.Trigger>
                                     <button 
                                         aria-haspopup="true"
-                                        aria-label="เปิดเมนูผู้ใช้งาน"
+                                        aria-label="เปิดเมนูบัญชีผู้ใช้งาน"
                                         className="flex items-center gap-2 p-1 rounded-full hover:bg-gray-50 transition min-h-[44px] focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                     >
                                         {user.avatar_url ? (
@@ -146,6 +169,9 @@ export default function AuthenticatedLayout({ header, children }) {
                                                 src={user.avatar_url} 
                                                 loading="lazy" 
                                                 decoding="async"
+                                                // 🌟 [Lighthouse] กำหนดขนาดภาพเพื่อป้องกัน Cumulative Layout Shift (CLS)
+                                                width="32" 
+                                                height="32"
                                                 className="h-8 w-8 rounded-full object-cover border" 
                                                 alt={`รูปโปรไฟล์ของ ${user.name}`} 
                                             />
@@ -156,21 +182,21 @@ export default function AuthenticatedLayout({ header, children }) {
                                     </button>
                                 </Dropdown.Trigger>
                                 <Dropdown.Content>
-                                    <Dropdown.Link href={route('profile.show', user.id)}>My Profile</Dropdown.Link>
-                                    <Dropdown.Link href={route('profile.edit')}>Settings</Dropdown.Link>
-                                    {user.is_admin && <Dropdown.Link href="/admin">Admin Panel</Dropdown.Link>}
-                                    <Dropdown.Link href={route('logout')} method="post" as="button">Log Out</Dropdown.Link>
+                                    <Dropdown.Link href={route('profile.show', user.id)}>หน้าโปรไฟล์ (Profile)</Dropdown.Link>
+                                    <Dropdown.Link href={route('profile.edit')}>การตั้งค่า (Settings)</Dropdown.Link>
+                                    {user.is_admin && <Dropdown.Link href="/admin">แผงควบคุม (Admin Panel)</Dropdown.Link>}
+                                    <Dropdown.Link href={route('logout')} method="post" as="button">ออกจากระบบ (Log Out)</Dropdown.Link>
                                 </Dropdown.Content>
                             </Dropdown>
                         </div>
 
-                        {/* Hamburger Menu (Mobile) */}
+                        {/* ปุ่มเปิดเมนูสำหรับหน้าจอขนาดเล็ก (Mobile Hamburger Menu) */}
                         <div className="sm:hidden flex items-center">
                             <button 
                                 onClick={() => setShowingNavigationDropdown(!showingNavigationDropdown)} 
-                                aria-label="เปิดเมนูบนมือถือ"
+                                aria-label={showingNavigationDropdown ? "ปิดเมนูนำทาง" : "เปิดเมนูนำทาง"}
                                 aria-expanded={showingNavigationDropdown}
-                                className="p-2 text-gray-500 min-h-[44px] min-w-[44px] focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-md"
+                                className="p-2 text-gray-500 min-h-[44px] min-w-[44px] focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-md flex items-center justify-center"
                             >
                                 <svg className="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24" aria-hidden="true">
                                     <path className={!showingNavigationDropdown ? 'inline-flex' : 'hidden'} strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
@@ -181,8 +207,9 @@ export default function AuthenticatedLayout({ header, children }) {
                     </div>
                 </div>
 
-                {/* Mobile Navigation & Search */}
+                {/* แผงเมนูและค้นหาสำหรับหน้าจอขนาดเล็ก (Mobile Navigation Panel) */}
                 <div className={(showingNavigationDropdown ? 'block' : 'hidden') + ' sm:hidden bg-white border-t'}>
+                    
                     <div className="p-4">
                         <form onSubmit={handleSearch} className="relative w-full">
                             <input 
@@ -190,13 +217,13 @@ export default function AuthenticatedLayout({ header, children }) {
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 placeholder="ค้นหา..."
-                                aria-label="ค้นหาบนมือถือ"
+                                aria-label="ช่องค้นหาสำหรับมือถือ"
                                 className="w-full bg-gray-100 border-none rounded-lg py-2 text-sm focus:ring-2 focus:ring-indigo-500"
                             />
                         </form>
                     </div>
                     
-                    {/* User Profile Mobile */}
+                    {/* ส่วนข้อมูลบัญชีผู้ใช้บนมือถือ (Mobile User Profile) */}
                     <div className="border-t border-gray-200 pb-1 pt-4">
                         <div className="flex items-center px-4">
                             <div className="shrink-0">
@@ -205,8 +232,11 @@ export default function AuthenticatedLayout({ header, children }) {
                                         src={user.avatar_url}
                                         loading="lazy" 
                                         decoding="async"
+                                        // [Lighthouse] กำหนดขนาดภาพเพื่อป้องกัน CLS สำหรับมือถือ
+                                        width="40"
+                                        height="40"
                                         className="h-10 w-10 rounded-full object-cover border border-gray-200" 
-                                        alt="Profile" 
+                                        alt={`รูปโปรไฟล์ของ ${user.name}`} 
                                     />
                                 ) : (
                                     <div className="h-10 w-10 rounded-full bg-indigo-500 flex items-center justify-center text-white font-bold" aria-hidden="true">{user.name[0]}</div>
@@ -220,17 +250,16 @@ export default function AuthenticatedLayout({ header, children }) {
                     </div>
 
                     <div className="pb-3 space-y-1 mt-2">
-                        {/* ✨ เพิ่มปุ่มหน้าหลักสำหรับมือถือตรงนี้ค่ะ */}
                         <ResponsiveNavLink href="/">หน้าหลัก</ResponsiveNavLink>
                         <ResponsiveNavLink href={route('dashboard')} active={route().current('dashboard')}>Dashboard</ResponsiveNavLink>
-                        <ResponsiveNavLink href={route('profile.show', user.id)}>My Profile</ResponsiveNavLink>
-                        {user.is_admin && <ResponsiveNavLink href="/admin">Admin Panel</ResponsiveNavLink>}
-                        <ResponsiveNavLink href={route('logout')} method="post" as="button">Log Out</ResponsiveNavLink>
+                        <ResponsiveNavLink href={route('profile.show', user.id)}>หน้าโปรไฟล์</ResponsiveNavLink>
+                        {user.is_admin && <ResponsiveNavLink href="/admin">แผงควบคุม</ResponsiveNavLink>}
+                        <ResponsiveNavLink href={route('logout')} method="post" as="button">ออกจากระบบ</ResponsiveNavLink>
                     </div>
                 </div>
             </nav>
 
-            {/* ส่วนเนื้อหาหลัก */}
+            {/* พื้นที่สำหรับแสดงเนื้อหาหลัก (Main Content Area) */}
             <div className="pt-16 sm:pt-20">
                 {header && (
                     <header className="bg-white shadow-sm border-b">

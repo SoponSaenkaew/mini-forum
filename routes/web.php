@@ -43,28 +43,35 @@ Route::get('/', function () {
 Route::get('/dashboard', function (Request $request) {
     $search = $request->query('search');
 
-    // กำหนด Cache Key โดยแยกตามคำค้นหา (หากไม่มีคำค้นหาจะใช้ค่า 'all')
-    $cacheKey = 'dashboard_posts_' . ($search ?: 'all');
+    // 1. กำหนดโครงสร้าง Query หลักที่ต้องใช้ซ้ำ
+    $postQuery = Post::with([
+        'user', 
+        'likes', 
+        'images',
+        'comments' => function($query) {
+            $query->whereNull('parent_id')
+                  ->with(['user', 'likes', 'replies']) 
+                  ->latest();
+        }
+    ]);
 
-    // ดึงข้อมูลจาก Cache หรือคิวรีข้อมูลใหม่หาก Cache หมดอายุ (60 วินาที)
-    $posts = Cache::remember($cacheKey, 60, function () use ($search) {
-        return Post::with([
-            'user', 
-            'likes', 
-            'images',
-            'comments' => function($query) {
-                // ดึงเฉพาะคอมเมนต์หลัก (ไม่มี parent_id) พร้อมตอบกลับที่เกี่ยวข้อง
-                $query->whereNull('parent_id')
-                      ->with(['user', 'likes', 'replies']) 
-                      ->latest();
-            }
-        ])
-        ->when($search, function($query, $search) {
-            $query->where('title', 'like', "%{$search}%")
-                  ->orWhere('content', 'like', "%{$search}%");
-        })
-        ->latest()->get();
-    });
+    // 2. แยกลอจิก: แคชเฉพาะตอน "ไม่ค้นหา" เท่านั้น
+    if (empty($search)) {
+        // ไม่มีคำค้นหา -> ดึงฟีดหลักจาก Cache
+        $posts = Cache::remember('dashboard_posts_all', 60, function () use ($postQuery) {
+            return $postQuery->latest()->get();
+        });
+    } else {
+        // มีคำค้นหา -> คิวรีจากฐานข้อมูลสดๆ (Real-time) เพื่อความแม่นยำ
+        $posts = $postQuery->where('title', 'like', "%{$search}%")
+                           ->orWhere('content', 'like', "%{$search}%")
+                           // แอบเพิ่มการค้นหาชื่อคนเขียนโพสต์ให้ด้วยค่ะ (ถ้าคุณครูต้องการ)
+                           ->orWhereHas('user', function ($q) use ($search) {
+                               $q->where('name', 'like', "%{$search}%");
+                           })
+                           ->latest()
+                           ->get();
+    }
 
     return Inertia::render('Dashboard', [
         'posts' => $posts,

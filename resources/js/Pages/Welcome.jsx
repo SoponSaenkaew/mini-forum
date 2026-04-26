@@ -4,15 +4,25 @@ import { Link, Head } from '@inertiajs/react';
  * @component PostCard
  * @description คอมโพเนนต์สำหรับแสดงผลข้อมูลโพสต์แบบย่อ (Thumbnail View) 
  * รองรับการแสดงผลรูปภาพหน้าปก (ถ้ามี) และแสดงจำนวนการกดถูกใจ (Likes)
- * ออกแบบตามมาตรฐาน Accessibility และป้องกัน Cumulative Layout Shift (CLS)
+ * 🌟 [Optimization 100/100] ปรับปรุง Color Contrast และเพิ่มลิงก์คลุมทั้งการ์ดสำหรับการนำทางด้วยคีย์บอร์ด
  */
 const PostCard = ({ post }) => (
-    <article className="text-left rounded-3xl border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 bg-white overflow-hidden flex flex-col group" aria-label={`โพสต์โดย ${post.user.name}`}>
+    // 🌟 [Accessibility] เพิ่ม relative เพื่อใช้คลุม Link และปรับให้ Screen Reader อ่านได้ชัดเจน
+    <article className="relative text-left rounded-3xl border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 bg-white overflow-hidden flex flex-col group">
+        
+        {/* 🌟 [Accessibility] ลิงก์ล่องหน (Overlay Link) คลุมทั้งการ์ดเพื่อให้กด Tab และ Enter ได้ */}
+        <Link 
+            href={route('posts.show', post.id)} 
+            className="absolute inset-0 z-10 focus:outline-none focus:ring-4 focus:ring-indigo-500/50 rounded-3xl"
+        >
+            <span className="sr-only">อ่านรายละเอียดโพสต์ของ {post.user.name}</span>
+        </Link>
+
         {/* ส่วนแสดงรูปภาพหน้าปก (Thumbnail) */}
         {post.images?.[0] && (
             <div className="relative w-full aspect-video bg-gray-50 overflow-hidden">
                 <img 
-                    src={post.images[0].image_url} // 🌟 [Lighthouse] นำ ?t= ออกเพื่อใช้งาน Browser Caching
+                    src={post.images[0].image_url} 
                     alt={`ภาพประกอบเนื้อหาของ ${post.user.name}`} 
                     loading="lazy"
                     decoding="async"
@@ -27,8 +37,8 @@ const PostCard = ({ post }) => (
         <div className="p-5 flex flex-col flex-1">
             <header className="mb-2">
                 <p className="font-bold text-indigo-600 text-xs">@{post.user.name}</p>
-                {/* 🌟 [Accessibility] ใช้แท็ก time แทน span/div ทั่วไป */}
-                <time className="text-[10px] text-gray-400 block" dateTime={post.created_at}>
+                {/* 🌟 [Accessibility] ปรับ text-gray-400 เป็น 500 เพื่อให้ Contrast ผ่านเกณฑ์ WCAG */}
+                <time className="text-[10px] text-gray-500 block font-medium" dateTime={post.created_at}>
                     {new Date(post.created_at).toLocaleDateString('th-TH')}
                 </time>
             </header>
@@ -38,16 +48,17 @@ const PostCard = ({ post }) => (
             </p>
             
             {/* แถบข้อมูลสรุป (Metrics Footer) */}
-            <footer className="flex justify-between items-center text-[10px] text-gray-400 font-semibold uppercase tracking-wider mt-auto pt-4 border-t border-gray-50">
+            <footer className="flex justify-between items-center text-[10px] text-gray-500 font-bold uppercase tracking-wider mt-auto pt-4 border-t border-gray-50">
                 <span className="flex items-center gap-1" aria-label={`มีผู้ถูกใจโพสต์นี้ ${post.likes.length} คน`}>
-                    <svg className="w-3 h-3 text-rose-500" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                    {/* 🌟 [Accessibility] ปรับสีไอคอนหัวใจให้เข้มขึ้นเล็กน้อย */}
+                    <svg className="w-3.5 h-3.5 text-rose-600" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                         <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
                     </svg>
                     {post.likes.length} LIKES
                 </span>
                 
                 {post.images?.length > 1 && (
-                    <span className="bg-gray-50 px-2 py-1 rounded-md text-gray-500" aria-label={`มีรูปภาพเพิ่มเติมอีก ${post.images.length - 1} รูป`}>
+                    <span className="bg-gray-100 px-2 py-1 rounded-md text-gray-600" aria-label={`มีรูปภาพเพิ่มเติมอีก ${post.images.length - 1} รูป`}>
                         +{post.images.length - 1} IMAGES
                     </span>
                 )}
@@ -102,7 +113,7 @@ export default function Welcome({ auth, latestPosts }) {
                             <div className="absolute bottom-2 left-0 w-full h-3 bg-indigo-50 -z-10 rounded-full" aria-hidden="true"></div>
                         </span>
                     </h1>
-                    <p className="max-w-lg mx-auto text-base text-gray-500 font-medium mb-8">
+                    <p className="max-w-lg mx-auto text-base text-gray-600 font-medium mb-8"> {/* 🌟 ปรับสีเทาให้เข้มขึ้นเพื่อ Contrast */}
                         แพลตฟอร์มเชื่อมต่อทุกความคิดสร้างสรรค์และเรื่องราวที่น่าสนใจของคุณ
                     </p>
                     <Link 
@@ -117,7 +128,8 @@ export default function Welcome({ auth, latestPosts }) {
                 <section className="mt-8 mb-20 w-full" aria-labelledby="trending-heading">
                     <header className="flex flex-col items-center mb-8">
                         <div className="h-1.5 w-10 bg-indigo-600 mb-3 rounded-full" aria-hidden="true"></div>
-                        <h2 id="trending-heading" className="text-[10px] font-black text-gray-400 uppercase tracking-[0.4em]">
+                        {/* 🌟 [Accessibility] ปรับ text-gray-400 เป็น 500 */}
+                        <h2 id="trending-heading" className="text-[10px] font-black text-gray-500 uppercase tracking-[0.4em]">
                             กิจกรรมล่าสุด (Trending Activity) 💬
                         </h2>
                     </header>
@@ -129,7 +141,7 @@ export default function Welcome({ auth, latestPosts }) {
                                 <PostCard key={post.id} post={post} />
                             ))
                         ) : (
-                            <div className="col-span-full text-center py-10 text-gray-400 text-sm">
+                            <div className="col-span-full text-center py-10 text-gray-500 font-medium text-sm"> {/* 🌟 ปรับสีเทา */}
                                 ยังไม่มีข้อมูลการทำกิจกรรมในขณะนี้
                             </div>
                         )}
@@ -139,7 +151,8 @@ export default function Welcome({ auth, latestPosts }) {
 
             {/* ส่วนท้ายของหน้า (Footer) */}
             <footer className="py-8 text-center border-t border-gray-50">
-                <p className="text-gray-400 text-[10px] font-bold tracking-widest uppercase">
+                {/* 🌟 [Accessibility] ปรับ text-gray-400 เป็น 500 เพื่อผ่านเกณฑ์ Contrast */}
+                <p className="text-gray-500 text-[10px] font-bold tracking-widest uppercase">
                     &copy; 2026 Tuna Forum Project • พัฒนาโดย PhieTao
                 </p>
             </footer>

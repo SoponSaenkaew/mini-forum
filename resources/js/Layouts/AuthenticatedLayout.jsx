@@ -132,8 +132,28 @@ export default function AuthenticatedLayout({ header, children }) {
                         </div>
 
                         {/* เมนูผู้ใช้งานมุมขวาบน (User Dropdown Menu) */}
-                        <div className="hidden sm:ms-6 sm:flex sm:items-center">
-                            <div className="relative ms-3">
+                        {/* ✨ [Optimization] เพิ่ม gap-2 เพื่อแยกปุ่มแจ้งเตือนออกจากปุ่มผู้ใช้ */}
+                        <div className="hidden sm:ms-6 sm:flex sm:items-center gap-2">
+                            
+                            {/* ✨ [Optimization: Touch Target] แยกปุ่มกระดิ่งแจ้งเตือนออกมาเดี่ยวๆ ให้กดง่ายขึ้น ไม่ซ้อนกับปุ่ม Dropdown */}
+                            <Link 
+                                href={route('notifications.index')}
+                                aria-label={`การแจ้งเตือน ${user.unread_notifications_count > 0 ? `ใหม่ ${user.unread_notifications_count} รายการ` : 'ทั้งหมด'}`}
+                                className="relative inline-flex items-center justify-center p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-800 rounded-full transition focus:outline-none focus:ring-2 focus:ring-indigo-500 min-h-[44px] min-w-[44px]"
+                            >
+                                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                                </svg>
+                                
+                                {/* ตัวแสดงจำนวนการแจ้งเตือนที่ยังไม่ได้อ่าน (Unread Notifications Badge) */}
+                                {user.unread_notifications_count > 0 && (
+                                    <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white shadow-sm">
+                                        {user.unread_notifications_count > 99 ? '99+' : user.unread_notifications_count}
+                                    </span>
+                                )}
+                            </Link>
+
+                            <div className="relative ms-1">
                                 <Dropdown>
                                     <Dropdown.Trigger>
                                         <span className="inline-flex rounded-md">
@@ -141,7 +161,8 @@ export default function AuthenticatedLayout({ header, children }) {
                                                 type="button"
                                                 aria-haspopup="true" // [Optimization] บอก Screen Reader ว่ามีเมนูย่อย
                                                 aria-label="เปิดเมนูผู้ใช้งาน" 
-                                                className="inline-flex items-center rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-600 transition duration-150 ease-in-out hover:text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500" // [Optimization] ปรับ text-gray-500 เป็น 600 เพื่อ Contrast
+                                                // ✨ [Optimization] เพิ่ม min-h-[44px] ให้ได้ขนาด Touch Target มาตรฐาน
+                                                className="inline-flex items-center rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-600 transition duration-150 ease-in-out hover:text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 min-h-[44px]" 
                                             >
                                                 <span className="relative inline-flex items-center">
                                                     {/* รูปโปรไฟล์ผู้ใช้งาน (User Avatar) */}
@@ -158,17 +179,6 @@ export default function AuthenticatedLayout({ header, children }) {
                                                     )}
                                                     
                                                     {user.name}
-
-                                                    {/* ตัวแสดงจำนวนการแจ้งเตือนที่ยังไม่ได้อ่าน (Unread Notifications Badge) */}
-                                                    {user.unread_notifications_count > 0 && (
-                                                        <Link 
-                                                            href={route('notifications.index')}
-                                                            aria-label={`คุณมีการแจ้งเตือนใหม่ ${user.unread_notifications_count} รายการ`} // [Optimization]
-                                                            className="ms-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm hover:bg-red-600 transition focus:outline-none focus:ring-2 focus:ring-red-500"
-                                                        >
-                                                            {user.unread_notifications_count > 99 ? '99+' : user.unread_notifications_count}
-                                                        </Link>
-                                                    )}
                                                 </span>
 
                                                 {/* ไอคอนลูกศรชี้ลง */}
@@ -217,7 +227,8 @@ export default function AuthenticatedLayout({ header, children }) {
                                 aria-label="เปิดหรือปิดเมนูนำทางสำหรับมือถือ" // [Optimization]
                                 aria-expanded={showingNavigationDropdown} // [Optimization]
                                 aria-controls="mobile-menu" // [Optimization]
-                                className="inline-flex items-center justify-center rounded-md p-2 text-gray-500 transition duration-150 ease-in-out hover:bg-gray-100 hover:text-gray-600 focus:bg-gray-100 focus:text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500" // [Optimization] ปรับสีเป็น 500
+                                // ✨ [Optimization] เพิ่ม min-h-[44px] min-w-[44px] ให้ได้ขนาด Touch Target มาตรฐานในมือถือ
+                                className="inline-flex items-center justify-center rounded-md p-2 text-gray-500 transition duration-150 ease-in-out hover:bg-gray-100 hover:text-gray-600 focus:bg-gray-100 focus:text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 min-h-[44px] min-w-[44px]" 
                             >
                                 <div className="relative">
                                     <svg className="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24" aria-hidden="true">

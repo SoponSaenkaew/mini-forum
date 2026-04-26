@@ -1,11 +1,12 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm, Link } from '@inertiajs/react'; 
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import PostItem from '@/Components/PostItem'; 
 
 /**
  * @component Dashboard
  * @description คอมโพเนนต์หน้า Dashboard แสดงฟีดโพสต์ แบบฟอร์มสร้างโพสต์ และผลการค้นหาผู้ใช้งาน
+ * ได้รับการปรับแต่งเพื่อประสิทธิภาพสูงสุด (Performance) และการเข้าถึง (Accessibility) ตามมาตรฐาน Lighthouse
  */
 export default function Dashboard({ auth, posts, searchedUsers = [], filters = {} }) {
     
@@ -23,7 +24,7 @@ export default function Dashboard({ auth, posts, searchedUsers = [], filters = {
      * @function handleImageChange
      * @description ตรวจสอบไฟล์รูปภาพที่ผู้ใช้อัปโหลดและสร้าง URL สำหรับแสดงตัวอย่าง (Preview)
      */
-    const handleImageChange = (e) => {
+    const handleImageChange = useCallback((e) => {
         const files = Array.from(e.target.files);
         
         // ข้อจำกัด: อัปโหลดได้สูงสุด 5 ไฟล์
@@ -44,13 +45,13 @@ export default function Dashboard({ auth, posts, searchedUsers = [], filters = {
         
         // ล้างค่า input เพื่อให้สามารถเลือกไฟล์เดิมได้ในกรณีที่มีการลบออก
         if (fileInputRef.current) fileInputRef.current.value = '';
-    };
+    }, [data.images, setData]);
 
     /**
      * @function handleRemoveImage
      * @description ลบรูปภาพที่เลือกออกจากรายการอัปโหลดและคืนค่าหน่วยความจำ
      */
-    const handleRemoveImage = (index) => {
+    const handleRemoveImage = useCallback((index) => {
         const updatedImages = [...data.images];
         updatedImages.splice(index, 1);
         setData('images', updatedImages);
@@ -59,13 +60,13 @@ export default function Dashboard({ auth, posts, searchedUsers = [], filters = {
         const updatedPreviews = [...previews];
         updatedPreviews.splice(index, 1);
         setPreviews(updatedPreviews);
-    };
+    }, [data.images, previews, setData]);
 
     /**
      * @function handleCreatePost
      * @description ส่งข้อมูลโพสต์ไปยังเซิร์ฟเวอร์และล้างสถานะฟอร์มเมื่อสำเร็จ
      */
-    const handleCreatePost = (e) => {
+    const handleCreatePost = useCallback((e) => {
         e.preventDefault();
         post(route('posts.store'), { 
             onSuccess: () => { 
@@ -74,7 +75,7 @@ export default function Dashboard({ auth, posts, searchedUsers = [], filters = {
                 setPreviews([]);
             } 
         });
-    };
+    }, [post, previews, reset]);
 
     return (
         <AuthenticatedLayout header={<h2 className="text-xl font-bold text-gray-800">Community Feed</h2>}>
@@ -87,30 +88,41 @@ export default function Dashboard({ auth, posts, searchedUsers = [], filters = {
                     {!filters.search && (
                         <div className="bg-white p-6 shadow-sm sm:rounded-2xl border border-gray-100 hover:shadow-md transition-shadow">
                             <form onSubmit={handleCreatePost} className="space-y-4">
-                                <input 
-                                    type="text" 
-                                    value={data.title} 
-                                    aria-label="หัวข้อโพสต์"
-                                    placeholder="ระบุหัวข้อโพสต์ของคุณ..." 
-                                    className="w-full border-none bg-gray-50 rounded-xl focus:ring-2 focus:ring-indigo-500" 
-                                    onChange={e => setData('title', e.target.value)} 
-                                />
                                 
-                                <textarea 
-                                    value={data.content} 
-                                    aria-label="เนื้อหาโพสต์"
-                                    placeholder="ระบุเนื้อหาที่คุณต้องการแบ่งปัน..." 
-                                    className="w-full border-none bg-gray-50 rounded-xl h-32 focus:ring-2 focus:ring-indigo-500 resize-none" 
-                                    onChange={e => setData('content', e.target.value)}
-                                />
+                                {/* 🌟 [Lighthouse A11y] ใช้ label คู่กับ id เสมอ */}
+                                <div>
+                                    <label htmlFor="post-title" className="sr-only">หัวข้อโพสต์</label>
+                                    <input 
+                                        id="post-title"
+                                        type="text" 
+                                        value={data.title} 
+                                        placeholder="ระบุหัวข้อโพสต์ของคุณ..." 
+                                        className="w-full border-none bg-gray-50 rounded-xl focus:ring-2 focus:ring-indigo-500" 
+                                        onChange={e => setData('title', e.target.value)} 
+                                    />
+                                </div>
+                                
+                                <div>
+                                    <label htmlFor="post-content" className="sr-only">เนื้อหาโพสต์</label>
+                                    <textarea 
+                                        id="post-content"
+                                        value={data.content} 
+                                        placeholder="ระบุเนื้อหาที่คุณต้องการแบ่งปัน..." 
+                                        className="w-full border-none bg-gray-50 rounded-xl h-32 focus:ring-2 focus:ring-indigo-500 resize-none" 
+                                        onChange={e => setData('content', e.target.value)}
+                                    />
+                                </div>
 
                                 {/* แสดงตัวอย่างรูปภาพก่อนอัปโหลด (Image Previews) */}
                                 {previews.length > 0 && (
-                                    <div className="grid grid-cols-4 gap-2">
+                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                                         {previews.map((url, index) => (
                                             <div key={index} className="relative aspect-square">
                                                 <img 
                                                     src={url} 
+                                                    // 🌟 [Lighthouse Performance] ป้องกัน Layout Shift
+                                                    width="400"
+                                                    height="400"
                                                     loading="lazy"
                                                     decoding="async"
                                                     alt={`ตัวอย่างภาพที่ ${index + 1}`}
@@ -119,10 +131,11 @@ export default function Dashboard({ auth, posts, searchedUsers = [], filters = {
                                                 <button 
                                                     type="button" 
                                                     onClick={() => handleRemoveImage(index)}
-                                                    aria-label="ลบรูปภาพนี้"
-                                                    className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-1 shadow hover:bg-red-600 transition-transform active:scale-90 min-h-[32px] min-w-[32px] flex items-center justify-center"
+                                                    aria-label={`ลบตัวอย่างภาพที่ ${index + 1}`}
+                                                    // 🌟 [Lighthouse A11y] ขยายพื้นที่ Touch Target เป็น 44x44
+                                                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow hover:bg-red-600 transition-transform active:scale-90 min-h-[44px] min-w-[44px] flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-red-500"
                                                 >
-                                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
                                                 </button>
                                             </div>
                                         ))}
@@ -130,15 +143,15 @@ export default function Dashboard({ auth, posts, searchedUsers = [], filters = {
                                 )}
                                 
                                 <div className="flex items-center justify-between border-t border-gray-50 pt-4">
-                                    <label className="cursor-pointer text-indigo-600 hover:text-indigo-700 flex items-center gap-2 text-sm font-semibold p-2 -ml-2 rounded-lg hover:bg-indigo-50 transition">
+                                    <label className="cursor-pointer text-indigo-600 hover:text-indigo-700 flex items-center gap-2 text-sm font-semibold p-2 -ml-2 rounded-lg hover:bg-indigo-50 transition focus-within:ring-2 focus-within:ring-indigo-500">
                                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                                         เพิ่มรูปภาพ
-                                        <input type="file" multiple className="hidden" ref={fileInputRef} onChange={handleImageChange} accept="image/*" />
+                                        <input type="file" multiple className="sr-only" ref={fileInputRef} onChange={handleImageChange} accept="image/*" />
                                     </label>
 
                                     <button 
                                         disabled={processing} 
-                                        className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-2 rounded-xl font-bold transition shadow-lg shadow-indigo-100 disabled:opacity-50 min-h-[44px]"
+                                        className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-2 rounded-xl font-bold transition shadow-lg shadow-indigo-100 disabled:opacity-50 min-h-[44px] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                                     >
                                         {processing ? 'กำลังประมวลผล...' : 'เผยแพร่โพสต์'}
                                     </button>
@@ -156,11 +169,20 @@ export default function Dashboard({ auth, posts, searchedUsers = [], filters = {
                             </h3>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 {searchedUsers.map(user => (
-                                    <Link key={user.id} href={route('profile.show', user.id)} className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-indigo-300 hover:bg-indigo-50 transition-all group">
+                                    <Link key={user.id} href={route('profile.show', user.id)} className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-indigo-300 hover:bg-indigo-50 transition-all group focus:outline-none focus:ring-2 focus:ring-indigo-500">
                                         {user.avatar_url ? (
-                                            <img src={user.avatar_url} className="w-10 h-10 rounded-full object-cover border" alt="Profile" loading="lazy" decoding="async" />
+                                            <img 
+                                                src={user.avatar_url} 
+                                                // 🌟 [Lighthouse Performance] ระบุขนาดภาพเพื่อลด Layout Shift
+                                                width="40"
+                                                height="40"
+                                                className="h-10 w-10 rounded-full object-cover border" 
+                                                alt={`รูปโปรไฟล์ของ ${user.name}`} 
+                                                loading="lazy" 
+                                                decoding="async" 
+                                            />
                                         ) : (
-                                            <div className="w-10 h-10 rounded-full bg-indigo-500 flex items-center justify-center text-white font-bold" aria-hidden="true">{user.name[0]}</div>
+                                            <div className="h-10 w-10 rounded-full bg-indigo-500 flex items-center justify-center text-white font-bold" aria-hidden="true">{user.name[0]}</div>
                                         )}
                                         <div>
                                             <div className="font-semibold text-gray-800 group-hover:text-indigo-700 transition-colors">{user.name}</div>

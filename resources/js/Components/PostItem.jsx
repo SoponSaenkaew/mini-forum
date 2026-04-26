@@ -203,7 +203,7 @@ export default function PostItem({ post, auth, highlightId = null }) {
                     {post.images && post.images.length > 0 && (
                         <div className={`grid gap-2 mb-4 ${post.images.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
                             {post.images.map(img => (
-                                <img key={img.id} src={`${img.image_url}?t=${new Date().getTime()}`} alt="content" className="w-full rounded-xl shadow-sm border object-contain bg-gray-50 max-h-[400px]"/>
+                                <img key={img.id} src={`${img.image_url}?t=${new Date().getTime()}`} alt={`รูปภาพประกอบโพสต์ของ ${post.user.name}`} className="w-full rounded-xl shadow-sm border object-contain bg-gray-50 max-h-[400px]"/>
                             ))}
                         </div>
                     )}

@@ -62,7 +62,8 @@ ENV VITE_BROADCAST_CONNECTION=$VITE_BROADCAST_CONNECTION
 ENV VITE_PUSHER_APP_KEY=$VITE_PUSHER_APP_KEY
 ENV VITE_PUSHER_APP_CLUSTER=$VITE_PUSHER_APP_CLUSTER
 
-RUN npm install --legacy-peer-deps && npm run build
+RUN npm ci --legacy-peer-deps || npm install --legacy-peer-deps
+RUN npm run build
 
 # 8. เตรียมโฟลเดอร์และสิทธิ์
 RUN mkdir -p storage/framework/cache/data \

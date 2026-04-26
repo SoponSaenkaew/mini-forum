@@ -36,20 +36,44 @@ export default function AuthenticatedLayout({ header, children }) {
      * เชื่อมต่อกับ Private Channel ของผู้ใช้งานเพื่อดักฟังการแจ้งเตือนใหม่
      */
     useEffect(() => {
-        const channelName = `App.Models.User.${user.id}`;
-        window.Echo.private(channelName)
+        // 1. Private Channel: สำหรับการแจ้งเตือนเฉพาะบุคคล (Laravel Database Notifications)
+        const privateChannel = `App.Models.User.${user.id}`;
+        
+        window.Echo.private(privateChannel)
             .notification((notification) => {
-                console.log('รับการแจ้งเตือนใหม่:', notification);
-                // โหลดข้อมูลคอมโพเนนต์ใหม่โดยรักษาตำแหน่งการเลื่อนหน้าจอและสถานะเดิมไว้
-                router.reload({ 
-                    only: ['auth'], 
-                    preserveScroll: true, 
-                    preserveState: true 
-                });
+                console.info('[Real-time] Private notification received:', notification);
+                handleRealTimeUpdate();
             });
 
-        // ยกเลิกการเชื่อมต่อเมื่อคอมโพเนนต์ถูกทำลาย (Unmount) เพื่อป้องกัน Memory Leak
-        return () => window.Echo.leave(channelName);
+        // 2. Public Channel: สำหรับการอัปเดตข้อมูลส่วนกลาง (Public Feed Events)
+        // ดักฟัง Event "FeedUpdated" เพื่ออัปเดตสถานะการแจ้งเตือนเมื่อมีการเคลื่อนไหวในระบบ
+        window.Echo.channel('public-feed')
+            .listen('FeedUpdated', (event) => {
+                console.info('[Real-time] Public feed updated:', event);
+                handleRealTimeUpdate();
+            });
+
+        /**
+         * Handle Real-time Update
+         * ทำการ Partial Reload เฉพาะข้อมูลในส่วน 'auth' เพื่ออัปเดต Unread Count
+         * โดยรักษาตำแหน่ง Scroll และ State ของแอปพลิเคชันไว้
+         */
+        const handleRealTimeUpdate = () => {
+            router.reload({ 
+                only: ['auth'], 
+                preserveScroll: true, 
+                preserveState: true,
+                onSuccess: () => {
+                    // สามารถเพิ่ม Logic การแจ้งเตือนแบบ Toast Message ตรงนี้ได้ในอนาคตค่ะคุณครู!
+                }
+            });
+        };
+
+        // Clean up: ตัดการเชื่อมต่อ WebSocket เมื่อ Component ถูก Unmount เพื่อป้องกัน Memory Leak
+        return () => {
+            window.Echo.leave(privateChannel);
+            window.Echo.leave('public-feed');
+        };
     }, [user.id]);
 
     /**

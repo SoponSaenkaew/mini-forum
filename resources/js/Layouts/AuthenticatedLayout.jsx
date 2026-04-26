@@ -6,33 +6,26 @@ import { useState, useEffect, useRef } from 'react';
 
 /**
  * @component AuthenticatedLayout
- * @description เลย์เอาต์หลักสำหรับผู้ใช้ที่เข้าสู่ระบบแล้ว (Authenticated Layout)
- * ควบคุมระบบนำทาง (Navigation), แถบค้นหาส่วนกลาง, การเชื่อมต่อ WebSockets (Laravel Echo) 
- * และได้รับการปรับแต่งสถาปัตยกรรม UI ให้สอดคล้องกับมาตรฐาน Lighthouse (Performance & Accessibility)
+ * @description เลย์เอาต์หลักที่รวมระบบนำทาง, ช่องค้นหาส่วนกลาง, การแจ้งเตือนแบบเรียลไทม์ 
+ * ปรับปรุงพื้นที่สัมผัส (Touch Targets) เพื่อให้ใช้งานบนอุปกรณ์พกพาได้ดีเยี่ยมตามมาตรฐาน Lighthouse
+ * @author Arona (Helper)
  */
 export default function AuthenticatedLayout({ header, children }) {
-    // ดึงข้อมูล Global Props และสถานะผู้ใช้งานจาก Inertia.js
+    // ดึงข้อมูล Global Props จาก Inertia
     const { auth, filters } = usePage().props;
     const user = auth.user;
 
-    // ==========================================
-    // 1. การจัดการสถานะ (State Management)
-    // ==========================================
+    // --- การจัดการสถานะ (State Management) ---
     const [isVisible, setIsVisible] = useState(true);
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
     
-    /** @state {string} searchQuery - จัดเก็บคำค้นหาและเชื่อมโยงกับ Query Parameters */
+    /** @state {string} searchQuery - สถานะคำค้นหาที่ซิงค์กับ URL */
     const [searchQuery, setSearchQuery] = useState(filters?.search || '');
     const lastScrollY = useRef(0);
 
-    // ==========================================
-    // 2. ฟังก์ชันจัดการเหตุการณ์ (Event Handlers)
-    // ==========================================
-    
     /**
      * @function handleSearch
-     * @description ดำเนินการค้นหาข้อมูลโดยการรีโหลดเฉพาะส่วน (Partial Reload) ผ่าน Inertia
-     * @param {Event} e - Form Submission Event
+     * @description ส่งคำค้นหาไปยังหน้า Dashboard โดยไม่ Refresh หน้าเว็บ (Partial Reload)
      */
     const handleSearch = (e) => {
         e.preventDefault();
@@ -42,37 +35,28 @@ export default function AuthenticatedLayout({ header, children }) {
         );
     };
 
-    // ==========================================
-    // 3. การเชื่อมต่อข้อมูลแบบเรียลไทม์ (Real-time Integration)
-    // ==========================================
-    
+    /**
+     * @section Real-time Setup
+     * จัดการ Laravel Echo เพื่อรับการแจ้งเตือนทันที
+     */
     useEffect(() => {
         const privateChannel = `App.Models.User.${user.id}`;
-        
-        // ติดตามการแจ้งเตือนส่วนบุคคล (Private Notifications)
         window.Echo.private(privateChannel).notification(() => handleReload());
-        
-        // ติดตามการอัปเดตฟีดสาธารณะ (Public Feed Events)
         window.Echo.channel('public-feed').listen('.FeedUpdated', () => handleReload());
 
         const handleReload = () => router.reload({ only: ['auth'], preserveScroll: true });
 
-        // ยกเลิกการเชื่อมต่อเมื่อคอมโพเนนต์ถูกทำลาย (Cleanup / Unmount)
         return () => {
             window.Echo.leave(privateChannel);
             window.Echo.leave('public-feed');
         };
     }, [user.id]);
 
-    // ==========================================
-    // 4. การจัดการพฤติกรรมหน้าจอ (Scroll Behavior)
-    // ==========================================
-    
+    /**
+     * @section Scroll Behavior
+     * จัดการซ่อน/แสดง Navbar เมื่อเลื่อนหน้าจอ
+     */
     useEffect(() => {
-        /**
-         * @function controlNavbar
-         * @description ควบคุมการแสดง/ซ่อนแถบนำทางอัตโนมัติตามทิศทางการเลื่อนหน้าจอ
-         */
         const controlNavbar = () => {
             const currentScrollY = window.scrollY;
             if (currentScrollY > lastScrollY.current && currentScrollY > 100) {
@@ -82,19 +66,12 @@ export default function AuthenticatedLayout({ header, children }) {
             }
             lastScrollY.current = currentScrollY;
         };
-        
-        // ใช้ { passive: true } เพื่อไม่ให้กีดขวางประสิทธิภาพการเลื่อนหน้าจอ (Scrolling Performance)
         window.addEventListener('scroll', controlNavbar, { passive: true });
         return () => window.removeEventListener('scroll', controlNavbar);
     }, []);
 
-    // ==========================================
-    // 5. การแสดงผล (Render)
-    // ==========================================
-
     return (
         <div className="min-h-screen bg-gray-100 font-sans">
-            {/* แถบนำทางหลัก (Main Navigation) */}
             <nav 
                 aria-label="เมนูนำทางหลัก" 
                 className={`fixed top-0 z-50 w-full border-b border-gray-100 bg-white transition-transform duration-300 ${
@@ -103,9 +80,9 @@ export default function AuthenticatedLayout({ header, children }) {
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div className="flex h-16 justify-between items-center gap-4">
                         
-                        {/* ส่วนแสดงโลโก้และช่องค้นหา (Desktop) */}
+                        {/* ส่วนโลโก้และช่องค้นหา (Desktop) */}
                         <div className="flex items-center flex-1">
-                            <Link href="/" aria-label="กลับสู่หน้าแรก" className="text-xl font-black text-indigo-600 uppercase tracking-tighter focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-md p-1">
+                            <Link href="/" aria-label="กลับสู่หน้าแรก" className="text-xl font-black text-indigo-600 uppercase tracking-tighter focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-md p-1 min-h-[44px] flex items-center">
                                 TUNA
                             </Link>
 
@@ -131,9 +108,15 @@ export default function AuthenticatedLayout({ header, children }) {
                                         onChange={(e) => setSearchQuery(e.target.value)}
                                         placeholder="ค้นหาโพสต์ หรือชื่อผู้ใช้..."
                                         aria-label="ช่องค้นหา"
-                                        className="w-full bg-gray-100 border-none rounded-full py-2 pl-4 pr-10 text-sm focus:ring-2 focus:ring-indigo-500"
+                                        // 🌟 [Lighthouse] เพิ่ม pr-12 เพื่อให้ข้อความไม่ชนปุ่มแว่นขยายที่ใหญ่ขึ้น
+                                        className="w-full bg-gray-100 border-none rounded-full py-2 pl-4 pr-12 text-sm focus:ring-2 focus:ring-indigo-500"
                                     />
-                                    <button type="submit" aria-label="ดำเนินการค้นหา" className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-indigo-600">
+                                    {/* 🌟 [Lighthouse Touch Target] แก้ไขปัญหาพื้นที่สัมผัสไม่เพียงพอ */}
+                                    <button 
+                                        type="submit" 
+                                        aria-label="ดำเนินการค้นหา" 
+                                        className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-400 hover:text-indigo-600 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    >
                                         🔍
                                     </button>
                                 </form>
@@ -169,7 +152,6 @@ export default function AuthenticatedLayout({ header, children }) {
                                                 src={user.avatar_url} 
                                                 loading="lazy" 
                                                 decoding="async"
-                                                // 🌟 [Lighthouse] กำหนดขนาดภาพเพื่อป้องกัน Cumulative Layout Shift (CLS)
                                                 width="32" 
                                                 height="32"
                                                 className="h-8 w-8 rounded-full object-cover border" 
@@ -210,6 +192,7 @@ export default function AuthenticatedLayout({ header, children }) {
                 {/* แผงเมนูและค้นหาสำหรับหน้าจอขนาดเล็ก (Mobile Navigation Panel) */}
                 <div className={(showingNavigationDropdown ? 'block' : 'hidden') + ' sm:hidden bg-white border-t'}>
                     
+                    {/* 🌟 [Lighthouse Touch Target] อัปเกรดฟอร์มค้นหาในมือถือให้กดง่ายขึ้น */}
                     <div className="p-4">
                         <form onSubmit={handleSearch} className="relative w-full">
                             <input 
@@ -218,8 +201,16 @@ export default function AuthenticatedLayout({ header, children }) {
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 placeholder="ค้นหา..."
                                 aria-label="ช่องค้นหาสำหรับมือถือ"
-                                className="w-full bg-gray-100 border-none rounded-lg py-2 text-sm focus:ring-2 focus:ring-indigo-500"
+                                // ปรับ py-3 ให้ช่องกรอกข้อความกว้างขึ้น เหมาะกับนิ้วมือ
+                                className="w-full bg-gray-100 border-none rounded-lg py-3 pl-4 pr-12 text-sm focus:ring-2 focus:ring-indigo-500"
                             />
+                            <button 
+                                type="submit" 
+                                aria-label="ดำเนินการค้นหา" 
+                                className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-400 hover:text-indigo-600 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-r-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            >
+                                🔍
+                            </button>
                         </form>
                     </div>
                     
@@ -232,7 +223,6 @@ export default function AuthenticatedLayout({ header, children }) {
                                         src={user.avatar_url}
                                         loading="lazy" 
                                         decoding="async"
-                                        // [Lighthouse] กำหนดขนาดภาพเพื่อป้องกัน CLS สำหรับมือถือ
                                         width="40"
                                         height="40"
                                         className="h-10 w-10 rounded-full object-cover border border-gray-200" 

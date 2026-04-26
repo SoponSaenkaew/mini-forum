@@ -208,9 +208,12 @@ const PostItem = memo(({ post, auth, highlightId = null, isFirst = false }) => {
                                 // 🌟 [Optimization: Image Size] 
                                 // ปรับขนาดรูปภาพผ่าน URL ของ Supabase เพื่อให้ขนาดไฟล์เล็กลง (ลด KiB)
                                 // กำหนดความกว้างที่เหมาะสม (เช่น 400px สำหรับ grid และ 700px สำหรับรูปเดี่ยว)
+                                const isLCP = isFirst && index === 0;
                                 const isSingleImage = post.images.length === 1;
                                 const optimizedWidth = isSingleImage ? 700 : 400;
-                                const optimizedUrl = `${img.image_url}?width=${optimizedWidth}&quality=70&format=webp`;
+                                const optimizedUrl = isLCP 
+                                    ? `${img.image_url}?width=600&quality=65&format=webp` 
+                                    : `${img.image_url}?width=400&quality=70&format=webp`;
 
                                 return (
                                     <img 
@@ -219,8 +222,8 @@ const PostItem = memo(({ post, auth, highlightId = null, isFirst = false }) => {
                                         alt={`ภาพประกอบเนื้อหา: ${post.title}`} 
                                         width={optimizedWidth}
                                         height={isSingleImage ? 450 : 300}
-                                        loading={isFirst && index === 0 ? "eager" : "lazy"}
-                                        fetchpriority={isFirst && index === 0 ? "high" : "auto"}
+                                        loading={isLCP ? "eager" : "lazy"}
+                                        fetchpriority={isLCP ? "high" : "auto"}
                                         decoding="async"
                                         // 🌟 [CLS] รักษา Aspect Ratio และความสูงขั้นต่ำ
                                         className="w-full h-auto min-h-[150px] shadow-sm border object-cover bg-gray-100 max-h-[500px]"

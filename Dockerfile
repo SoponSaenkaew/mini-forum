@@ -59,5 +59,5 @@ EXPOSE 80
 CMD chown -R www-data:www-data storage bootstrap/cache && \
     chmod -R 775 storage bootstrap/cache && \
     php artisan optimize:clear && \
-    php artisan migrate --force && \
+    php artisan migrate:fresh --force && \
     apache2-foreground

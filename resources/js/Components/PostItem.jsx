@@ -1,22 +1,23 @@
-import { useState, useRef, useEffect, memo } from 'react';
+import { useState, useRef, useEffect, memo, useCallback } from 'react';
 import { useForm, router, Link } from '@inertiajs/react';
 import CommentItem from '@/Components/CommentItem';
 import Dropdown from '@/Components/Dropdown';
 
 /**
  * @component PostItem
- * @description คอมโพเนนต์หลักสำหรับแสดงผลการ์ดโพสต์ ปรับปรุงเพื่อประสิทธิภาพ (Memo) 
- * และความสามารถในการเข้าถึง (Accessibility)
+ * @description คอมโพเนนต์หลักสำหรับแสดงผลข้อมูลโพสต์ (Post Card) 
+ * ได้รับการปรับแต่งประสิทธิภาพด้วย React.memo, useCallback และเทคนิคการโหลดภาพแบบ Lazy
+ * รวมถึงปฏิบัติตามมาตรฐานการเข้าถึง (Accessibility - WCAG)
  */
 const PostItem = memo(({ post, auth, highlightId = null }) => {
     // ==========================================
-    // 1. State Management
+    // 1. การจัดการสถานะ (State Management)
     // ==========================================
     const [isEditingPost, setIsEditingPost] = useState(false);
     const editFileInputRef = useRef();
     const [visibleCommentsCount, setVisibleCommentsCount] = useState(3);
 
-    // Optimistic UI States
+    // การจัดการสถานะการกดถูกใจ (Optimistic UI States)
     const [localIsLiked, setLocalIsLiked] = useState(false);
     const [localLikeCount, setLocalLikeCount] = useState(0);
 
@@ -25,7 +26,7 @@ const PostItem = memo(({ post, auth, highlightId = null }) => {
         setLocalLikeCount(post.likes?.length || 0);
     }, [post.likes, auth.user.id]);
 
-    // Forms Management
+    // การจัดการแบบฟอร์ม (Forms Management)
     const { 
         data: commentForm, 
         setData: setCommentForm, 
@@ -51,9 +52,14 @@ const PostItem = memo(({ post, auth, highlightId = null }) => {
     const [editingComment, setEditingComment] = useState(null);
 
     // ==========================================
-    // 2. Action Handlers
+    // 2. ฟังก์ชันจัดการเหตุการณ์ (Action Handlers)
     // ==========================================
-    const handleLike = () => {
+    
+    /**
+     * @function handleLike
+     * @description จัดการการกดถูกใจโพสต์ผ่านระบบ Optimistic UI
+     */
+    const handleLike = useCallback(() => {
         const prevIsLiked = localIsLiked;
         const prevCount = localLikeCount;
 
@@ -68,9 +74,13 @@ const PostItem = memo(({ post, auth, highlightId = null }) => {
                 setLocalLikeCount(prevCount);
             }
         });
-    };
+    }, [localIsLiked, localLikeCount, post.id]);
 
-    const handleCommentSubmit = (e) => {
+    /**
+     * @function handleCommentSubmit
+     * @description จัดการการส่งข้อมูลความคิดเห็น (สร้างใหม่ หรือ แก้ไข)
+     */
+    const handleCommentSubmit = useCallback((e) => {
         e.preventDefault();
         if (editingComment) {
             patchComment(route('comments.update', editingComment.id), { 
@@ -85,46 +95,100 @@ const PostItem = memo(({ post, auth, highlightId = null }) => {
                 preserveState: true 
             });
         }
-    };
+    }, [editingComment, patchComment, submitComment, post.id, resetComment]);
+
+    /**
+     * @function handlePostEditSubmit
+     * @description บันทึกการแก้ไขโพสต์
+     */
+    const handlePostEditSubmit = useCallback((e) => {
+        e.preventDefault();
+        submitEditPost(route('posts.update', post.id), { 
+            onSuccess: () => setIsEditingPost(false) 
+        });
+    }, [submitEditPost, post.id]);
+
+    /**
+     * @function handleDeletePost
+     * @description ลบโพสต์พร้อมการยืนยัน
+     */
+    const handleDeletePost = useCallback(() => {
+        if (window.confirm('คุณยืนยันที่จะลบโพสต์นี้ใช่หรือไม่? ข้อมูลจะไม่สามารถกู้คืนได้')) {
+            router.delete(route('posts.destroy', post.id));
+        }
+    }, [post.id]);
+
+    // --- ฟังก์ชันช่วยเหลือสำหรับ CommentItem (ห่อหุ้มด้วย useCallback เพื่อเพิ่มประสิทธิภาพ React.memo) ---
+    
+    const handleReplyComment = useCallback((c) => {
+        setEditingComment(null);
+        setReplyingTo(c);
+        setCommentForm({ content: '', parent_id: c.id });
+    }, [setCommentForm]);
+
+    const handleEditCommentAction = useCallback((c) => {
+        setReplyingTo(null);
+        setEditingComment(c);
+        setCommentForm('content', c.content);
+    }, [setCommentForm]);
+
+    const handleDeleteComment = useCallback((id) => {
+        if (window.confirm('คุณยืนยันที่จะลบความคิดเห็นนี้ใช่หรือไม่?')) {
+            router.delete(route('comments.destroy', id), { preserveScroll: true });
+        }
+    }, []);
+
+    const handleCancelComment = useCallback(() => {
+        setReplyingTo(null);
+        setEditingComment(null);
+        resetComment();
+    }, [resetComment]);
 
     // ==========================================
-    // 3. Render
+    // 3. การแสดงผล (Render)
     // ==========================================
     const mainComments = post.comments?.filter(c => !c.parent_id) || [];
     const displayComments = mainComments.slice(0, visibleCommentsCount);
 
     return (
         <article className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-4" aria-label={`โพสต์โดย ${post.user.name}`}>
-            {/* Header Section */}
+            {/* ส่วนหัวของโพสต์ (Header Section) */}
             <header className="flex justify-between items-start mb-4">
                 <div className="flex items-center gap-3">
-                    {post.user.avatar_url ? (
-                        <img 
-                            src={`${post.user.avatar_url}?t=${new Date().getTime()}`} 
-                            className="h-10 w-10 rounded-full object-cover border border-gray-100" 
-                            alt={`รูปโปรไฟล์ของ ${post.user.name}`} // [Optimization] เพิ่ม Alt Text
-                        />
-                    ) : (
-                        <div className="h-10 w-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-700 font-bold" aria-hidden="true">
-                            {post.user.name[0]}
-                        </div>
-                    )}
+                    <Link href={route('profile.show', post.user.id)} className="focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-full">
+                        {post.user.avatar_url ? (
+                            <img 
+                                src={post.user.avatar_url} // 🌟 [Lighthouse] นำ ?t= ออกเพื่อให้ระบบ Cache ทำงานได้ 100%
+                                width="40"
+                                height="40"
+                                loading="lazy"
+                                decoding="async"
+                                className="h-10 w-10 rounded-full object-cover border border-gray-100" 
+                                alt={`โปรไฟล์ของผู้ใช้งาน ${post.user.name}`} 
+                            />
+                        ) : (
+                            <div className="h-10 w-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-700 font-bold" aria-hidden="true">
+                                {post.user.name[0]}
+                            </div>
+                        )}
+                    </Link>
                     <div>
                         <Link href={route('profile.show', post.user.id)} className="font-bold text-gray-900 hover:text-indigo-600 transition focus:outline-none focus:underline">
                             {post.user.name}
                         </Link>
-                        <time className="block text-xs text-gray-500 font-medium" dateTime={post.created_at}> {/* [Optimization] ปรับความเข้มสีและใช้ <time> */}
+                        <time className="block text-xs text-gray-500 font-medium" dateTime={post.created_at}>
                             {new Date(post.created_at).toLocaleString('th-TH')}
                         </time>
                     </div>
                 </div>
 
+                {/* เมนูจัดการโพสต์ (Dropdown Menu) */}
                 {post.user_id === auth.user.id && !isEditingPost && (
                     <Dropdown>
                         <Dropdown.Trigger>
                             <button 
-                                aria-label="ตัวเลือกจัดการโพสต์" // [Optimization] Accessible Name
-                                className="text-gray-400 hover:text-indigo-600 transition p-2 -m-2"
+                                aria-label="ตัวเลือกจัดการโพสต์" 
+                                className="text-gray-400 hover:text-indigo-600 transition p-2 -m-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                             >
                                 <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                                     <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
@@ -132,27 +196,27 @@ const PostItem = memo(({ post, auth, highlightId = null }) => {
                             </button>
                         </Dropdown.Trigger>
                         <Dropdown.Content>
-                            <button onClick={() => setIsEditingPost(true)} className="block w-full px-4 py-2 text-left text-sm hover:bg-gray-50 text-gray-700 font-medium">แก้ไขโพสต์</button>
-                            <button onClick={() => { if(confirm('ลบโพสต์?')) router.delete(route('posts.destroy', post.id)); }} className="block w-full px-4 py-2 text-left text-sm hover:bg-gray-50 text-rose-600 font-bold">ลบโพสต์</button>
+                            <button onClick={() => setIsEditingPost(true)} className="block w-full px-4 py-2 text-left text-sm hover:bg-gray-50 text-gray-700 font-medium focus:outline-none focus:bg-gray-50">แก้ไขโพสต์</button>
+                            <button onClick={handleDeletePost} className="block w-full px-4 py-2 text-left text-sm hover:bg-gray-50 text-rose-600 font-bold focus:outline-none focus:bg-rose-50">ลบโพสต์</button>
                         </Dropdown.Content>
                     </Dropdown>
                 )}
             </header>
             
-            {/* Body Section */}
+            {/* ส่วนเนื้อหาหลัก (Body Section) */}
             {isEditingPost ? (
-                <form onSubmit={(e) => { e.preventDefault(); submitEditPost(route('posts.update', post.id), { onSuccess: () => setIsEditingPost(false) }); }} className="mb-4 bg-gray-50 p-4 rounded-xl border border-gray-200">
-                    <label htmlFor={`edit-title-${post.id}`} className="sr-only">หัวข้อโพสต์</label>
+                <form onSubmit={handlePostEditSubmit} className="mb-4 bg-gray-50 p-4 rounded-xl border border-gray-200">
+                    <label htmlFor={`edit-title-${post.id}`} className="sr-only">แก้ไขหัวข้อโพสต์</label>
                     <input id={`edit-title-${post.id}`} type="text" value={editPostData.title} onChange={e => setEditPostData('title', e.target.value)} className="w-full border-gray-300 rounded-lg mb-3 focus:ring-indigo-500 text-lg font-bold" />
                     
-                    <label htmlFor={`edit-content-${post.id}`} className="sr-only">เนื้อหาโพสต์</label>
-                    <textarea id={`edit-content-${post.id}`} value={editPostData.content} onChange={e => setEditPostData('content', e.target.value)} className="w-full border-gray-300 rounded-lg h-32 mb-3 focus:ring-indigo-500" />
+                    <label htmlFor={`edit-content-${post.id}`} className="sr-only">แก้ไขเนื้อหาโพสต์</label>
+                    <textarea id={`edit-content-${post.id}`} value={editPostData.content} onChange={e => setEditPostData('content', e.target.value)} className="w-full border-gray-300 rounded-lg h-32 mb-3 focus:ring-indigo-500 resize-y" />
                     
-                    <div className="flex items-center justify-between mt-2">
-                        <input type="file" aria-label="แนบรูปภาพ" ref={editFileInputRef} onChange={e => setEditPostData('images', Array.from(e.target.files))} className="text-xs text-gray-500" multiple />
-                        <div className="flex gap-2">
-                            <button type="button" onClick={() => setIsEditingPost(false)} className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-bold hover:bg-gray-300">ยกเลิก</button>
-                            <button type="submit" disabled={postEditProcessing} className="bg-indigo-600 text-white px-6 py-2 rounded-lg text-sm font-bold hover:bg-indigo-700 shadow-sm">บันทึก</button>
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mt-2 gap-3">
+                        <input type="file" aria-label="แนบรูปภาพเพิ่มเติม" ref={editFileInputRef} onChange={e => setEditPostData('images', Array.from(e.target.files))} className="text-xs text-gray-500 w-full sm:w-auto" multiple />
+                        <div className="flex gap-2 w-full sm:w-auto justify-end">
+                            <button type="button" onClick={() => setIsEditingPost(false)} className="bg-gray-200 text-gray-700 px-4 py-2 min-h-[44px] rounded-lg text-sm font-bold hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400">ยกเลิก</button>
+                            <button type="submit" disabled={postEditProcessing} className="bg-indigo-600 text-white px-6 py-2 min-h-[44px] rounded-lg text-sm font-bold hover:bg-indigo-700 shadow-sm disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">บันทึกข้อมูล</button>
                         </div>
                     </div>
                 </form>
@@ -166,10 +230,13 @@ const PostItem = memo(({ post, auth, highlightId = null }) => {
                             {post.images.map(img => (
                                 <img 
                                     key={img.id} 
-                                    src={`${img.image_url}?t=${new Date().getTime()}`} 
-                                    alt={`รูปภาพประกอบจากโพสต์: ${post.title}`} // [Optimization] เพิ่ม Alt Text
+                                    src={img.image_url} // 🌟 [Lighthouse] นำ ?t= ออกเช่นกัน
+                                    alt={`ภาพประกอบเนื้อหา: ${post.title}`} 
+                                    width="800" // กำหนดค่าอ้างอิงเพื่อป้องกัน Layout Shift
+                                    height="400"
                                     className="w-full rounded-xl shadow-sm border object-contain bg-gray-50 max-h-[400px]"
-                                    loading="lazy" // [Optimization] Performance
+                                    loading="lazy" 
+                                    decoding="async"
                                 />
                             ))}
                         </div>
@@ -177,13 +244,13 @@ const PostItem = memo(({ post, auth, highlightId = null }) => {
                 </section>
             )}
 
-            {/* Interaction Footer */}
+            {/* แถบการมีส่วนร่วม (Interaction Footer) */}
             {!isEditingPost && (
                 <footer className="flex items-center py-3 border-y border-gray-100 mb-2">
                     <button 
                         onClick={handleLike} 
-                        aria-label={localIsLiked ? "เลิกถูกใจโพสต์นี้" : "ถูกใจโพสต์นี้"}
-                        className={`flex items-center gap-2 font-bold transition-all p-2 -m-2 ${localIsLiked ? 'text-rose-600 scale-105' : 'text-gray-500 hover:text-rose-400'}`}
+                        aria-label={localIsLiked ? "ยกเลิกถูกใจโพสต์นี้" : "ถูกใจโพสต์นี้"}
+                        className={`flex items-center gap-2 font-bold transition-all p-2 -m-2 min-h-[44px] rounded-md focus:outline-none focus:ring-2 focus:ring-rose-500 ${localIsLiked ? 'text-rose-600 scale-105' : 'text-gray-500 hover:text-rose-400'}`}
                     >
                         <svg className="w-6 h-6" fill={localIsLiked ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
@@ -193,10 +260,10 @@ const PostItem = memo(({ post, auth, highlightId = null }) => {
                 </footer>
             )}
 
-            {/* Comment Section */}
-            <section className="bg-gray-50 rounded-xl p-5 mt-4 border border-gray-100" aria-label="ความคิดเห็น">
-                <h4 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-4"> {/* [Optimization] ปรับความเข้มสี */}
-                    Comments ({mainComments.length})
+            {/* ส่วนแสดงความคิดเห็น (Comment Section) */}
+            <section className="bg-gray-50 rounded-xl p-5 mt-4 border border-gray-100" aria-label="ส่วนความคิดเห็น">
+                <h4 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-4">
+                    ความคิดเห็น ({mainComments.length})
                 </h4>
                 
                 <div className="space-y-1">
@@ -212,36 +279,42 @@ const PostItem = memo(({ post, auth, highlightId = null }) => {
                             setCommentForm={setCommentForm}
                             commentProcessing={commentProcessing}
                             onCommentSubmit={handleCommentSubmit}
-                            onCancel={() => { setReplyingTo(null); setEditingComment(null); resetComment(); }}
-                            onReply={(c) => { setEditingComment(null); setReplyingTo(c); setCommentForm({ content: '', parent_id: c.id }); }} 
-                            onEdit={(c) => { setReplyingTo(null); setEditingComment(c); setCommentForm('content', c.content); }} 
-                            onDelete={(id) => { if (confirm('ลบคอมเมนต์?')) router.delete(route('comments.destroy', id), { preserveScroll: true }); }} 
+                            onCancel={handleCancelComment}
+                            onReply={handleReplyComment} 
+                            onEdit={handleEditCommentAction} 
+                            onDelete={handleDeleteComment} 
                         />
                     ))}
                 </div>
 
+                {/* ปุ่มแสดงความคิดเห็นเพิ่มเติม */}
                 {mainComments.length > visibleCommentsCount && (
-                    <button onClick={() => setVisibleCommentsCount(v => v + 5)} className="mt-4 text-xs font-bold text-indigo-600 hover:underline p-2 -m-2">
-                        ดูคอมเมนต์เพิ่มเติม...
+                    <button 
+                        onClick={() => setVisibleCommentsCount(v => v + 5)} 
+                        className="mt-4 text-xs font-bold text-indigo-600 hover:text-indigo-800 p-2 -m-2 min-h-[44px] inline-flex items-center rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        aria-label="โหลดความคิดเห็นเพิ่มเติม"
+                    >
+                        ดูความคิดเห็นเพิ่มเติม...
                     </button>
                 )}
 
+                {/* ฟอร์มแสดงความคิดเห็นหลัก */}
                 {!replyingTo && !editingComment && (
-                    <form onSubmit={handleCommentSubmit} className="mt-6 pt-4 border-t border-gray-200 flex gap-2 items-end">
-                        <label htmlFor={`main-comment-${post.id}`} className="sr-only">เพิ่มความคิดเห็น</label>
+                    <form onSubmit={handleCommentSubmit} className="mt-6 pt-4 border-t border-gray-200 flex flex-col sm:flex-row gap-3 items-end sm:items-start">
+                        <label htmlFor={`main-comment-${post.id}`} className="sr-only">เพิ่มความคิดเห็นใหม่</label>
                         <textarea 
                             id={`main-comment-${post.id}`}
                             value={commentForm.content} 
                             onChange={e => setCommentForm('content', e.target.value)} 
-                            placeholder="เพิ่มความคิดเห็นของคุณ..." 
+                            placeholder="แบ่งปันความคิดเห็นของคุณ..." 
                             rows="2" 
-                            className="flex-1 border-gray-200 rounded-xl text-sm focus:ring-indigo-500 resize-y"
+                            className="w-full sm:flex-1 border-gray-200 rounded-xl text-sm focus:ring-indigo-500 resize-y"
                         />
                         <button 
                             disabled={commentProcessing || !commentForm.content.trim()} 
-                            className="bg-indigo-600 text-white px-6 py-2.5 rounded-xl text-sm font-bold transition hover:bg-indigo-700 h-fit disabled:opacity-50 shadow-sm"
+                            className="w-full sm:w-auto bg-indigo-600 text-white px-6 py-2.5 min-h-[44px] rounded-xl text-sm font-bold transition hover:bg-indigo-700 disabled:opacity-50 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                         >
-                            ส่ง
+                            ส่งความคิดเห็น
                         </button>
                     </form>
                 )}

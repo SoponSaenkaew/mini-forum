@@ -204,22 +204,29 @@ const PostItem = memo(({ post, auth, highlightId = null, isFirst = false }) => {
                     
                     {post.images && post.images.length > 0 && (
                         <div className={`grid gap-2 mb-4 overflow-hidden rounded-xl ${post.images.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
-                            {post.images.map((img, index) => (
-                                <img 
-                                    key={img.id} 
-                                    src={img.image_url} 
-                                    alt={`ภาพประกอบเนื้อหา: ${post.title}`} 
-                                    width="800"
-                                    height="450"
-                                    // 🌟 [Lighthouse Performance] 
-                                    // ถ้าเป็นโพสต์แรกและรูปแรก ให้โหลดแบบ Eager และลำดับความสำคัญสูง
-                                    loading={isFirst && index === 0 ? "eager" : "lazy"}
-                                    fetchpriority={isFirst && index === 0 ? "high" : "auto"}
-                                    decoding="async"
-                                    // 🌟 [CLS] กำหนดความสูงขั้นต่ำเพื่อป้องกันหน้าจอกระตุก
-                                    className="w-full h-auto min-h-[200px] shadow-sm border object-cover bg-gray-100 max-h-[500px]"
-                                />
-                            ))}
+                            {post.images.map((img, index) => {
+                                // 🌟 [Optimization: Image Size] 
+                                // ปรับขนาดรูปภาพผ่าน URL ของ Supabase เพื่อให้ขนาดไฟล์เล็กลง (ลด KiB)
+                                // กำหนดความกว้างที่เหมาะสม (เช่น 450px สำหรับ grid และ 800px สำหรับรูปเดี่ยว)
+                                const isSingleImage = post.images.length === 1;
+                                const optimizedWidth = isSingleImage ? 800 : 450;
+                                const optimizedUrl = `${img.image_url}?width=${optimizedWidth}&quality=80&format=webp`;
+
+                                return (
+                                    <img 
+                                        key={img.id} 
+                                        src={optimizedUrl} // ✨ ใช้ URL ที่ผ่านการบีบอัดและปรับขนาดแล้ว
+                                        alt={`ภาพประกอบเนื้อหา: ${post.title}`} 
+                                        width={optimizedWidth}
+                                        height={isSingleImage ? 450 : 300}
+                                        loading={isFirst && index === 0 ? "eager" : "lazy"}
+                                        fetchpriority={isFirst && index === 0 ? "high" : "auto"}
+                                        decoding="async"
+                                        // 🌟 [CLS] รักษา Aspect Ratio และความสูงขั้นต่ำ
+                                        className="w-full h-auto min-h-[150px] shadow-sm border object-cover bg-gray-100 max-h-[500px]"
+                                    />
+                                );
+                            })}
                         </div>
                     )}
                 </section>

@@ -12,8 +12,9 @@
         <link rel="preconnect" href="https://fonts.bunny.net" crossorigin>
         <link rel="dns-prefetch" href="https://fonts.bunny.net">
         
+        {{-- 🌟 [Optimization] โหลดฟอนต์แบบ Non-blocking (ถูกต้องแล้วค่ะ) --}}
         <link rel="stylesheet" href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,900&display=swap" 
-      media="print" onload="this.media='all'">
+              media="print" onload="this.media='all'">
 
         @routes
         @viteReactRefresh

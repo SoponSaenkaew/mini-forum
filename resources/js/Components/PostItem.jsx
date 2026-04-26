@@ -207,9 +207,9 @@ const PostItem = memo(({ post, auth, highlightId = null, isFirst = false }) => {
                             {post.images.map((img, index) => {
                                 // 🌟 [Optimization: Image Size] 
                                 // ปรับขนาดรูปภาพผ่าน URL ของ Supabase เพื่อให้ขนาดไฟล์เล็กลง (ลด KiB)
-                                // กำหนดความกว้างที่เหมาะสม (เช่น 450px สำหรับ grid และ 800px สำหรับรูปเดี่ยว)
+                                // กำหนดความกว้างที่เหมาะสม (เช่น 400px สำหรับ grid และ 700px สำหรับรูปเดี่ยว)
                                 const isSingleImage = post.images.length === 1;
-                                const optimizedWidth = isSingleImage ? 800 : 450;
+                                const optimizedWidth = isSingleImage ? 700 : 400;
                                 const optimizedUrl = `${img.image_url}?width=${optimizedWidth}&quality=70&format=webp`;
 
                                 return (

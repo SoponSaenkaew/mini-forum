@@ -27,10 +27,29 @@ export default function Dashboard({ auth, posts, searchedUsers = [], filters = {
 
     /**
      * Handle Image Selection
-     * @description แปลงไฟล์ภาพเป็น URL ชั่วคราวเพื่อแสดง Preview และอัปเดต State
+     * @description แปลงไฟล์ภาพเป็น URL ชั่วคราวเพื่อแสดง Preview และอัปเดต State พร้อมจำกัดจำนวนและขนาดไฟล์
      */
     const handleImageChange = (e) => {
         const files = Array.from(e.target.files);
+        
+        // 1. ตรวจสอบจำนวนรูปรวม (จำกัดสูงสุด 5 รูป)
+        const totalImagesCount = data.images.length + files.length;
+        if (totalImagesCount > 5) {
+            alert('อัปโหลดรูปได้สูงสุด 5 รูปเท่านั้น');
+            if (fileInputRef.current) fileInputRef.current.value = ''; // ล้างค่า input เพื่อให้เลือกใหม่ได้
+            return;
+        }
+
+        // 2. ตรวจสอบขนาดไฟล์รวม (จำกัดสูงสุด 8 MB)
+        const currentTotalSize = data.images.reduce((acc, file) => acc + file.size, 0);
+        const newFilesSize = files.reduce((acc, file) => acc + file.size, 0);
+        const maxSizeBytes = 8 * 1024 * 1024; // 8 MB
+
+        if (currentTotalSize + newFilesSize > maxSizeBytes) {
+            alert('ขนาดรูปรวมกันเกิน 8 MB ค่ะ! กรุณาลดขนาดหรือจำนวนรูปลงหน่อยนะคะ 🥺');
+            if (fileInputRef.current) fileInputRef.current.value = '';
+            return;
+        }
         
         // อัปเดตไฟล์ลงใน form data
         const updatedImages = [...data.images, ...files];
@@ -39,6 +58,9 @@ export default function Dashboard({ auth, posts, searchedUsers = [], filters = {
         // สร้าง URL สำหรับ Preview
         const newPreviews = files.map(file => URL.createObjectURL(file));
         setPreviews(prev => [...prev, ...newPreviews]);
+        
+        // ล้างค่า input เพื่อให้ผู้ใช้สามารถกดเลือกไฟล์เดิมซ้ำได้ในกรณีที่ลบออกไปแล้ว
+        if (fileInputRef.current) fileInputRef.current.value = '';
     };
 
     /**
@@ -166,6 +188,9 @@ export default function Dashboard({ auth, posts, searchedUsers = [], filters = {
                                         />
                                     </label>
                                     {errors.images && <div className="text-rose-500 text-xs mt-1 font-medium">{errors.images}</div>}
+                                    
+                                   
+                                    <p className="text-[10px] text-gray-400 mt-1">สูงสุด 5 รูป (รวมไม่เกิน 8MB)</p>
                                 </div>
 
                                 <button 

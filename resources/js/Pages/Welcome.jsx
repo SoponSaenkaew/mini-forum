@@ -61,7 +61,7 @@ export default function Welcome({ auth, latestPosts }) {
                         </span>
                     </h1>
                     <p className="max-w-lg mx-auto text-base text-gray-400 font-medium mb-8">
-                        เชื่อมต่อทุกความคิดสร้างสรรค์ ในสังคมของเหล่าเซ็นเซย์ ✨
+                        เชื่อมต่อทุกความคิดสร้างสรรค์
                     </p>
                     <Link 
                         href={auth.user ? route('dashboard') : route('register')} 

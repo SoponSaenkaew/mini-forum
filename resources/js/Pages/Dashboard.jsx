@@ -18,6 +18,7 @@ export default function Dashboard({ auth, posts, searchedUsers = [], filters = {
     });
 
     const [previews, setPreviews] = useState([]);
+    const firstPostImage = posts?.data?.[0]?.images?.[0]?.image_url;
     const fileInputRef = useRef();
 
     /**
@@ -79,7 +80,12 @@ export default function Dashboard({ auth, posts, searchedUsers = [], filters = {
 
     return (
         <AuthenticatedLayout header={<h2 className="text-xl font-bold text-gray-800">Community Feed</h2>}>
-            <Head title="Dashboard" />
+            <Head title="Dashboard">
+                {/* สั่ง Preload รูปภาพ LCP ตั้งแต่บรรทัดแรก */}
+                {lcpImageUrl && (
+                    <link rel="preload" as="image" href={lcpImageUrl} fetchpriority="high" />
+                )}
+            </Head>
 
             <div className="py-8 bg-gray-50 min-h-screen">
                 <div className="mx-auto max-w-3xl sm:px-6 lg:px-8 space-y-6">

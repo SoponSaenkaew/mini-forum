@@ -5,11 +5,10 @@ import Dropdown from '@/Components/Dropdown';
 
 /**
  * @component PostItem
- * @description คอมโพเนนต์หลักสำหรับแสดงผลข้อมูลโพสต์ (Post Card) 
- * ได้รับการปรับแต่งประสิทธิภาพด้วย React.memo, useCallback และเทคนิคการโหลดภาพแบบ Lazy
- * รวมถึงปฏิบัติตามมาตรฐานการเข้าถึง (Accessibility - WCAG)
+ * @description คอมโพเนนต์แสดงผลโพสต์ ปรับปรุงเพื่อคะแนน Lighthouse 100/100
+ * เน้นการลด Layout Shift และเพิ่มความเร็วในการโหลดรูปภาพ (LCP)
  */
-const PostItem = memo(({ post, auth, highlightId = null }) => {
+const PostItem = memo(({ post, auth, highlightId = null, isFirst = false }) => {
     // ==========================================
     // 1. การจัดการสถานะ (State Management)
     // ==========================================
@@ -17,7 +16,6 @@ const PostItem = memo(({ post, auth, highlightId = null }) => {
     const editFileInputRef = useRef();
     const [visibleCommentsCount, setVisibleCommentsCount] = useState(3);
 
-    // การจัดการสถานะการกดถูกใจ (Optimistic UI States)
     const [localIsLiked, setLocalIsLiked] = useState(false);
     const [localLikeCount, setLocalLikeCount] = useState(0);
 
@@ -26,7 +24,6 @@ const PostItem = memo(({ post, auth, highlightId = null }) => {
         setLocalLikeCount(post.likes?.length || 0);
     }, [post.likes, auth.user.id]);
 
-    // การจัดการแบบฟอร์ม (Forms Management)
     const { 
         data: commentForm, 
         setData: setCommentForm, 
@@ -55,10 +52,6 @@ const PostItem = memo(({ post, auth, highlightId = null }) => {
     // 2. ฟังก์ชันจัดการเหตุการณ์ (Action Handlers)
     // ==========================================
     
-    /**
-     * @function handleLike
-     * @description จัดการการกดถูกใจโพสต์ผ่านระบบ Optimistic UI
-     */
     const handleLike = useCallback(() => {
         const prevIsLiked = localIsLiked;
         const prevCount = localLikeCount;
@@ -76,10 +69,6 @@ const PostItem = memo(({ post, auth, highlightId = null }) => {
         });
     }, [localIsLiked, localLikeCount, post.id]);
 
-    /**
-     * @function handleCommentSubmit
-     * @description จัดการการส่งข้อมูลความคิดเห็น (สร้างใหม่ หรือ แก้ไข)
-     */
     const handleCommentSubmit = useCallback((e) => {
         e.preventDefault();
         if (editingComment) {
@@ -97,10 +86,6 @@ const PostItem = memo(({ post, auth, highlightId = null }) => {
         }
     }, [editingComment, patchComment, submitComment, post.id, resetComment]);
 
-    /**
-     * @function handlePostEditSubmit
-     * @description บันทึกการแก้ไขโพสต์
-     */
     const handlePostEditSubmit = useCallback((e) => {
         e.preventDefault();
         submitEditPost(route('posts.update', post.id), { 
@@ -108,18 +93,12 @@ const PostItem = memo(({ post, auth, highlightId = null }) => {
         });
     }, [submitEditPost, post.id]);
 
-    /**
-     * @function handleDeletePost
-     * @description ลบโพสต์พร้อมการยืนยัน
-     */
     const handleDeletePost = useCallback(() => {
         if (window.confirm('คุณยืนยันที่จะลบโพสต์นี้ใช่หรือไม่? ข้อมูลจะไม่สามารถกู้คืนได้')) {
             router.delete(route('posts.destroy', post.id));
         }
     }, [post.id]);
 
-    // --- ฟังก์ชันช่วยเหลือสำหรับ CommentItem (ห่อหุ้มด้วย useCallback เพื่อเพิ่มประสิทธิภาพ React.memo) ---
-    
     const handleReplyComment = useCallback((c) => {
         setEditingComment(null);
         setReplyingTo(c);
@@ -152,19 +131,19 @@ const PostItem = memo(({ post, auth, highlightId = null }) => {
 
     return (
         <article className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-4" aria-label={`โพสต์โดย ${post.user.name}`}>
-            {/* ส่วนหัวของโพสต์ (Header Section) */}
             <header className="flex justify-between items-start mb-4">
                 <div className="flex items-center gap-3">
                     <Link href={route('profile.show', post.user.id)} className="focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-full">
                         {post.user.avatar_url ? (
                             <img 
-                                src={post.user.avatar_url} // 🌟 [Lighthouse] นำ ?t= ออกเพื่อให้ระบบ Cache ทำงานได้ 100%
+                                src={post.user.avatar_url}
                                 width="40"
                                 height="40"
+                                // 🌟 [Performance] รูปโปรไฟล์ในฟีดควรโหลดแบบ async เสมอ
                                 loading="lazy"
                                 decoding="async"
-                                className="h-10 w-10 rounded-full object-cover border border-gray-100" 
-                                alt={`โปรไฟล์ของผู้ใช้งาน ${post.user.name}`} 
+                                className="h-10 w-10 rounded-full object-cover border border-gray-100 bg-gray-50" 
+                                alt={`โปรไฟล์ของ ${post.user.name}`} 
                             />
                         ) : (
                             <div className="h-10 w-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-700 font-bold" aria-hidden="true">
@@ -182,7 +161,6 @@ const PostItem = memo(({ post, auth, highlightId = null }) => {
                     </div>
                 </div>
 
-                {/* เมนูจัดการโพสต์ (Dropdown Menu) */}
                 {post.user_id === auth.user.id && !isEditingPost && (
                     <Dropdown>
                         <Dropdown.Trigger>
@@ -196,14 +174,13 @@ const PostItem = memo(({ post, auth, highlightId = null }) => {
                             </button>
                         </Dropdown.Trigger>
                         <Dropdown.Content>
-                            <button onClick={() => setIsEditingPost(true)} className="block w-full px-4 py-2 text-left text-sm hover:bg-gray-50 text-gray-700 font-medium focus:outline-none focus:bg-gray-50">แก้ไขโพสต์</button>
-                            <button onClick={handleDeletePost} className="block w-full px-4 py-2 text-left text-sm hover:bg-gray-50 text-rose-600 font-bold focus:outline-none focus:bg-rose-50">ลบโพสต์</button>
+                            <button onClick={() => setIsEditingPost(true)} className="block w-full px-4 py-2 text-left text-sm hover:bg-gray-50 text-gray-700 font-medium focus:outline-none">แก้ไขโพสต์</button>
+                            <button onClick={handleDeletePost} className="block w-full px-4 py-2 text-left text-sm hover:bg-gray-50 text-rose-600 font-bold focus:outline-none">ลบโพสต์</button>
                         </Dropdown.Content>
                     </Dropdown>
                 )}
             </header>
             
-            {/* ส่วนเนื้อหาหลัก (Body Section) */}
             {isEditingPost ? (
                 <form onSubmit={handlePostEditSubmit} className="mb-4 bg-gray-50 p-4 rounded-xl border border-gray-200">
                     <label htmlFor={`edit-title-${post.id}`} className="sr-only">แก้ไขหัวข้อโพสต์</label>
@@ -215,8 +192,8 @@ const PostItem = memo(({ post, auth, highlightId = null }) => {
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mt-2 gap-3">
                         <input type="file" aria-label="แนบรูปภาพเพิ่มเติม" ref={editFileInputRef} onChange={e => setEditPostData('images', Array.from(e.target.files))} className="text-xs text-gray-500 w-full sm:w-auto" multiple />
                         <div className="flex gap-2 w-full sm:w-auto justify-end">
-                            <button type="button" onClick={() => setIsEditingPost(false)} className="bg-gray-200 text-gray-700 px-4 py-2 min-h-[44px] rounded-lg text-sm font-bold hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400">ยกเลิก</button>
-                            <button type="submit" disabled={postEditProcessing} className="bg-indigo-600 text-white px-6 py-2 min-h-[44px] rounded-lg text-sm font-bold hover:bg-indigo-700 shadow-sm disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">บันทึกข้อมูล</button>
+                            <button type="button" onClick={() => setIsEditingPost(false)} className="bg-gray-200 text-gray-700 px-4 py-2 min-h-[44px] rounded-lg text-sm font-bold hover:bg-gray-300">ยกเลิก</button>
+                            <button type="submit" disabled={postEditProcessing} className="bg-indigo-600 text-white px-6 py-2 min-h-[44px] rounded-lg text-sm font-bold hover:bg-indigo-700 shadow-sm disabled:opacity-50">บันทึกข้อมูล</button>
                         </div>
                     </div>
                 </form>
@@ -226,17 +203,21 @@ const PostItem = memo(({ post, auth, highlightId = null }) => {
                     <p className="text-gray-800 whitespace-pre-wrap mb-4 leading-relaxed">{post.content}</p>
                     
                     {post.images && post.images.length > 0 && (
-                        <div className={`grid gap-2 mb-4 ${post.images.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
-                            {post.images.map(img => (
+                        <div className={`grid gap-2 mb-4 overflow-hidden rounded-xl ${post.images.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
+                            {post.images.map((img, index) => (
                                 <img 
                                     key={img.id} 
-                                    src={img.image_url} // 🌟 [Lighthouse] นำ ?t= ออกเช่นกัน
+                                    src={img.image_url} 
                                     alt={`ภาพประกอบเนื้อหา: ${post.title}`} 
-                                    width="800" // กำหนดค่าอ้างอิงเพื่อป้องกัน Layout Shift
-                                    height="400"
-                                    className="w-full rounded-xl shadow-sm border object-contain bg-gray-50 max-h-[400px]"
-                                    loading="lazy" 
+                                    width="800"
+                                    height="450"
+                                    // 🌟 [Lighthouse Performance] 
+                                    // ถ้าเป็นโพสต์แรกและรูปแรก ให้โหลดแบบ Eager และลำดับความสำคัญสูง
+                                    loading={isFirst && index === 0 ? "eager" : "lazy"}
+                                    fetchpriority={isFirst && index === 0 ? "high" : "auto"}
                                     decoding="async"
+                                    // 🌟 [CLS] กำหนดความสูงขั้นต่ำเพื่อป้องกันหน้าจอกระตุก
+                                    className="w-full h-auto min-h-[200px] shadow-sm border object-cover bg-gray-100 max-h-[500px]"
                                 />
                             ))}
                         </div>
@@ -244,7 +225,6 @@ const PostItem = memo(({ post, auth, highlightId = null }) => {
                 </section>
             )}
 
-            {/* แถบการมีส่วนร่วม (Interaction Footer) */}
             {!isEditingPost && (
                 <footer className="flex items-center py-3 border-y border-gray-100 mb-2">
                     <button 
@@ -260,11 +240,10 @@ const PostItem = memo(({ post, auth, highlightId = null }) => {
                 </footer>
             )}
 
-            {/* ส่วนแสดงความคิดเห็น (Comment Section) */}
             <section className="bg-gray-50 rounded-xl p-5 mt-4 border border-gray-100" aria-label="ส่วนความคิดเห็น">
-                <h4 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-4">
+                <h4 className="text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-4">
                     ความคิดเห็น ({mainComments.length})
-                </h4>
+                </h4> 
                 
                 <div className="space-y-1">
                     {displayComments.map(comment => (
@@ -287,18 +266,15 @@ const PostItem = memo(({ post, auth, highlightId = null }) => {
                     ))}
                 </div>
 
-                {/* ปุ่มแสดงความคิดเห็นเพิ่มเติม */}
                 {mainComments.length > visibleCommentsCount && (
                     <button 
                         onClick={() => setVisibleCommentsCount(v => v + 5)} 
                         className="mt-4 text-xs font-bold text-indigo-600 hover:text-indigo-800 p-2 -m-2 min-h-[44px] inline-flex items-center rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                        aria-label="โหลดความคิดเห็นเพิ่มเติม"
                     >
                         ดูความคิดเห็นเพิ่มเติม...
                     </button>
                 )}
 
-                {/* ฟอร์มแสดงความคิดเห็นหลัก */}
                 {!replyingTo && !editingComment && (
                     <form onSubmit={handleCommentSubmit} className="mt-6 pt-4 border-t border-gray-200 flex flex-col sm:flex-row gap-3 items-end sm:items-start">
                         <label htmlFor={`main-comment-${post.id}`} className="sr-only">เพิ่มความคิดเห็นใหม่</label>
@@ -307,14 +283,14 @@ const PostItem = memo(({ post, auth, highlightId = null }) => {
                             value={commentForm.content} 
                             onChange={e => setCommentForm('content', e.target.value)} 
                             placeholder="แบ่งปันความคิดเห็นของคุณ..." 
-                            rows="2" 
-                            className="w-full sm:flex-1 border-gray-200 rounded-xl text-sm focus:ring-indigo-500 resize-y"
+                            rows="1" 
+                            className="w-full sm:flex-1 border-gray-200 rounded-xl text-sm focus:ring-indigo-500 resize-none py-3"
                         />
                         <button 
                             disabled={commentProcessing || !commentForm.content.trim()} 
-                            className="w-full sm:w-auto bg-indigo-600 text-white px-6 py-2.5 min-h-[44px] rounded-xl text-sm font-bold transition hover:bg-indigo-700 disabled:opacity-50 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                            className="w-full sm:w-auto bg-indigo-600 text-white px-6 py-2.5 min-h-[44px] rounded-xl text-sm font-bold transition hover:bg-indigo-700 disabled:opacity-50 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         >
-                            ส่งความคิดเห็น
+                            ส่ง
                         </button>
                     </form>
                 )}

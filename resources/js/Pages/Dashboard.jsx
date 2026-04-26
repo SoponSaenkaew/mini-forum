@@ -204,7 +204,7 @@ export default function Dashboard({ auth, posts, searchedUsers = [], filters = {
 
                     {/* ส่วนแสดงรายการโพสต์ (Feed Section) */}
                     <div className="space-y-4">
-                        {posts.map(post => <PostItem key={post.id} post={post} auth={auth} />)}
+                        {posts.map(post => <PostItem key={post.id} post={post} auth={auth} isFirst={index === 0} />)}
                     </div>
 
                 </div>

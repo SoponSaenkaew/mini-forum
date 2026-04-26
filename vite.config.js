@@ -11,36 +11,25 @@ export default defineConfig({
         }),
         react(),
     ],
-
     server: {
-        hmr: {
-            host: 'localhost',
-        },
-        watch: {
-            usePolling: true,
-        },
+        hmr: { host: 'localhost' },
+        watch: { usePolling: true },
         host: '0.0.0.0', 
         port: 5173,
     },
-
     build: {
-        // 🌟 [Performance] แก้ปัญหา Warning เรื่อง esbuild
-        minify: 'terser', // ใช้ terser แทนเพื่อให้บีบอัดโค้ดได้เล็กลงอีกนิด
+        // ฃ
+        // Vite 8 จะจัดการเลือกตัวบีบอัดที่เหมาะสมที่สุดให้เองโดยไม่ต้องลงเพิ่ม
         cssCodeSplit: true,
+        chunkSizeWarningLimit: 800,
         
         rollupOptions: {
             output: {
-                // 🌟 [The Fix] เปลี่ยนจาก Object เป็น Function เพื่อแก้ TypeError
+                // ✅ รักษาฟังก์ชัน manualChunks ไว้เพื่อแก้เรื่อง TypeError รอบที่แล้ว
                 manualChunks(id) {
                     if (id.includes('node_modules')) {
-                        // แยก React และ Inertia ออกมาเป็นก้อนใหญ่
-                        if (id.includes('react') || id.includes('react-dom')) {
-                            return 'react-vendor';
-                        }
-                        if (id.includes('@inertiajs')) {
-                            return 'inertia-vendor';
-                        }
-                        // ที่เหลือรวมเป็น vendor
+                        if (id.includes('react')) return 'react-vendor';
+                        if (id.includes('@inertiajs')) return 'inertia-vendor';
                         return 'vendor';
                     }
                 },

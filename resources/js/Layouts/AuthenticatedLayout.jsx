@@ -101,7 +101,9 @@ export default function AuthenticatedLayout({ header, children }) {
     return (
         <div className="min-h-screen bg-gray-100">
             {/* Navigation Bar */}
-            <nav className={`fixed top-0 z-50 w-full border-b border-gray-100 bg-white transition-transform duration-300 ease-in-out ${
+            <nav 
+                aria-label="เมนูนำทางหลัก" // [Optimization] เพิ่ม Label ให้ nav
+                className={`fixed top-0 z-50 w-full border-b border-gray-100 bg-white transition-transform duration-300 ease-in-out ${
                 isVisible ? 'translate-y-0' : '-translate-y-full'
             }`}>
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -111,7 +113,8 @@ export default function AuthenticatedLayout({ header, children }) {
                             <div className="flex shrink-0 items-center">
                                 <Link 
                                     href="/" 
-                                    className="text-2xl font-black tracking-wider text-gray-800 uppercase"
+                                    aria-label="กลับสู่หน้าแรก Tuna Forum" // [Optimization]
+                                    className="text-2xl font-black tracking-wider text-gray-800 uppercase focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-md"
                                 >
                                     TUNA FORUM
                                 </Link>
@@ -136,7 +139,9 @@ export default function AuthenticatedLayout({ header, children }) {
                                         <span className="inline-flex rounded-md">
                                             <button
                                                 type="button"
-                                                className="inline-flex items-center rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none"
+                                                aria-haspopup="true" // [Optimization] บอก Screen Reader ว่ามีเมนูย่อย
+                                                aria-label="เปิดเมนูผู้ใช้งาน" 
+                                                className="inline-flex items-center rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-600 transition duration-150 ease-in-out hover:text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500" // [Optimization] ปรับ text-gray-500 เป็น 600 เพื่อ Contrast
                                             >
                                                 <span className="relative inline-flex items-center">
                                                     {/* รูปโปรไฟล์ผู้ใช้งาน (User Avatar) */}
@@ -144,10 +149,10 @@ export default function AuthenticatedLayout({ header, children }) {
                                                         <img 
                                                             src={`${user.avatar_url}?t=${new Date().getTime()}`} // ป้องกันการแคชรูปภาพเก่า
                                                             className="h-8 w-8 rounded-full object-cover mr-2 border border-gray-200" 
-                                                            alt={user.name}
+                                                            alt={`รูปโปรไฟล์ของ ${user.name}`} // [Optimization] เพิ่มคำอธิบาย
                                                         />
                                                     ) : (
-                                                        <div className="h-8 w-8 rounded-full bg-indigo-500 flex items-center justify-center text-[10px] text-white font-bold mr-2 shadow-sm">
+                                                        <div className="h-8 w-8 rounded-full bg-indigo-500 flex items-center justify-center text-[10px] text-white font-bold mr-2 shadow-sm" aria-hidden="true">
                                                             {user.name[0]}
                                                         </div>
                                                     )}
@@ -158,7 +163,8 @@ export default function AuthenticatedLayout({ header, children }) {
                                                     {user.unread_notifications_count > 0 && (
                                                         <Link 
                                                             href={route('notifications.index')}
-                                                            className="ms-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm hover:bg-red-600 transition"
+                                                            aria-label={`คุณมีการแจ้งเตือนใหม่ ${user.unread_notifications_count} รายการ`} // [Optimization]
+                                                            className="ms-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm hover:bg-red-600 transition focus:outline-none focus:ring-2 focus:ring-red-500"
                                                         >
                                                             {user.unread_notifications_count > 99 ? '99+' : user.unread_notifications_count}
                                                         </Link>
@@ -168,6 +174,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                                 {/* ไอคอนลูกศรชี้ลง */}
                                                 <svg
                                                     className="-me-0.5 ms-2 h-4 w-4"
+                                                    aria-hidden="true" // [Optimization] ซ่อน SVG จาก Screen Reader เพราะตกแต่งเฉยๆ
                                                     xmlns="http://www.w3.org/2000/svg"
                                                     viewBox="0 0 20 20"
                                                     fill="currentColor"
@@ -207,10 +214,13 @@ export default function AuthenticatedLayout({ header, children }) {
                         <div className="-me-2 flex items-center sm:hidden">
                             <button
                                 onClick={() => setShowingNavigationDropdown((previousState) => !previousState)}
-                                className="inline-flex items-center justify-center rounded-md p-2 text-gray-400 transition duration-150 ease-in-out hover:bg-gray-100 hover:text-gray-500 focus:bg-gray-100 focus:text-gray-500 focus:outline-none"
+                                aria-label="เปิดหรือปิดเมนูนำทางสำหรับมือถือ" // [Optimization]
+                                aria-expanded={showingNavigationDropdown} // [Optimization]
+                                aria-controls="mobile-menu" // [Optimization]
+                                className="inline-flex items-center justify-center rounded-md p-2 text-gray-500 transition duration-150 ease-in-out hover:bg-gray-100 hover:text-gray-600 focus:bg-gray-100 focus:text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500" // [Optimization] ปรับสีเป็น 500
                             >
                                 <div className="relative">
-                                    <svg className="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                                    <svg className="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24" aria-hidden="true">
                                         <path
                                             className={!showingNavigationDropdown ? 'inline-flex' : 'hidden'}
                                             strokeLinecap="round"
@@ -241,7 +251,10 @@ export default function AuthenticatedLayout({ header, children }) {
                 </div>
 
                 {/* เมนูนำทางสำหรับหน้าจอขนาดเล็ก (Mobile Navigation Menu) */}
-                <div className={(showingNavigationDropdown ? 'block' : 'hidden') + ' sm:hidden'}>
+                <div 
+                    id="mobile-menu" // [Optimization] ให้ตรงกับ aria-controls
+                    className={(showingNavigationDropdown ? 'block' : 'hidden') + ' sm:hidden'}
+                >
                     <div className="space-y-1 pb-3 pt-2">
                         <ResponsiveNavLink href={route('dashboard')} active={route().current('dashboard')}>
                             Dashboard
@@ -259,10 +272,10 @@ export default function AuthenticatedLayout({ header, children }) {
                                     <img 
                                         src={`${user.avatar_url}?t=${new Date().getTime()}`}
                                         className="h-10 w-10 rounded-full object-cover border border-gray-200" 
-                                        alt={user.name}
+                                        alt={`รูปโปรไฟล์ของ ${user.name}`} // [Optimization]
                                     />
                                 ) : (
-                                    <div className="h-10 w-10 rounded-full bg-indigo-500 flex items-center justify-center text-white font-bold shadow-sm">
+                                    <div className="h-10 w-10 rounded-full bg-indigo-500 flex items-center justify-center text-white font-bold shadow-sm" aria-hidden="true">
                                         {user.name[0]}
                                     </div>
                                 )}

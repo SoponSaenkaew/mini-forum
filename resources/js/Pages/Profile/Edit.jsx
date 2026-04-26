@@ -115,7 +115,7 @@ export default function Edit({ mustVerifyEmail, status, auth }) {
                         </section>
 
                         {/* โซนอันตราย (Danger Zone) */}
-                        <section id="section-danger" aria-label="ลบบัญชีผู้ใช้งาน" className="bg-rose-50/30 p-6 shadow-sm sm:rounded-3xl border border-rose-100 scroll-mt-24">
+                        <section id="section-danger" aria-label="ลบบัญชีผู้ใช้งาน" className="block w-full text-left px-4 py-2 rounded-xl text-sm font-bold text-rose-700 hover:bg-rose-50 transition-all mt-4 focus:outline-none focus:ring-2 focus:ring-rose-500">
                             <DeleteUserForm className="max-w-xl" />
                         </section>
                         

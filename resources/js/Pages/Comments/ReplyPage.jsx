@@ -3,111 +3,121 @@ import { Head, useForm, Link } from '@inertiajs/react';
 import CommentItem from '@/Components/CommentItem';
 
 /**
- * Reply Page Component
- * @description หน้าต่างเฉพาะสำหรับตอบกลับคอมเมนต์ (มักจะเข้ามาจากหน้าต่างแจ้งเตือน)
- * จะทำหน้าที่แสดงคอมเมนต์ต้นทางแบบมีไฮไลท์เน้นย้ำ และแสดงฟอร์มสำหรับพิมพ์ข้อความตอบกลับไปยังเป้าหมายนั้น
- * * @param {Object} props
- * @param {Object} props.auth - ข้อมูลผู้ใช้งานปัจจุบันที่เข้าสู่ระบบ
- * @param {Object} props.targetComment - ข้อมูลคอมเมนต์เป้าหมายที่ผู้ใช้ต้องการตอบกลับ (รวม post_id และข้อมูล user)
- * @returns {JSX.Element}
+ * @component ReplyPage
+ * @description หน้าต่างเฉพาะสำหรับแสดงแบบฟอร์มตอบกลับความคิดเห็น (Dedicated Reply View)
+ * นำเสนอคอมเมนต์เป้าหมายพร้อมแถบไฮไลท์ เพื่อลดความสับสนและเพิ่มบริบทให้ผู้ใช้งาน 
+ * ได้รับการปรับแต่งมาตรฐานการเข้าถึง (Accessibility) และประสิทธิภาพ (Performance)
+ *
+ * @param {Object} props
+ * @param {Object} props.auth - ข้อมูลและสิทธิ์ของผู้ใช้งานปัจจุบัน
+ * @param {Object} props.targetComment - ข้อมูลเป้าหมายการตอบกลับ (ประกอบด้วย User และ Post ID)
  */
 export default function ReplyPage({ auth, targetComment }) {
     
     // ==========================================
-    // Form & State Management
+    // 1. การจัดการสถานะแบบฟอร์ม (Form & State Management)
     // ==========================================
 
-    /**
-     * @type {Object} form - อินสแตนซ์จัดการฟอร์มจาก useForm ของ Inertia.js 
-     * ใช้เก็บข้อมูลข้อความตอบกลับ และล็อกค่า parent_id เพื่อผูกให้เป็นคอมเมนต์ลูกของเป้าหมายเสมอ
-     */
     const { data, setData, post, processing, reset } = useForm({
         content: '',
-        parent_id: targetComment.id, // ล็อก ID ไว้ตอบตัวนี้โดยเฉพาะ
+        parent_id: targetComment.id, // ผูก ID เพื่อระบุว่าเป็นคอมเมนต์ย่อยของเป้าหมายนี้
     });
 
     // ==========================================
-    // Handlers
+    // 2. ฟังก์ชันจัดการเหตุการณ์ (Event Handlers)
     // ==========================================
 
     /**
      * @function submit
-     * @description จัดการการส่งฟอร์ม (Submit)
-     * ยิงข้อมูลไปยัง Route ของระบบหลังบ้านเพื่อบันทึกคอมเมนต์ใหม่ลงในโพสต์เดียวกันกับคอมเมนต์เป้าหมาย
+     * @description ส่งข้อมูลข้อความตอบกลับไปยังระบบหลังบ้าน และล้างข้อมูลฟอร์มเมื่อประมวลผลสำเร็จ
      * @param {React.FormEvent} e 
      */
     const submit = (e) => {
         e.preventDefault();
         
-        // ส่งข้อมูลอ้างอิงตามโพสต์ ID จาก targetComment
         post(route('comments.store', targetComment.post_id), { 
-            onSuccess: () => reset() // ล้างค่าฟอร์มเมื่อส่งสำเร็จ
+            onSuccess: () => reset() 
         });
     };
 
     // ==========================================
-    // Render
+    // 3. การแสดงผล (Render)
     // ==========================================
 
     return (
-        <AuthenticatedLayout header={<h2 className="font-semibold text-xl text-gray-800">ตอบกลับความคิดเห็น ✨</h2>}>
-            <Head title="Reply to Comment" />
+        <AuthenticatedLayout header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">ตอบกลับความคิดเห็น ✨</h2>}>
             
-            <div className="py-12 bg-gray-50 min-h-screen">
-                <div className="max-w-2xl mx-auto sm:px-6 lg:px-8">
+            {/* การตั้งค่า Metadata สำหรับ SEO และ Browser Tab */}
+            <Head>
+                <title>{`ตอบกลับ @${targetComment.user.name} - Tuna Forum`}</title>
+                <meta name="description" content={`ร่วมสนทนาและตอบกลับความคิดเห็นของ ${targetComment.user.name} บน Tuna Forum`} />
+            </Head>
+            
+            <main className="py-12 bg-gray-50 min-h-screen">
+                <div className="max-w-2xl mx-auto sm:px-6 lg:px-8 space-y-6">
                     
-                    {/* --- Section: แสดงคอมเมนต์เป้าหมาย (Target Comment) --- */}
-                    {/* ออกแบบกรอบให้เป็นสีทอง (amber) เพื่อเน้นย้ำผู้ใช้ว่ากำลังตอบกลับใครอยู่ */}
-                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-amber-200 mb-6">
-                        <h4 className="text-[10px] font-bold text-amber-600 uppercase mb-4 tracking-widest">
+                    {/* --- ส่วนที่ 1: พื้นที่แสดงคอมเมนต์เป้าหมาย (Target Comment Section) --- */}
+                    <section aria-labelledby="target-comment-heading" className="bg-white p-6 rounded-2xl shadow-sm border border-amber-200">
+                        <h3 id="target-comment-heading" className="text-[10px] font-bold text-amber-600 uppercase mb-4 tracking-widest">
                             คอมเมนต์เป้าหมาย
-                        </h4>
+                        </h3>
                         
-                        {/* * เรียกใช้ CommentItem 
-                          * ส่งค่า highlightId ให้ตรงกับเป้าหมายเพื่อให้ Component ปลายทางแสดงเอฟเฟกต์สีทอง
-                          */}
+                        {/* เรนเดอร์คอมเมนต์ต้นทาง โดยบังคับให้แสดงผลแบบไฮไลท์ (highlightId) 
+                          และปิดการทำงานของปุ่มตอบกลับภายใน (onReply) เพื่อป้องกันการกดซ้ำซ้อน
+                        */}
                         <CommentItem 
                             comment={targetComment} 
                             auth={auth} 
-                            highlightId={targetComment.id} // สั่งให้ไฮไลท์ตัวนี้
-                            onReply={() => {}} // ปล่อยว่างไว้เพราะอยู่ในหน้าตอบกลับอยู่แล้ว ป้องกันผู้ใช้กดซ้ำซ้อน
+                            highlightId={targetComment.id} 
+                            onReply={() => {}} 
                         />
-                    </div>
+                    </section>
 
-                    {/* --- Section: ฟอร์มสำหรับพิมพ์ตอบกลับ (Reply Form) --- */}
-                    <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                    {/* --- ส่วนที่ 2: พื้นที่กรอกข้อความตอบกลับ (Reply Form Section) --- */}
+                    <section aria-labelledby="reply-form-heading" className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                        <h3 id="reply-form-heading" className="sr-only">ฟอร์มตอบกลับข้อความ</h3>
+                        
                         <form onSubmit={submit} className="space-y-4">
                             
-                            <label className="block text-sm font-bold text-gray-700">
-                                พิมพ์คำตอบกลับถึง @{targetComment.user.name}
-                            </label>
+                            <div>
+                                <label htmlFor="reply-content" className="block text-sm font-bold text-gray-700 mb-2">
+                                    พิมพ์คำตอบกลับถึง @{targetComment.user.name}
+                                </label>
+                                
+                                <textarea 
+                                    id="reply-content" 
+                                    value={data.content} 
+                                    onChange={e => setData('content', e.target.value)} 
+                                    className="w-full border-gray-200 rounded-xl h-32 focus:ring-indigo-500 focus:border-indigo-500 resize-y transition-colors" 
+                                    placeholder="กรอกความคิดเห็นของคุณที่นี่..." 
+                                    required
+                                    aria-required="true"
+                                />
+                            </div>
                             
-                            <textarea 
-                                value={data.content} 
-                                onChange={e => setData('content', e.target.value)} 
-                                className="w-full border-gray-200 rounded-xl h-32 focus:ring-indigo-500 resize-y" 
-                                placeholder="ใส่ความคิดเห็นของคุณที่นี่..." 
-                            />
-                            
-                            {/* แถบเครื่องมือปุ่มกด (Action Bar) */}
-                            <div className="flex justify-end gap-2 items-center">
+                            {/* แถบคำสั่ง (Action Bar) */}
+                            <div className="flex justify-end gap-3 items-center pt-2">
                                 <Link 
                                     href={route('notifications.index')} 
-                                    className="px-4 py-2 text-sm text-gray-400 hover:text-gray-600 transition font-medium"
+                                    className="inline-flex items-center justify-center px-4 py-2 text-sm text-gray-500 hover:bg-gray-100 hover:text-gray-800 transition font-bold focus:outline-none focus:ring-2 focus:ring-gray-400 rounded-xl min-h-[44px]"
+                                    aria-label="ยกเลิกการตอบกลับและกลับสู่หน้าแจ้งเตือน"
                                 >
                                     ยกเลิก
                                 </Link>
+                                
                                 <button 
+                                    type="submit"
                                     disabled={processing || !data.content.trim()} 
-                                    className="bg-indigo-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-indigo-700 transition disabled:opacity-50 shadow-sm"
+                                    className="inline-flex items-center justify-center bg-indigo-600 text-white px-8 py-2 rounded-xl font-bold hover:bg-indigo-700 transition disabled:opacity-50 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 min-h-[44px]"
                                 >
-                                    ส่งคำตอบกลับ
+                                    {processing ? 'กำลังส่งข้อมูล...' : 'ส่งคำตอบกลับ'}
                                 </button>
                             </div>
                         </form>
-                    </div>
+                    </section>
+
                 </div>
-            </div>
+            </main>
         </AuthenticatedLayout>
     );
 }

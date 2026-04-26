@@ -10,65 +10,56 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Cache;
 use App\Http\Requests\StorePostRequest;
 use App\Http\Requests\UpdatePostRequest;
+// นำเข้า Intervention Image สำหรับจัดการรูปภาพ
+use Intervention\Image\Laravel\Facades\Image;
 
 /**
  * @class PostController
- * @description คอนโทรลเลอร์สำหรับจัดการกระดานสนทนา (Posts)
- * ครอบคลุมการสร้าง, แก้ไข, ลบ และการแสดงผลโพสต์ฉบับเต็ม พร้อมจัดการระบบอัปโหลดรูปภาพ (Gallery)
+ * @package App\Http\Controllers
+ * @description คอนโทรลเลอร์สำหรับจัดการระบบกระดานสนทนา (Forum Posts)
+ * รองรับการสร้าง, แก้ไข, ลบ และแสดงผลโพสต์ พร้อมระบบจัดการรูปภาพ (Image Processing) 
+ * และการจัดการแคช (Cache Management) เพื่อเพิ่มประสิทธิภาพการทำงาน
  */
 class PostController extends Controller
 {
     /**
      * @function store
-     * @description สร้างโพสต์ใหม่ลงในระบบพร้อมอัปโหลดรูปภาพที่แนบมาด้วย
-     * @param StorePostRequest $request ข้อมูลฟอร์มที่ผ่านการตรวจสอบความถูกต้องแล้ว (Validation)
-     * @return RedirectResponse รีไดเรกต์กลับไปยังหน้ากระดานหลัก (Dashboard)
+     * @description บันทึกโพสต์ใหม่พร้อมประมวลผลรูปภาพเป็นไฟล์ WebP
+     * @param StorePostRequest $request ข้อมูลฟอร์มที่ผ่านการตรวจสอบ (Validated)
+     * @return RedirectResponse รีไดเรกต์กลับไปยังหน้า Dashboard
      */
     public function store(StorePostRequest $request): RedirectResponse
     {
         $validated = $request->validated();
 
-        // 1. สร้างโพสต์หลักและเชื่อมโยงกับผู้ใช้งานปัจจุบัน
+        // 1. สร้าง Record โพสต์หลักเชื่อมโยงกับผู้ใช้ที่ล็อกอิน
         $post = $request->user()->posts()->create([
             'title' => $validated['title'],
             'content' => $validated['content'],
         ]);
 
-        // 2. ตรวจสอบและบันทึกรูปภาพ (รองรับการอัปโหลดหลายไฟล์พร้อมกัน)
+        // 2. ตรวจสอบและประมวลผลรูปภาพ (ถ้ามี)
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $file) {
-                $path = $file->store('posts');
-                $post->images()->create(['image_path' => $path]);
+                // อ่านข้อมูลรูปภาพและเริ่มการประมวลผล
+                $image = Image::read($file);
+                
+                // ย่อขนาดความกว้างให้ไม่เกิน 1200px (Aspect Ratio จะถูกรักษาไว้อัตโนมัติ)
+                $image->scaleDown(width: 1200);
+                
+                // บีบอัดและแปลงเป็นฟอร์แมต WebP (คุณภาพ 80%) เพื่อประหยัดพื้นที่และโหลดไว
+                $encodedImage = $image->toWebp(80);
+                
+                // กำหนดชื่อไฟล์แบบสุ่มและบันทึกลงใน Directory 'posts'
+                $filename = 'posts/' . uniqid('post_') . '_' . time() . '.webp';
+                Storage::put($filename, $encodedImage);
+
+                // บันทึกความสัมพันธ์ของรูปภาพลงในฐานข้อมูล
+                $post->images()->create(['image_path' => $filename]);
             }
         }
 
-        // ล้าง Cache หน้ากระดานหลักเพื่อให้โพสต์ใหม่แสดงผลบนฟีดทันที
-        Cache::forget('dashboard_posts_all');
-
-        return redirect(route('dashboard'));
-    }
-    
-    /**
-     * @function destroy
-     * @description ลบโพสต์และไฟล์รูปภาพที่เกี่ยวข้องทั้งหมดออกจากระบบ
-     * @param Post $post โมเดลโพสต์เป้าหมายที่ต้องการลบ
-     * @return RedirectResponse รีไดเรกต์กลับไปยังหน้ากระดานหลัก
-     */
-    public function destroy(Post $post): RedirectResponse
-    {
-        // ตรวจสอบสิทธิ์การเข้าถึง: อนุญาตให้ลบได้เฉพาะเจ้าของโพสต์เท่านั้น
-        if ($post->user_id !== auth()->id()) { 
-            abort(403, 'Unauthorized action.'); 
-        }
-
-        // ทำการลบไฟล์รูปภาพออกจากเซิร์ฟเวอร์ (Storage) ก่อน เพื่อไม่ให้เกิดไฟล์ขยะตกค้าง
-        foreach ($post->images as $img) {
-            Storage::delete($img->image_path);
-        }
-
-        $post->delete();
-
-        // ล้าง Cache หน้ากระดานหลัก
+        // ล้าง Cache ข้อมูลโพสต์เพื่อให้หน้า Feed อัปเดตทันที
         Cache::forget('dashboard_posts_all');
 
         return redirect(route('dashboard'));
@@ -76,42 +67,77 @@ class PostController extends Controller
 
     /**
      * @function update
-     * @description อัปเดตข้อมูลเนื้อหาโพสต์ และจัดการสลับเปลี่ยนรูปภาพ (หากมีการอัปโหลดใหม่)
-     * @param UpdatePostRequest $request ข้อมูลฟอร์มที่ผ่านการตรวจสอบแล้ว
-     * @param Post $post โมเดลโพสต์ที่ต้องการแก้ไข
-     * @return RedirectResponse รีไดเรกต์กลับไปยังหน้ากระดานหลัก
+     * @description อัปเดตข้อมูลโพสต์และจัดการเปลี่ยนชุดรูปภาพใหม่
+     * @param UpdatePostRequest $request ข้อมูลแก้ไขที่ผ่านการตรวจสอบ
+     * @param Post $post โมเดลโพสต์เป้าหมาย
+     * @return RedirectResponse รีไดเรกต์กลับไปยังหน้า Dashboard
+     * @security ตรวจสอบสิทธิ์ความเป็นเจ้าของ (Owner Authorization)
      */
     public function update(UpdatePostRequest $request, Post $post): RedirectResponse
     {
-        // ตรวจสอบสิทธิ์การเข้าถึง
+        // ตรวจสอบสิทธิ์: ป้องกันผู้อื่นแอบแก้ไขโพสต์ผ่านการส่ง Request โดยตรง
         if ($post->user_id !== auth()->id()) { 
             abort(403, 'Unauthorized action.'); 
         }
 
         $validated = $request->validated();
 
+        // อัปเดตข้อมูล Title และ Content
         $post->update([
             'title' => $validated['title'],
             'content' => $validated['content'],
         ]);
 
-        // จัดการเปลี่ยนรูปภาพ (ทำงานเฉพาะเมื่อผู้ใช้งานเลือกอัปโหลดรูปชุดใหม่เข้ามา)
+        // จัดการรูปภาพใหม่ (จะทำงานเฉพาะเมื่อมีการอัปโหลดไฟล์ใหม่เข้ามา)
         if ($request->hasFile('images')) {
             
-            // ลบรูปภาพชุดเก่าออกจากเซิร์ฟเวอร์และฐานข้อมูลให้หมดก่อน
+            // ลบรูปภาพชุดเก่าทั้งใน Storage และ Database
             foreach ($post->images as $img) {
                 Storage::delete($img->image_path);
                 $img->delete();
             }
             
-            // อัปโหลดและบันทึกรูปภาพชุดใหม่เข้าไปแทนที่
+            // ประมวลผลและบันทึกรูปภาพชุดใหม่ (Logic เดียวกับฟังก์ชัน Store)
             foreach ($request->file('images') as $file) {
-                $path = $file->store('posts');
-                $post->images()->create(['image_path' => $path]);
+                $image = Image::read($file);
+                $image->scaleDown(width: 1200);
+                $encodedImage = $image->toWebp(80);
+                
+                $filename = 'posts/' . uniqid('post_') . '_' . time() . '.webp';
+                Storage::put($filename, $encodedImage);
+                
+                $post->images()->create(['image_path' => $filename]);
             }
         }
 
-        // ล้าง Cache หน้ากระดานหลัก
+        // ล้าง Cache หลังการอัปเดต
+        Cache::forget('dashboard_posts_all');
+
+        return redirect(route('dashboard'));
+    }
+
+    /**
+     * @function destroy
+     * @description ลบโพสต์และล้างไฟล์รูปภาพที่เกี่ยวข้องทั้งหมดออกจากระบบ
+     * @param Post $post โมเดลโพสต์เป้าหมาย
+     * @return RedirectResponse รีไดเรกต์กลับไปยังหน้า Dashboard
+     */
+    public function destroy(Post $post): RedirectResponse
+    {
+        // ตรวจสอบสิทธิ์ความเป็นเจ้าของ
+        if ($post->user_id !== auth()->id()) { 
+            abort(403, 'Unauthorized action.'); 
+        }
+
+        // ลบไฟล์รูปภาพออกจาก Storage เพื่อป้องกันไฟล์ขยะ
+        foreach ($post->images as $img) {
+            Storage::delete($img->image_path);
+        }
+
+        // ลบข้อมูลจากฐานข้อมูล (ความสัมพันธ์แบบ Cascade จะจัดการ Record ที่เกี่ยวข้อง)
+        $post->delete();
+
+        // ล้าง Cache หลังการลบ
         Cache::forget('dashboard_posts_all');
 
         return redirect(route('dashboard'));
@@ -119,25 +145,24 @@ class PostController extends Controller
 
     /**
      * @function show
-     * @description แสดงผลหน้าโพสต์แบบเจาะจง (Full Post View) 
-     * พร้อมดึงข้อมูลความสัมพันธ์ทั้งหมด (Eager Loading) เพื่อแสดงความคิดเห็นและรูปภาพ
-     * @param Request $request ข้อมูล HTTP Request (ใช้เพื่อตรวจสอบเป้าหมายการทำ Highlight)
-     * @param Post $post โมเดลโพสต์ที่ถูกเลือก
-     * @return \Inertia\Response หน้า Component ของ Inertia.js
+     * @description แสดงรายละเอียดโพสต์ฉบับเต็ม พร้อมจัดการการเน้นความคิดเห็น (Highlight)
+     * @param Request $request ข้อมูล Request สำหรับดึง Query Params
+     * @param Post $post โมเดลโพสต์เป้าหมาย
+     * @return \Inertia\Response หน้าแสดงผลผ่าน Inertia.js
      */
     public function show(Request $request, Post $post)
     {
-        // รับค่า comment_id จาก URL Parameters เพื่อใช้เน้นข้อความ (Highlight) ความคิดเห็นนั้นๆ
+        // ดึงค่า comment_id สำหรับการเน้นข้อความ (ถ้ามี)
         $highlightId = $request->query('comment_id');
 
         return Inertia::render('Posts/Show', [
-            // โหลดข้อมูลความสัมพันธ์ (Relations) ทั้งหมดที่จำเป็นต้องใช้ในหน้าแสดงผล
+            // ใช้ Eager Loading ดึงข้อมูลความสัมพันธ์ที่จำเป็นทั้งหมดในคราวเดียว
             'post' => $post->load([
-                'user',
-                'likes', 
-                'images', 
+                'user',         // เจ้าของโพสต์
+                'likes',        // ยอดถูกใจ
+                'images',       // รูปภาพในโพสต์
                 'comments' => function($query) {
-                    $query->whereNull('parent_id')
+                    $query->whereNull('parent_id') // ดึงเฉพาะคอมเมนต์หลัก (ไม่ใช่การตอบกลับ)
                           ->with(['user', 'likes', 'replies'])
                           ->latest();
                 }

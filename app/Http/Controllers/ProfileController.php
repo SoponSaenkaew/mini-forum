@@ -13,6 +13,8 @@ use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Support\Facades\Storage;
 
+use Intervention\Image\Laravel\Facades\Image;
+
 /**
  * @class ProfileController
  * @description คอนโทรลเลอร์สำหรับจัดการข้อมูลส่วนตัวของผู้ใช้งาน (User Profile)
@@ -122,11 +124,20 @@ class ProfileController extends Controller
                 Storage::delete($user->avatar);
             }
 
-            // บันทึกไฟล์รูปภาพใหม่ลงในโฟลเดอร์ 'avatars'
-            $path = $request->file('avatar')->store('avatars');
+            $image = Image::read($request->file('avatar'));
+            
+            // รูปโปรไฟล์ใช้แสดงผลแค่กรอบเล็กๆ ย่อความกว้างให้เหลือแค่ 400px ก็คมชัดแล้วค่ะ
+            $image->scaleDown(width: 400); 
+            $encodedImage = $image->toWebp(80);
+            
+            // สร้างชื่อไฟล์ใหม่
+            $filename = 'avatars/' . uniqid('avatar_') . '_' . time() . '.webp';
+            
+            // บันทึกไฟล์ที่ถูกบีบอัดแล้วลง Storage
+            Storage::put($filename, $encodedImage);
             
             // อัปเดตที่อยู่ไฟล์ (Path) ลงในฐานข้อมูลของผู้ใช้งาน
-            $user->update(['avatar' => $path]);
+            $user->update(['avatar' => $filename]);
         }
 
         return back()->with('status', 'profile-avatar-updated');
@@ -153,11 +164,20 @@ class ProfileController extends Controller
                 Storage::delete($user->cover_photo);
             }
 
-            // บันทึกไฟล์รูปลงในโฟลเดอร์ 'covers'
-            $path = $request->file('cover_photo')->store('covers');
+            $image = Image::read($request->file('cover_photo'));
+            
+            // หน้าปกกว้างมาก ให้ย่อขนาดความกว้างสูงสุดไว้ที่ 1920px (ระดับ Full HD)
+            $image->scaleDown(width: 1920);
+            $encodedImage = $image->toWebp(80);
+            
+            // สร้างชื่อไฟล์ใหม่
+            $filename = 'covers/' . uniqid('cover_') . '_' . time() . '.webp';
+            
+            // บันทึกไฟล์รูปที่ถูกบีบอัดลงใน Storage
+            Storage::put($filename, $encodedImage);
             
             // อัปเดตข้อมูลที่อยู่ไฟล์ในฐานข้อมูล
-            $user->update(['cover_photo' => $path]);
+            $user->update(['cover_photo' => $filename]);
         }
 
         return back()->with('status', 'profile-cover-updated');

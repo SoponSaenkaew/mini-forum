@@ -86,7 +86,7 @@ export default function Dashboard({ auth, posts, searchedUsers = [], filters = {
             <Head title="Dashboard">
                 {/* สั่ง Preload รูปภาพ LCP ตั้งแต่บรรทัดแรก */}
                 {lcpImageUrl && (
-                    <link rel="preload" as="image" href={lcpImageUrl} fetchpriority="high" />
+                    <link rel="preload" as="image" href={lcpImageUrl} fetchpriority="high" crossOrigin="anonymous" />
                 )}
             </Head>
 

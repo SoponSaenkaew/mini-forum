@@ -216,9 +216,9 @@ export default function Dashboard({ auth, posts, searchedUsers = [], filters = {
 
                     {/* ส่วนแสดงรายการโพสต์ (Feed Section) */}
                     <div className="space-y-4">
-                        {posts?.map((post, index) => (
+                        {(Array.isArray(posts) ? posts : Object.values(posts || {}))?.map((post, index) => (
                             <PostItem 
-                                key={post?.id || index}
+                                key={post?.id || index} 
                                 post={post} 
                                 auth={auth} 
                                 isFirst={index === 0} 

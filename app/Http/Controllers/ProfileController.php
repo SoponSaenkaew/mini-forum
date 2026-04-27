@@ -100,7 +100,7 @@ class ProfileController extends Controller
                         ->with(['user', 'likes', 'replies.user', 'replies.likes'])
                         ->latest();
                 }
-            ])->latest()->get(),
+            ])->latest()->get()->values(),
         ]);
     }
 

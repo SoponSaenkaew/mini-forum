@@ -115,7 +115,8 @@ const PostItem = memo(({ post, auth, highlightId = null, isFirst = false }) => {
         resetComment();
     }, [resetComment]);
 
-    const mainComments = post?.comments?.filter(c => !c.parent_id) || [];
+    const allComments = Array.isArray(post?.comments) ? post.comments : Object.values(post?.comments || {});
+    const mainComments = allComments.filter(c => !c.parent_id) || [];
     const displayComments = mainComments.slice(0, visibleCommentsCount);
 
     return (

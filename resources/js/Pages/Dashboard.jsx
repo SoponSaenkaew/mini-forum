@@ -18,8 +18,8 @@ export default function Dashboard({ auth, posts, searchedUsers = [], filters = {
     });
 
     const [previews, setPreviews] = useState([]);
-    const fileInputRef = useRef();
-    const firstPostImage = posts?.[0]?.images?.[0]?.image_url;
+    const firstPost = (Array.isArray(posts) ? posts[0] : Object.values(posts || {})[0]);
+    const firstPostImage = firstPost?.images?.[0]?.image_url;
     const lcpImageUrl = firstPostImage 
         ? `${firstPostImage}?width=600&quality=65&format=webp` 
         : null;

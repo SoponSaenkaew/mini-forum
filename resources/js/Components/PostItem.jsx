@@ -128,7 +128,7 @@ const PostItem = memo(({ post, auth, highlightId = null, isFirst = false }) => {
                     <Link href={post?.user?.id ? route('profile.show', post.user.id) : '#'} className="focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-full">
                         {post?.user?.avatar_url ? (
                             <img 
-                                src={post.user.avatar_url}
+                                src={post?.user?.avatar_url}
                                 width="40" height="40" loading="lazy" decoding="async"
                                 className="h-10 w-10 rounded-full object-cover border border-gray-100 bg-gray-50" 
                                 alt={`โปรไฟล์ของ ${post?.user?.name}`} 
@@ -182,8 +182,8 @@ const PostItem = memo(({ post, auth, highlightId = null, isFirst = false }) => {
                     <p className="text-gray-800 whitespace-pre-wrap mb-4 leading-relaxed">{post?.content}</p>
                     
                     {post?.images?.length > 0 && (
-                        <div className={`grid gap-2 mb-4 overflow-hidden rounded-xl ${post.images.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
-                            {post.images.map((img, index) => (
+                        <div className={`grid gap-2 mb-4 overflow-hidden rounded-xl ${post?.images?.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
+                            {post?.images?.map((img, index) => (
                                 <img 
                                     key={img.id} 
                                     src={`${img.image_url}?width=400&quality=70&format=webp`} 
@@ -213,7 +213,7 @@ const PostItem = memo(({ post, auth, highlightId = null, isFirst = false }) => {
                 <div className="space-y-1">
                     {displayComments.map(comment => (
                         <CommentItem 
-                            key={comment.id} comment={comment} auth={auth} 
+                            key={comment?.id} comment={comment} auth={auth} 
                             highlightId={highlightId} replyingTo={replyingTo} editingComment={editingComment}
                             commentForm={commentForm} setCommentForm={setCommentForm}
                             commentProcessing={commentProcessing} onCommentSubmit={handleCommentSubmit}

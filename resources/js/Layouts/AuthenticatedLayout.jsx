@@ -41,10 +41,10 @@ export default function AuthenticatedLayout({ header, children }) {
      */
     useEffect(() => {
         const privateChannel = `App.Models.User.${user.id}`;
+        const handleReload = () => router.reload({ preserveScroll: true, preserveState: true });
+
         window.Echo.private(privateChannel).notification(() => handleReload());
         window.Echo.channel('public-feed').listen('.FeedUpdated', () => handleReload());
-
-        const handleReload = () => router.reload({ only: ['auth'], preserveScroll: true });
 
         return () => {
             window.Echo.leave(privateChannel);

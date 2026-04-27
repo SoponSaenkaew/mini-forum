@@ -17,6 +17,9 @@ export default function Dashboard({ auth, posts, searchedUsers = [], filters = {
         images: [] 
     });
 
+    const fileInputRef = useRef(); 
+    const safePosts = Array.isArray(posts) ? posts : Object.values(posts || {});
+
     const [previews, setPreviews] = useState([]);
     const firstPost = (Array.isArray(posts) ? posts[0] : Object.values(posts || {})[0]);
     const firstPostImage = firstPost?.images?.[0]?.image_url;
@@ -216,7 +219,7 @@ export default function Dashboard({ auth, posts, searchedUsers = [], filters = {
 
                     {/* ส่วนแสดงรายการโพสต์ (Feed Section) */}
                     <div className="space-y-4">
-                        {(Array.isArray(posts) ? posts : Object.values(posts || {}))?.map((post, index) => (
+                        {safePosts?.map((post, index) => (
                             <PostItem 
                                 key={post?.id || index} 
                                 post={post} 

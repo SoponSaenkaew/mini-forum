@@ -12,6 +12,8 @@ const PostItem = memo(({ post, auth, highlightId = null, isFirst = false }) => {
     // ==========================================
     // 1. การจัดการสถานะ (State Management)
     // ==========================================
+
+
     const [isEditingPost, setIsEditingPost] = useState(false);
     const editFileInputRef = useRef();
     const [visibleCommentsCount, setVisibleCommentsCount] = useState(3);
@@ -20,9 +22,9 @@ const PostItem = memo(({ post, auth, highlightId = null, isFirst = false }) => {
     const [localLikeCount, setLocalLikeCount] = useState(0);
 
     useEffect(() => {
-        setLocalIsLiked(post.likes?.some(like => like.user_id === auth.user.id) || false);
-        setLocalLikeCount(post.likes?.length || 0);
-    }, [post.likes, auth.user.id]);
+        setLocalIsLiked(post?.likes?.some(like => like.user_id === auth?.user?.id) || false);
+        setLocalLikeCount(post?.likes?.length || 0);
+    }, [post?.likes, auth?.user?.id]);
 
     const { 
         data: commentForm, 
@@ -126,7 +128,7 @@ const PostItem = memo(({ post, auth, highlightId = null, isFirst = false }) => {
     // ==========================================
     // 3. การแสดงผล (Render)
     // ==========================================
-    const mainComments = post.comments?.filter(c => !c.parent_id) || [];
+    const mainComments = post?.comments?.filter(c => !c.parent_id) || [];
     const displayComments = mainComments.slice(0, visibleCommentsCount);
 
     return (

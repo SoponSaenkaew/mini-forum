@@ -37,7 +37,7 @@ const CommentItem = memo(({
         if (shouldBeExpanded) setIsExpanded(true);
     }, [highlightId, shouldBeExpanded]);
 
-    const hasReplies = comment.replies && comment.replies.length > 0;
+    const hasReplies = comment?.replies?.length > 0;
 
     // ==========================================
     // 2. ตรรกะส่วนติดต่อผู้ใช้แบบตอบสนองทันที (Optimistic UI - Comment Likes)
@@ -47,9 +47,9 @@ const CommentItem = memo(({
     const [localLikeCount, setLocalLikeCount] = useState(0);
 
     useEffect(() => {
-        setLocalIsLiked(comment.likes?.some(like => like.user_id === auth.user.id) || false);
-        setLocalLikeCount(comment.likes?.length || 0);
-    }, [comment.likes, auth.user.id]);
+        setLocalIsLiked(comment?.likes?.some(like => like.user_id === auth?.user?.id) || false);
+        setLocalLikeCount(comment?.likes?.length || 0);
+    }, [comment?.likes, auth?.user?.id]);
 
     /**
      * @function handleCommentLike

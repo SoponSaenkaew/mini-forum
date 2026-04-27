@@ -177,7 +177,7 @@ export default function Dashboard({ auth, posts, searchedUsers = [], filters = {
                                 ผลการค้นหาผู้ใช้งาน
                             </h3>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                {searchedUsers.map(user => (
+                                {searchedUsers?.map(user => (
                                     <Link key={user.id} href={route('profile.show', user.id)} className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-indigo-300 hover:bg-indigo-50 transition-all group focus:outline-none focus:ring-2 focus:ring-indigo-500">
                                         {user.avatar_url ? (
                                             <img 

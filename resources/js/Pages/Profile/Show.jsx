@@ -124,7 +124,7 @@ export default function Show({ auth, user, posts }) {
                                 โพสต์ล่าสุด
                             </h3>
                             <span className="text-sm text-gray-700 font-bold bg-gray-200 px-4 py-1.5 rounded-full" aria-label={`จำนวนโพสต์ทั้งหมด ${posts.length} โพสต์`}> 
-                                {posts.length} โพสต์
+                                {posts?.length} โพสต์
                             </span>
                         </header>
                         
@@ -133,8 +133,8 @@ export default function Show({ auth, user, posts }) {
                           - ไม่มีโพสต์: แสดงสถานะว่างเปล่า (Empty State) 
                         */}
                         <div className="space-y-4">
-                            {posts.length > 0 ? (
-                                posts.map((post, index) => <PostItem key={post.id} post={post} auth={auth} isFirst={index === 0} />)
+                            {posts?.length > 0 ? (
+                                posts?.map((post, index) => <PostItem key={post?.id || index} post={post} auth={auth} isFirst={index === 0} />)
                             ) : (
                                 <div className="bg-white p-16 text-center rounded-3xl border-2 border-dashed border-gray-200 text-gray-500 flex flex-col items-center justify-center"> 
                                     <svg className="w-12 h-12 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">

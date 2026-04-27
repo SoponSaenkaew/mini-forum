@@ -36,7 +36,7 @@ class DashboardController extends Controller
                   ->orWhereHas('user', function ($q) use ($search) {
                       $q->where('name', 'like', "%{$search}%");
                   });
-        })->latest()->get();
+        })->latest()->get()->values();
 
         // ส่งข้อมูลไปที่หน้าจอ Inertia (React)
         return Inertia::render('Dashboard', [

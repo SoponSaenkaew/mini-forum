@@ -164,9 +164,7 @@ class PostController extends Controller
                 'comments' => function($query) {
                     $query->whereNull('parent_id') // ดึงเฉพาะคอมเมนต์หลัก (ไม่ใช่การตอบกลับ)
                           ->with(['user', 'likes', 'replies.user', 'replies.likes'])
-                          ->latest()
-                          ->get()
-                          ->values()
+                          ->latest();
                 }
             ]),
             'highlightId' => $highlightId ? (int)$highlightId : null,

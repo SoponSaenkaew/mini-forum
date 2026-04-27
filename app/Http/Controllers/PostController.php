@@ -163,7 +163,7 @@ class PostController extends Controller
                 'images',       // รูปภาพในโพสต์
                 'comments' => function($query) {
                     $query->whereNull('parent_id') // ดึงเฉพาะคอมเมนต์หลัก (ไม่ใช่การตอบกลับ)
-                          ->with(['user', 'likes', 'replies'])
+                          ->with(['user', 'likes', 'replies.user', 'replies.likes'])
                           ->latest();
                 }
             ]),

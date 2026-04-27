@@ -106,9 +106,10 @@ export default function Dashboard({ auth, posts, searchedUsers = [], filters = {
                                         type="text" 
                                         value={data.title} 
                                         placeholder="ระบุหัวข้อโพสต์ของคุณ..." 
-                                        className="w-full border-none bg-gray-50 rounded-xl focus:ring-2 focus:ring-indigo-500" 
+                                        className={`w-full border-none bg-gray-50 rounded-xl focus:ring-2 focus:ring-indigo-500 ${errors.title ? 'ring-2 ring-red-500' : ''}`}
                                         onChange={e => setData('title', e.target.value)} 
                                     />
+                                    {errors.title && <div className="text-red-500 text-xs mt-1 ml-1 font-bold">{errors.title}</div>}
                                 </div>
                                 
                                 <div>
@@ -117,9 +118,11 @@ export default function Dashboard({ auth, posts, searchedUsers = [], filters = {
                                         id="post-content"
                                         value={data.content} 
                                         placeholder="ระบุเนื้อหาที่คุณต้องการแบ่งปัน..." 
-                                        className="w-full border-none bg-gray-50 rounded-xl h-32 focus:ring-2 focus:ring-indigo-500 resize-none" 
+                                        
+                                        className={`w-full border-none bg-gray-50 rounded-xl h-32 focus:ring-2 focus:ring-indigo-500 resize-none ${errors.content ? 'ring-2 ring-red-500' : ''}`}
                                         onChange={e => setData('content', e.target.value)}
                                     />
+                                    {errors.content && <div className="text-red-500 text-xs mt-1 ml-1 font-bold">{errors.content}</div>}
                                 </div>
 
                                 {/* แสดงตัวอย่างรูปภาพก่อนอัปโหลด (Image Previews) */}

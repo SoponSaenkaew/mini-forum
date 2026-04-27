@@ -97,7 +97,7 @@ class ProfileController extends Controller
                 'images',
                 'comments' => function($query) {
                     $query->whereNull('parent_id')
-                        ->with(['user', 'likes', 'replies'])
+                        ->with(['user', 'likes', 'replies.user', 'replies.likes'])
                         ->latest();
                 }
             ])->latest()->get(),

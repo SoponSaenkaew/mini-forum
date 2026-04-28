@@ -256,7 +256,7 @@ const PostItem = memo(({ post, auth, highlightId = null, isFirst = false, isExpa
                         <div className="text-gray-800 mb-4 relative">
                             <div 
                                 ref={contentRef}
-                                className={`prose max-w-none prose-indigo prose-p:leading-relaxed prose-li:my-0 prose-h1:text-xl prose-h2:text-lg prose-h3:text-base prose-headings:font-bold transition-all duration-300 ${
+                                className={`whitespace-pre-wrap prose max-w-none prose-indigo prose-p:leading-relaxed prose-li:my-0 prose-h1:text-xl prose-h2:text-lg prose-h3:text-base prose-headings:font-bold transition-all duration-300 ${
                                     !isExpanded ? 'line-clamp-5 overflow-hidden' : ''
                                 }`}
                                 dangerouslySetInnerHTML={{ __html: post.content }} 

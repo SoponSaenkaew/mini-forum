@@ -6,7 +6,7 @@ import Dropdown from '@/Components/Dropdown';
 /**
  * @component PostItem
  * @description คอมโพเนนต์หลักสำหรับแสดงผลโพสต์ 
- * 🌟 [อัปเดตล่าสุด] พื้นที่เนื้อหาและรูปภาพสามารถคลิกเพื่อไปยังหน้า Post เต็มได้ (Facebook Style)
+ * 🌟 [อัปเดตล่าสุด] พื้นที่คลิกได้แบบ Facebook และเพิ่มระบบ Smart Newline สำหรับ HTML & Plain Text
  */
 const PostItem = memo(({ post, auth, highlightId = null, isFirst = false, isExpandedDefault = false }) => {
     if (!post) return null;
@@ -59,15 +59,9 @@ const PostItem = memo(({ post, auth, highlightId = null, isFirst = false, isExpa
     }, [post?.content, isExpanded]);
 
     // --- 4. Handlers (Logic การทำงาน) ---
-
-    // 🌟 ระบบวาร์ปไปหน้าโพสต์เต็ม (Facebook Style)
     const goToPost = useCallback((e) => {
-        // 1. ถ้ากดโดนแท็กลิงก์ (a) ที่อยู่ในเนื้อหา ให้ปล่อยผ่านไม่เด้ง
         if (e.target.closest('a')) return;
-        // 2. ถ้ากำลังคลุมดำเพื่อก๊อปปี้ข้อความ ให้ปล่อยผ่านไม่เด้ง
         if (window.getSelection().toString().length > 0) return;
-
-        // วาร์ปไปเลย!
         router.get(route('posts.show', post.id));
     }, [post.id]);
 
@@ -144,6 +138,16 @@ const PostItem = memo(({ post, auth, highlightId = null, isFirst = false, isExpa
     const allComments = Array.isArray(post?.comments) ? post.comments : Object.values(post?.comments || {});
     const mainComments = allComments.filter(c => !c.parent_id) || [];
     const displayComments = mainComments.slice(0, visibleCommentsCount);
+
+    // 🌟 ระบบจัดการขึ้นบรรทัดใหม่ (Smart Newline)
+    const displayContent = useMemo(() => {
+        if (!post?.content) return "";
+        return post.content
+            // 1. ลบ Enter ที่ใช้สำหรับจัดหน้าโค้ด HTML (ระหว่าง > กับ <)
+            .replace(/>\s*\n\s*</g, '><')
+            // 2. แปลง Enter ที่หลงเหลืออยู่ (ข้อความธรรมดา) ให้เป็นแท็ก <br />
+            .replace(/\n/g, '<br />');
+    }, [post?.content]);
 
     // --- 6. Render ---
     return (
@@ -244,7 +248,6 @@ const PostItem = memo(({ post, auth, highlightId = null, isFirst = false, isExpa
                 </form>
             ) : (
                 <section>
-                    {/* 🌟 พื้นที่ Facebook Style: กดตรงไหนในกรอบนี้ก็เด้งไปหน้าเต็ม! */}
                     <div 
                         onClick={goToPost} 
                         className="cursor-pointer group/content"
@@ -254,18 +257,19 @@ const PostItem = memo(({ post, auth, highlightId = null, isFirst = false, isExpa
                         </h2>
                         
                         <div className="text-gray-800 mb-4 relative">
+                            {/* 🔍 แสดงผลด้วยตัวแปร displayContent แทน post.content ปกติ */}
                             <div 
                                 ref={contentRef}
-                                className={`whitespace-pre-wrap prose max-w-none prose-indigo prose-p:leading-relaxed prose-li:my-0 prose-h1:text-xl prose-h2:text-lg prose-h3:text-base prose-headings:font-bold transition-all duration-300 ${
+                                className={`prose max-w-none prose-indigo prose-p:leading-relaxed prose-li:my-0 prose-h1:text-xl prose-h2:text-lg prose-h3:text-base prose-headings:font-bold transition-all duration-300 ${
                                     !isExpanded ? 'line-clamp-5 overflow-hidden' : ''
                                 }`}
-                                dangerouslySetInnerHTML={{ __html: post.content }} 
+                                dangerouslySetInnerHTML={{ __html: displayContent }} 
                             />
 
                             {showReadMoreButton && (
                                 <button 
                                     onClick={(e) => {
-                                        e.stopPropagation(); // 👈 ป้องกันไม่ให้การกดปุ่มนี้พาวาร์ปไปหน้าอื่น
+                                        e.stopPropagation(); 
                                         setIsExpanded(!isExpanded);
                                     }}
                                     className="mt-2 text-indigo-600 font-bold hover:text-indigo-800 focus:outline-none"

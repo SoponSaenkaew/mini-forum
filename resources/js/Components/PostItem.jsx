@@ -245,13 +245,13 @@ const PostItem = memo(({ post, auth, highlightId = null, isFirst = false }) => {
                 </form>
             ) : (
                 <section>
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">{post?.title}</h3>
+                    <h2 className="text-2xl font-extrabold text-gray-900 mb-3 tracking-tight">{post?.title}</h2>
                     
                     {/* 🔍 ส่วนแสดงผล: ใช้คลาส prose เพื่อให้ HTML ที่พิมพ์แสดงผลได้อย่างสวยงาม */}
                     <div className="text-gray-800 mb-4">
                         {isExpanded || plainTextLength <= TEXT_LIMIT ? (
                             <div 
-                                className="prose max-w-none prose-indigo prose-p:leading-relaxed prose-li:my-0" 
+                                className="prose max-w-none prose-indigo prose-p:leading-relaxed prose-li:my-0 prose-h1:text-xl prose-h2:text-lg prose-h3:text-base prose-headings:font-bold"
                                 dangerouslySetInnerHTML={{ __html: post.content }} 
                             />
                         ) : (

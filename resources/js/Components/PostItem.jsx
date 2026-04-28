@@ -1,11 +1,11 @@
-import { useState, useRef, useEffect, memo, useCallback, useMemo } from 'react';
+import { useState, useRef, useEffect, memo, useCallback } from 'react';
 import { useForm, router, Link } from '@inertiajs/react';
 import CommentItem from '@/Components/CommentItem';
 import Dropdown from '@/Components/Dropdown';
 
 /**
  * @component PostItem
- * @description คอมโพเนนต์หลักสำหรับแสดงผลโพสต์ รองรับการย่อข้อความยาวๆ, การแก้ไขโดยใช้ HTML Tag โดยตรง และการจัดการคอมเมนต์
+ * @description คอมโพเนนต์หลักสำหรับแสดงผลโพสต์ รองรับการย่อข้อความตามจำนวนบรรทัด, การแก้ไขโดยใช้ HTML Tag โดยตรง
  */
 const PostItem = memo(({ post, auth, highlightId = null, isFirst = false }) => {
     // 🛡️ ป้องกันกรณีข้อมูล post ไม่ถูกส่งมา
@@ -19,10 +19,10 @@ const PostItem = memo(({ post, auth, highlightId = null, isFirst = false }) => {
     const [localLikeCount, setLocalLikeCount] = useState(0);
     const [replyingTo, setReplyingTo] = useState(null);
     const [editingComment, setEditingComment] = useState(null);
+    
     const editFileInputRef = useRef();
-
-    // ค่าคงที่สำหรับระบบย่อข้อความ
-    const TEXT_LIMIT = 400; 
+    const contentRef = useRef(null); // 👈 อ้างอิงกล่องเนื้อหาเพื่อเช็คความสูง
+    const [showReadMoreButton, setShowReadMoreButton] = useState(false); // ควบคุมการแสดงปุ่มอ่านเพิ่มเติม
 
     // --- 2. Forms (Inertia useForm) ---
     const { 
@@ -46,9 +46,23 @@ const PostItem = memo(({ post, auth, highlightId = null, isFirst = false }) => {
         setLocalLikeCount(post?.likes?.length || 0);
     }, [post?.likes, auth?.user?.id]);
 
-    // --- 4. Handlers (Logic การทำงาน) ---
+    // 🌟 ระบบตรวจสอบจำนวนบรรทัด (เช็คว่าข้อความล้นกล่องหรือไม่)
+    useEffect(() => {
+        const checkOverflow = () => {
+            if (contentRef.current && !isExpanded) {
+                // เปรียบเทียบความสูงจริง (scrollHeight) กับความสูงที่ถูกจำกัดบรรทัด (clientHeight)
+                // บวกเผื่อค่าคลาดเคลื่อนนิดหน่อย (+2px)
+                setShowReadMoreButton(contentRef.current.scrollHeight > contentRef.current.clientHeight + 2);
+            }
+        };
 
-    /** จัดการระบบถูกใจแบบ Optimistic Update */
+        checkOverflow();
+        // เช็คอีกครั้งเผื่อเซนเซย์ย่อขยายหน้าต่างเบราว์เซอร์
+        window.addEventListener('resize', checkOverflow);
+        return () => window.removeEventListener('resize', checkOverflow);
+    }, [post?.content, isExpanded]);
+
+    // --- 4. Handlers (Logic การทำงาน) ---
     const handleLike = useCallback(() => {
         const prevIsLiked = localIsLiked;
         const prevCount = localLikeCount;
@@ -65,7 +79,6 @@ const PostItem = memo(({ post, auth, highlightId = null, isFirst = false }) => {
         });
     }, [localIsLiked, localLikeCount, post.id]);
 
-    /** จัดการส่งฟอร์มความคิดเห็น (ทั้งสร้างใหม่และแก้ไข) */
     const handleCommentSubmit = useCallback((e) => {
         e.preventDefault();
         if (editingComment) {
@@ -83,24 +96,21 @@ const PostItem = memo(({ post, auth, highlightId = null, isFirst = false }) => {
         }
     }, [editingComment, patchComment, submitComment, post.id, resetComment]);
 
-    /** บันทึกการแก้ไขโพสต์ */
     const handlePostEditSubmit = useCallback((e) => {
         e.preventDefault();
         submitEditPost(route('posts.update', post.id), { 
-            onSuccess: () => setIsEditingPost(false) ,
+            onSuccess: () => setIsEditingPost(false),
             preserveScroll: true, 
             preserveState: true 
         });
     }, [submitEditPost, post.id]);
 
-    /** ลบโพสต์ */
     const handleDeletePost = useCallback(() => {
         if (window.confirm('คุณยืนยันที่จะลบโพสต์นี้ใช่หรือไม่?')) {
             router.delete(route('posts.destroy', post.id));
         }
     }, [post.id]);
 
-    // Handlers สำหรับ Comment Management
     const handleReplyComment = useCallback((c) => {
         setEditingComment(null);
         setReplyingTo(c);
@@ -125,24 +135,7 @@ const PostItem = memo(({ post, auth, highlightId = null, isFirst = false }) => {
         resetComment();
     }, [resetComment]);
 
-    // --- 5. Data Processing (ระบบย่อข้อความ) ---
-    const getPlainText = (htmlContent) => {
-        if (!htmlContent) return "";
-        return htmlContent
-            .replace(/<\/p>/gi, '\n')
-            .replace(/<br\s*\/?>/gi, '\n')
-            .replace(/<[^>]*>?/gm, '')
-            .trim();
-    };
-
-    const plainTextLength = useMemo(() => getPlainText(post.content).length, [post.content]);
-
-    const truncatedContent = useMemo(() => {
-        const plainText = getPlainText(post.content);
-        if (plainText.length <= TEXT_LIMIT || isExpanded) return post.content;
-        return plainText.substring(0, TEXT_LIMIT) + '...';
-    }, [post.content, isExpanded]);
-
+    // --- 5. Data Processing ---
     const allComments = Array.isArray(post?.comments) ? post.comments : Object.values(post?.comments || {});
     const mainComments = allComments.filter(c => !c.parent_id) || [];
     const displayComments = mainComments.slice(0, visibleCommentsCount);
@@ -192,7 +185,6 @@ const PostItem = memo(({ post, auth, highlightId = null, isFirst = false }) => {
             </header>
             
             {isEditingPost ? (
-                /* 🎨 ฟอร์มแก้ไขที่หน้าตาเดียวกับฟอร์มสร้าง (Dashboard) โดยใช้ Input ปกติ ไม่ใช้ ReactQuill */
                 <form onSubmit={handlePostEditSubmit} className="space-y-4 mb-6">
                     <div>
                         <label htmlFor={`edit-post-title-${post.id}`} className="sr-only">หัวข้อโพสต์</label>
@@ -247,18 +239,18 @@ const PostItem = memo(({ post, auth, highlightId = null, isFirst = false }) => {
                 <section>
                     <h2 className="text-2xl font-extrabold text-gray-900 mb-3 tracking-tight">{post?.title}</h2>
                     
-                    {/* 🔍 ส่วนแสดงผล: ใช้คลาส prose เพื่อให้ HTML ที่พิมพ์แสดงผลได้อย่างสวยงาม */}
-                    <div className="text-gray-800 mb-4">
-                        {isExpanded || plainTextLength <= TEXT_LIMIT ? (
-                            <div 
-                                className="prose max-w-none prose-indigo prose-p:leading-relaxed prose-li:my-0 prose-h1:text-xl prose-h2:text-lg prose-h3:text-base prose-headings:font-bold"
-                                dangerouslySetInnerHTML={{ __html: post.content }} 
-                            />
-                        ) : (
-                            <p className="whitespace-pre-wrap leading-relaxed">{truncatedContent}</p>
-                        )}
+                    <div className="text-gray-800 mb-4 relative">
+                        {/* 🔍 พระเอกของเรา: ควบคุมการย่อบรรทัดด้วยคลาส line-clamp */}
+                        <div 
+                            ref={contentRef}
+                            className={`prose max-w-none prose-indigo prose-p:leading-relaxed prose-li:my-0 prose-h1:text-xl prose-h2:text-lg prose-h3:text-base prose-headings:font-bold transition-all duration-300 ${
+                                !isExpanded ? 'line-clamp-5 overflow-hidden' : '' // 👈 แก้ไขจำนวนบรรทัดตรงเลข 5 ได้เลยค่ะ!
+                            }`}
+                            dangerouslySetInnerHTML={{ __html: post.content }} 
+                        />
 
-                        {plainTextLength > TEXT_LIMIT && (
+                        {/* แสดงปุ่มก็ต่อเมื่อข้อความล้นบรรทัดที่เราตั้งไว้ */}
+                        {showReadMoreButton && (
                             <button 
                                 onClick={() => setIsExpanded(!isExpanded)}
                                 className="mt-2 text-indigo-600 font-bold hover:text-indigo-800 focus:outline-none"

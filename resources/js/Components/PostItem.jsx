@@ -1,19 +1,19 @@
-import { useState, useRef, useEffect, memo, useCallback } from 'react';
+import { useState, useRef, useEffect, memo, useCallback, useMemo } from 'react';
 import { useForm, router, Link } from '@inertiajs/react';
 import CommentItem from '@/Components/CommentItem';
 import Dropdown from '@/Components/Dropdown';
 
 /**
  * @component PostItem
- * @description คอมโพเนนต์หลักสำหรับแสดงผลโพสต์ รองรับการย่อข้อความตามจำนวนบรรทัด, การแก้ไขโดยใช้ HTML Tag โดยตรง
+ * @description คอมโพเนนต์หลักสำหรับแสดงผลโพสต์ 
+ * 🌟 [อัปเดตล่าสุด] พื้นที่เนื้อหาและรูปภาพสามารถคลิกเพื่อไปยังหน้า Post เต็มได้ (Facebook Style)
  */
-const PostItem = memo(({ post, auth, highlightId = null, isFirst = false }) => {
-    // 🛡️ ป้องกันกรณีข้อมูล post ไม่ถูกส่งมา
+const PostItem = memo(({ post, auth, highlightId = null, isFirst = false, isExpandedDefault = false }) => {
     if (!post) return null;
 
     // --- 1. States & Refs ---
     const [isEditingPost, setIsEditingPost] = useState(false);
-    const [isExpanded, setIsExpanded] = useState(false); // ควบคุมการแสดงเนื้อหา (Read More)
+    const [isExpanded, setIsExpanded] = useState(isExpandedDefault);
     const [visibleCommentsCount, setVisibleCommentsCount] = useState(1);
     const [localIsLiked, setLocalIsLiked] = useState(false);
     const [localLikeCount, setLocalLikeCount] = useState(0);
@@ -21,8 +21,8 @@ const PostItem = memo(({ post, auth, highlightId = null, isFirst = false }) => {
     const [editingComment, setEditingComment] = useState(null);
     
     const editFileInputRef = useRef();
-    const contentRef = useRef(null); // 👈 อ้างอิงกล่องเนื้อหาเพื่อเช็คความสูง
-    const [showReadMoreButton, setShowReadMoreButton] = useState(false); // ควบคุมการแสดงปุ่มอ่านเพิ่มเติม
+    const contentRef = useRef(null); 
+    const [showReadMoreButton, setShowReadMoreButton] = useState(false);
 
     // --- 2. Forms (Inertia useForm) ---
     const { 
@@ -46,23 +46,31 @@ const PostItem = memo(({ post, auth, highlightId = null, isFirst = false }) => {
         setLocalLikeCount(post?.likes?.length || 0);
     }, [post?.likes, auth?.user?.id]);
 
-    // 🌟 ระบบตรวจสอบจำนวนบรรทัด (เช็คว่าข้อความล้นกล่องหรือไม่)
     useEffect(() => {
         const checkOverflow = () => {
             if (contentRef.current && !isExpanded) {
-                // เปรียบเทียบความสูงจริง (scrollHeight) กับความสูงที่ถูกจำกัดบรรทัด (clientHeight)
-                // บวกเผื่อค่าคลาดเคลื่อนนิดหน่อย (+2px)
                 setShowReadMoreButton(contentRef.current.scrollHeight > contentRef.current.clientHeight + 2);
             }
         };
 
         checkOverflow();
-        // เช็คอีกครั้งเผื่อเซนเซย์ย่อขยายหน้าต่างเบราว์เซอร์
         window.addEventListener('resize', checkOverflow);
         return () => window.removeEventListener('resize', checkOverflow);
     }, [post?.content, isExpanded]);
 
     // --- 4. Handlers (Logic การทำงาน) ---
+
+    // 🌟 ระบบวาร์ปไปหน้าโพสต์เต็ม (Facebook Style)
+    const goToPost = useCallback((e) => {
+        // 1. ถ้ากดโดนแท็กลิงก์ (a) ที่อยู่ในเนื้อหา ให้ปล่อยผ่านไม่เด้ง
+        if (e.target.closest('a')) return;
+        // 2. ถ้ากำลังคลุมดำเพื่อก๊อปปี้ข้อความ ให้ปล่อยผ่านไม่เด้ง
+        if (window.getSelection().toString().length > 0) return;
+
+        // วาร์ปไปเลย!
+        router.get(route('posts.show', post.id));
+    }, [post.id]);
+
     const handleLike = useCallback(() => {
         const prevIsLiked = localIsLiked;
         const prevCount = localLikeCount;
@@ -84,14 +92,12 @@ const PostItem = memo(({ post, auth, highlightId = null, isFirst = false }) => {
         if (editingComment) {
             patchComment(route('comments.update', editingComment.id), { 
                 onSuccess: () => { setEditingComment(null); resetComment(); }, 
-                preserveScroll: true, 
-                preserveState: true 
+                preserveScroll: true, preserveState: true 
             });
         } else {
             submitComment(route('comments.store', post.id), { 
                 onSuccess: () => { setReplyingTo(null); resetComment(); }, 
-                preserveScroll: true, 
-                preserveState: true 
+                preserveScroll: true, preserveState: true 
             });
         }
     }, [editingComment, patchComment, submitComment, post.id, resetComment]);
@@ -100,8 +106,7 @@ const PostItem = memo(({ post, auth, highlightId = null, isFirst = false }) => {
         e.preventDefault();
         submitEditPost(route('posts.update', post.id), { 
             onSuccess: () => setIsEditingPost(false),
-            preserveScroll: true, 
-            preserveState: true 
+            preserveScroll: true, preserveState: true 
         });
     }, [submitEditPost, post.id]);
 
@@ -160,12 +165,14 @@ const PostItem = memo(({ post, auth, highlightId = null, isFirst = false }) => {
                         )}
                     </Link>
                     <div>
-                        <Link href={post?.user?.id ? route('profile.show', post.user.id) : '#'} className="font-bold text-gray-900 hover:text-indigo-600 transition">
+                        <Link href={post?.user?.id ? route('profile.show', post.user.id) : '#'} className="font-bold text-gray-900 hover:text-indigo-600 transition block">
                             {post?.user?.name || 'Unknown User'}
                         </Link>
-                        <time className="block text-xs text-gray-500 font-medium">
-                            {post?.created_at ? new Date(post.created_at).toLocaleString('th-TH') : ''}
-                        </time>
+                        <Link href={route('posts.show', post.id)} className="block focus:outline-none rounded-sm">
+                            <time className="text-xs text-gray-500 font-medium hover:underline">
+                                {post?.created_at ? new Date(post.created_at).toLocaleString('th-TH') : ''}
+                            </time>
+                        </Link>
                     </div>
                 </div>
 
@@ -237,46 +244,55 @@ const PostItem = memo(({ post, auth, highlightId = null, isFirst = false }) => {
                 </form>
             ) : (
                 <section>
-                    <h2 className="text-2xl font-extrabold text-gray-900 mb-3 tracking-tight">{post?.title}</h2>
-                    
-                    <div className="text-gray-800 mb-4 relative">
-                        {/* 🔍 พระเอกของเรา: ควบคุมการย่อบรรทัดด้วยคลาส line-clamp */}
-                        <div 
-                            ref={contentRef}
-                            className={`prose max-w-none prose-indigo prose-p:leading-relaxed prose-li:my-0 prose-h1:text-xl prose-h2:text-lg prose-h3:text-base prose-headings:font-bold transition-all duration-300 ${
-                                !isExpanded ? 'line-clamp-5 overflow-hidden' : '' // 👈 แก้ไขจำนวนบรรทัดตรงเลข 5 ได้เลยค่ะ!
-                            }`}
-                            dangerouslySetInnerHTML={{ __html: post.content }} 
-                        />
+                    {/* 🌟 พื้นที่ Facebook Style: กดตรงไหนในกรอบนี้ก็เด้งไปหน้าเต็ม! */}
+                    <div 
+                        onClick={goToPost} 
+                        className="cursor-pointer group/content"
+                    >
+                        <h2 className="text-2xl font-extrabold text-gray-900 mb-3 tracking-tight group-hover/content:text-indigo-600 transition-colors">
+                            {post?.title}
+                        </h2>
+                        
+                        <div className="text-gray-800 mb-4 relative">
+                            <div 
+                                ref={contentRef}
+                                className={`prose max-w-none prose-indigo prose-p:leading-relaxed prose-li:my-0 prose-h1:text-xl prose-h2:text-lg prose-h3:text-base prose-headings:font-bold transition-all duration-300 ${
+                                    !isExpanded ? 'line-clamp-5 overflow-hidden' : ''
+                                }`}
+                                dangerouslySetInnerHTML={{ __html: post.content }} 
+                            />
 
-                        {/* แสดงปุ่มก็ต่อเมื่อข้อความล้นบรรทัดที่เราตั้งไว้ */}
-                        {showReadMoreButton && (
-                            <button 
-                                onClick={() => setIsExpanded(!isExpanded)}
-                                className="mt-2 text-indigo-600 font-bold hover:text-indigo-800 focus:outline-none"
-                            >
-                                {isExpanded ? 'แสดงน้อยลง' : '...อ่านเพิ่มเติม'}
-                            </button>
+                            {showReadMoreButton && (
+                                <button 
+                                    onClick={(e) => {
+                                        e.stopPropagation(); // 👈 ป้องกันไม่ให้การกดปุ่มนี้พาวาร์ปไปหน้าอื่น
+                                        setIsExpanded(!isExpanded);
+                                    }}
+                                    className="mt-2 text-indigo-600 font-bold hover:text-indigo-800 focus:outline-none"
+                                >
+                                    {isExpanded ? 'แสดงน้อยลง' : '...อ่านเพิ่มเติม'}
+                                </button>
+                            )}
+                        </div>
+                        
+                        {post?.images?.length > 0 && (
+                            <div className={`grid gap-2 mb-4 overflow-hidden rounded-xl ${post?.images?.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
+                                {post?.images?.map((img) => (
+                                    <img 
+                                        key={img.id} 
+                                        src={`${img.image_url}?width=600&quality=80`} 
+                                        alt="Post content" 
+                                        className="w-full h-auto object-cover bg-gray-100 max-h-[500px]"
+                                    />
+                                ))}
+                            </div>
                         )}
                     </div>
-                    
-                    {post?.images?.length > 0 && (
-                        <div className={`grid gap-2 mb-4 overflow-hidden rounded-xl ${post?.images?.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
-                            {post?.images?.map((img) => (
-                                <img 
-                                    key={img.id} 
-                                    src={`${img.image_url}?width=600&quality=80`} 
-                                    alt="Post content" 
-                                    className="w-full h-auto object-cover bg-gray-100 max-h-[500px]"
-                                />
-                            ))}
-                        </div>
-                    )}
                 </section>
             )}
 
             {!isEditingPost && (
-                <footer className="flex items-center py-3 border-y border-gray-100 mb-2">
+                <footer className="flex items-center py-3 border-y border-gray-100 mb-2 mt-2">
                     <button 
                         onClick={handleLike} 
                         className={`flex items-center gap-2 font-bold transition-all p-2 rounded-md ${localIsLiked ? 'text-rose-600' : 'text-gray-500'}`}

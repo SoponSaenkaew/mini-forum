@@ -3,7 +3,6 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
-use Illuminate\Http\Request; // 1. Import Request เข้ามาใช้งาน
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -13,15 +12,8 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // 2. ตั้งค่าให้ Laravel เชื่อถือ Trust Proxies จาก Render
+        // บังคับให้ Laravel เชื่อถือ Proxy ทุกตัว (Render Reverse Proxy)
         $middleware->trustProxies(at: '*');
-        $middleware->trustHeaders(at: 
-            Request::HEADER_X_FORWARDED_FOR | 
-            Request::HEADER_X_FORWARDED_HOST | 
-            Request::HEADER_X_FORWARDED_PORT | 
-            Request::HEADER_X_FORWARDED_PROTO | 
-            Request::HEADER_X_FORWARDED_AWS_ELB
-        );
 
         $middleware->web(append: [
             \App\Http\Middleware\HandleInertiaRequests::class,
